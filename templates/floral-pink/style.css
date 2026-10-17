@@ -1,0 +1,1093 @@
+/* =============================================================================
+   templates/floral-pink/style.css
+   Sweet Pink Romance Theme — Digital Wedding Invitation
+   Scoped to .template-root.floral-pink-theme
+   ============================================================================= */
+
+/* ─── Color Palette & Local Variables ────────────────────────────────────── */
+.template-root.floral-pink-theme {
+  --pink-bg:               #fff0f4;
+  --pink-bg-soft:          #ffe4eb;
+  --pink-surface:          #ffffff;
+  --pink-primary:          #e91e63;
+  --pink-primary-dark:     #c2185b;
+  --pink-primary-light:    #ff4081;
+  --pink-accent:           #ff85a1;
+  --pink-border:           #ffd2df;
+  --pink-text-title:       #4a1525;
+  --pink-text-body:        #5d3a46;
+  --pink-text-muted:       #8e6975;
+  --pink-gold:             #d4af37;
+  --pink-shadow:           0 12px 36px rgba(233, 30, 99, 0.12);
+  --pink-shadow-hover:     0 16px 44px rgba(233, 30, 99, 0.22);
+  --pink-radius-card:      26px;
+  --pink-radius-pill:      9999px;
+
+  /* Typography */
+  --font-script:           'Alex Brush', 'Playfair Display', cursive, serif;
+  --font-heading-en:       'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  --font-myanmar:          'Pyidaungsu', 'Myanmar Text', 'Noto Sans Myanmar', system-ui, sans-serif;
+
+  /* Page base styles */
+  background: linear-gradient(180deg, #ffeef2 0%, #ffdbe4 45%, #fff0f4 100%);
+  color: var(--pink-text-body);
+  font-family: var(--font-myanmar);
+  min-height: 100vh;
+  padding: 0 0 4rem 0;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ─── Floating Romantic Music Disc Player ────────────────────────────────── */
+.template-root.floral-pink-theme .pink-floating-music {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff4081, #c2185b);
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(194, 24, 91, 0.35);
+  cursor: pointer;
+  z-index: 500;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.template-root.floral-pink-theme .pink-floating-music:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 24px rgba(194, 24, 91, 0.5);
+}
+
+.template-root.floral-pink-theme .pink-floating-music.is-playing .music-icon {
+  animation: pinkSpinDisc 4s linear infinite;
+}
+
+.template-root.floral-pink-theme .pink-floating-music.is-playing .music-ripple {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 64, 129, 0.6);
+  animation: pinkMusicPulse 1.8s ease-out infinite;
+}
+
+@keyframes pinkSpinDisc {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes pinkMusicPulse {
+  0%   { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   SCREEN 1: INTERACTIVE ENVELOPE OPENING HERO
+   ═════════════════════════════════════════════════════════════════════════ */
+.template-root.floral-pink-theme .envelope-hero-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.25rem 2.5rem;
+  text-align: center;
+  position: relative;
+}
+
+/* Top Pill Badge */
+.template-root.floral-pink-theme .top-kicker-badge {
+  background: #ffffff;
+  padding: 0.55rem 1.6rem;
+  border-radius: var(--pink-radius-pill);
+  box-shadow: 0 4px 16px rgba(233, 30, 99, 0.08);
+  margin-bottom: 1.5rem;
+  display: inline-block;
+  border: 1px solid rgba(255, 210, 223, 0.6);
+}
+
+.template-root.floral-pink-theme .top-kicker-badge .badge-text {
+  font-family: var(--font-heading-en);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--pink-primary);
+  text-transform: uppercase;
+}
+
+/* Couple Names Hero Header */
+.template-root.floral-pink-theme .envelope-couple-names {
+  font-size: clamp(1.6rem, 5.5vw, 2.3rem);
+  font-weight: 700;
+  color: var(--pink-text-title);
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  line-height: 1.4;
+}
+
+.template-root.floral-pink-theme .envelope-couple-names .name-heart {
+  color: var(--pink-primary);
+  font-size: 1.4rem;
+  animation: pinkHeartBeat 1.8s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes pinkHeartBeat {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.28); }
+}
+
+/* ── 3D Pink Envelope ────────────────────────────────────────────────────── */
+.template-root.floral-pink-theme .envelope-stage {
+  perspective: 1000px;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto 2.2rem;
+}
+
+.template-root.floral-pink-theme .envelope-wrapper {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  cursor: pointer;
+  border-radius: 18px;
+  transition: transform 0.3s ease;
+}
+
+.template-root.floral-pink-theme .envelope-wrapper:hover {
+  transform: translateY(-4px);
+}
+
+/* Envelope Back */
+.template-root.floral-pink-theme .envelope-back {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(145deg, #ff6584, #f05077);
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(233, 30, 99, 0.28);
+  z-index: 1;
+}
+
+/* Letter inside */
+.template-root.floral-pink-theme .envelope-letter {
+  position: absolute;
+  top: 14px;
+  left: 18px;
+  right: 18px;
+  height: 190px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 1.2rem 1rem;
+  text-align: center;
+  z-index: 2;
+  transition: transform 0.85s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ffe1eb;
+}
+
+.template-root.floral-pink-theme .envelope-letter .rings-mini {
+  font-size: 1.3rem;
+  display: block;
+}
+
+.template-root.floral-pink-theme .envelope-letter .letter-script {
+  font-family: var(--font-script);
+  font-size: 1.5rem;
+  color: var(--pink-primary-dark);
+  line-height: 1.2;
+}
+
+.template-root.floral-pink-theme .envelope-letter .letter-names {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--pink-text-title);
+  margin-top: 0.4rem;
+}
+
+.template-root.floral-pink-theme .envelope-letter .letter-line {
+  width: 40px;
+  height: 2px;
+  background: #ff85a1;
+  margin: 0.5rem auto 0;
+  border-radius: 2px;
+}
+
+/* Envelope Front Pocket */
+.template-root.floral-pink-theme .envelope-pocket {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 35%, #ff527b 100%);
+  border-radius: 18px;
+  clip-path: polygon(0% 45%, 50% 75%, 100% 45%, 100% 100%, 0% 100%);
+  box-shadow: inset 0 -4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Envelope Flap (3D Flip) */
+.template-root.floral-pink-theme .envelope-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 125px;
+  background: linear-gradient(180deg, #ff7b99 0%, #ff5c83 100%);
+  clip-path: polygon(0% 0%, 50% 100%, 100% 0%);
+  transform-origin: top center;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), z-index 0.2s 0.3s;
+  z-index: 4;
+}
+
+/* Wax Seal Heart in Flap Center */
+.template-root.floral-pink-theme .envelope-wax-seal {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ff4081, #c2185b);
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 18px rgba(194, 24, 91, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.template-root.floral-pink-theme .envelope-wax-seal:hover {
+  transform: translate(-50%, 50%) scale(1.12);
+  box-shadow: 0 6px 24px rgba(194, 24, 91, 0.65);
+}
+
+/* OPENED STATE FOR ENVELOPE */
+.template-root.floral-pink-theme .envelope-wrapper.is-opened .envelope-flap {
+  transform: rotateX(180deg);
+  z-index: 1;
+}
+
+.template-root.floral-pink-theme .envelope-wrapper.is-opened .envelope-wax-seal {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.template-root.floral-pink-theme .envelope-wrapper.is-opened .envelope-letter {
+  transform: translateY(-90px);
+  box-shadow: 0 16px 36px rgba(233, 30, 99, 0.2);
+}
+
+/* Button below Envelope */
+.template-root.floral-pink-theme .envelope-action-wrap {
+  margin-top: 1.5rem;
+}
+
+.template-root.floral-pink-theme .btn-open-envelope {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.95rem 2.2rem;
+  background: linear-gradient(135deg, #ff4081 0%, #c2185b 100%);
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-family: var(--font-myanmar);
+  border: none;
+  border-radius: var(--pink-radius-pill);
+  box-shadow: 0 8px 26px rgba(194, 24, 91, 0.38);
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.template-root.floral-pink-theme .btn-open-envelope:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 12px 32px rgba(194, 24, 91, 0.5);
+}
+
+.template-root.floral-pink-theme .btn-open-envelope:active {
+  transform: translateY(0) scale(0.98);
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   MAIN INVITATION CARDS CONTAINER
+   ═════════════════════════════════════════════════════════════════════════ */
+.template-root.floral-pink-theme .cards-container {
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+/* General Wedding Card Base */
+.template-root.floral-pink-theme .wedding-card {
+  background: var(--pink-surface);
+  border-radius: var(--pink-radius-card);
+  padding: 2.2rem 1.6rem;
+  box-shadow: var(--pink-shadow);
+  border: 1px solid rgba(255, 210, 223, 0.75);
+  position: relative;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.template-root.floral-pink-theme .wedding-card:hover {
+  box-shadow: var(--pink-shadow-hover);
+}
+
+
+/* ── CARD 1: MAIN INTRO CARD (with Couple Photo 1) ───────────────────────── */
+.template-root.floral-pink-theme .main-intro-card {
+  padding-top: 2.6rem;
+}
+
+.template-root.floral-pink-theme .ring-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #fff0f5;
+  box-shadow: 0 6px 18px rgba(233, 30, 99, 0.12);
+  margin-bottom: 0.8rem;
+}
+
+.template-root.floral-pink-theme .card-script-title {
+  font-family: var(--font-script);
+  font-size: clamp(2.4rem, 7vw, 3.2rem);
+  color: var(--pink-primary-dark);
+  line-height: 1.15;
+  margin-bottom: 0.2rem;
+  font-weight: 400;
+}
+
+.template-root.floral-pink-theme .card-sub-script {
+  font-size: 0.95rem;
+  color: var(--pink-text-muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 1.4rem;
+}
+
+/* ── PHOTO 1: Couple Photo Arched Portrait Frame ─────────────────────────── */
+.template-root.floral-pink-theme .couple-photo-arch {
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto 1.6rem;
+}
+
+.template-root.floral-pink-theme .couple-photo-arch .photo-frame-inner {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 140px 140px 24px 24px;
+  overflow: hidden;
+  position: relative;
+  border: 4px solid #ffffff;
+  box-shadow: 0 10px 28px rgba(233, 30, 99, 0.16);
+  background: linear-gradient(135deg, #ffeef2, #ffd8e4);
+}
+
+.template-root.floral-pink-theme .couple-photo-arch .couple-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+
+.template-root.floral-pink-theme .couple-photo-arch:hover .couple-portrait-img {
+  transform: scale(1.05);
+}
+
+/* Fallback when no photo is uploaded */
+.template-root.floral-pink-theme [data-no-photo] .photo-element {
+  display: none !important;
+}
+
+.template-root.floral-pink-theme .photo-fallback-placeholder {
+  display: none;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--pink-primary);
+  background: linear-gradient(135deg, #fff2f6, #ffe0e9);
+  padding: 1.5rem;
+}
+
+.template-root.floral-pink-theme [data-no-photo] .photo-fallback-placeholder {
+  display: flex !important;
+}
+
+.template-root.floral-pink-theme .photo-fallback-placeholder .fallback-icon {
+  font-size: 2.8rem;
+}
+
+.template-root.floral-pink-theme .photo-fallback-placeholder .fallback-text {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--pink-text-muted);
+}
+
+.template-root.floral-pink-theme .photo-frame-decor {
+  font-size: 0.85rem;
+  color: var(--pink-accent);
+  margin-top: 0.4rem;
+  letter-spacing: 0.3em;
+}
+
+/* Couple Names Block */
+.template-root.floral-pink-theme .couple-names-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.6rem;
+}
+
+.template-root.floral-pink-theme .groom-row,
+.template-root.floral-pink-theme .bride-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.template-root.floral-pink-theme .title-prefix {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--pink-text-title);
+}
+
+.template-root.floral-pink-theme .name-main {
+  font-size: clamp(1.4rem, 5vw, 1.85rem);
+  font-weight: 700;
+  color: var(--pink-text-title);
+}
+
+.template-root.floral-pink-theme .name-en {
+  font-size: 0.95rem;
+  color: var(--pink-text-muted);
+  font-family: var(--font-heading-en);
+  font-style: italic;
+  display: block;
+  width: 100%;
+}
+
+.template-root.floral-pink-theme .heart-divider-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--pink-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.2rem 0;
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+/* Date Pill Badge */
+.template-root.floral-pink-theme .date-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.6rem;
+  background: #fff5f8;
+  border: 1.5px solid #ffccd8;
+  border-radius: var(--pink-radius-pill);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--pink-primary-dark);
+}
+
+
+/* ── CARD 2: WELCOME & INVITATION LETTER CARD ────────────────────────────── */
+.template-root.floral-pink-theme .card-header-with-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+.template-root.floral-pink-theme .card-header-icon {
+  font-size: 1.4rem;
+  color: var(--pink-primary);
+}
+
+.template-root.floral-pink-theme .welcome-heading {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--pink-primary-dark);
+  line-height: 1.4;
+}
+
+.template-root.floral-pink-theme .invitation-text-body {
+  font-size: 1rem;
+  line-height: 1.95;
+  color: var(--pink-text-body);
+}
+
+.template-root.floral-pink-theme .name-highlight {
+  color: var(--pink-primary-dark);
+  font-weight: 700;
+}
+
+.template-root.floral-pink-theme .tradition-intro,
+.template-root.floral-pink-theme .tradition-middle,
+.template-root.floral-pink-theme .tradition-invitation {
+  margin-bottom: 0.9rem;
+}
+
+.template-root.floral-pink-theme .custom-note-wrap {
+  margin-top: 1.2rem;
+  padding: 0.9rem 1.1rem;
+  background: #fff5f8;
+  border-left: 3px solid var(--pink-primary);
+  border-radius: 8px;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--pink-text-title);
+  text-align: left;
+}
+
+.template-root.floral-pink-theme .custom-note-wrap:empty {
+  display: none !important;
+}
+
+
+/* ── PHOTO 2: ROMANTIC MEMORY SHOWCASE CARD ──────────────────────────────── */
+.template-root.floral-pink-theme .memory-photo-card {
+  padding: 2rem 1.5rem 1.8rem;
+}
+
+.template-root.floral-pink-theme .memory-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.template-root.floral-pink-theme .memory-heading {
+  font-family: var(--font-heading-en);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--pink-primary-dark);
+  letter-spacing: 0.08em;
+  font-style: italic;
+}
+
+.template-root.floral-pink-theme .memory-polaroid-frame {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.template-root.floral-pink-theme .memory-polaroid-frame .photo-frame-inner {
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(233, 30, 99, 0.14);
+  position: relative;
+  background: linear-gradient(135deg, #fff0f4, #ffd8e4);
+}
+
+.template-root.floral-pink-theme .memory-showcase-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+
+.template-root.floral-pink-theme .memory-polaroid-frame:hover .memory-showcase-img {
+  transform: scale(1.04);
+}
+
+.template-root.floral-pink-theme .memory-caption {
+  margin-top: 1.1rem;
+  padding: 0 0.5rem;
+}
+
+.template-root.floral-pink-theme .caption-quote {
+  font-size: 0.95rem;
+  color: var(--pink-text-title);
+  font-style: italic;
+  line-height: 1.6;
+  margin-bottom: 0.35rem;
+}
+
+.template-root.floral-pink-theme .caption-credit {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--pink-primary);
+}
+
+
+/* ── CARD 3: WEDDING SCHEDULE & VENUE DETAILS ────────────────────────────── */
+.template-root.floral-pink-theme .schedule-heading {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--pink-primary-dark);
+}
+
+.template-root.floral-pink-theme .schedule-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-bottom: 1.6rem;
+}
+
+.template-root.floral-pink-theme .schedule-item-row {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1.1rem 1.25rem;
+  background: #ffffff;
+  border: 1.5px solid #ffdde7;
+  border-radius: 20px;
+  box-shadow: 0 6px 18px rgba(233, 30, 99, 0.05);
+  text-align: left;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.template-root.floral-pink-theme .schedule-item-row:hover {
+  transform: translateY(-2px);
+  border-color: #ffb8cb;
+}
+
+.template-root.floral-pink-theme .item-icon-box {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ff4081 0%, #c2185b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(194, 24, 91, 0.28);
+}
+
+.template-root.floral-pink-theme .item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex-grow: 1;
+}
+
+.template-root.floral-pink-theme .item-label {
+  font-size: 0.85rem;
+  color: var(--pink-text-muted);
+  font-weight: 500;
+}
+
+.template-root.floral-pink-theme .item-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--pink-text-title);
+  line-height: 1.4;
+}
+
+.template-root.floral-pink-theme .item-day-tag {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--pink-primary);
+  margin-left: 0.25rem;
+}
+
+.template-root.floral-pink-theme .venue-name-highlight {
+  color: var(--pink-primary-dark);
+}
+
+.template-root.floral-pink-theme .venue-address-text {
+  font-size: 0.9rem;
+  color: var(--pink-text-muted);
+  margin-top: 0.15rem;
+}
+
+.template-root.floral-pink-theme .schedule-actions-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.template-root.floral-pink-theme .btn-pink-gradient {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.95rem 1.6rem;
+  background: linear-gradient(135deg, #ff4081 0%, #c2185b 100%);
+  color: #ffffff;
+  font-size: 1.02rem;
+  font-weight: 600;
+  font-family: var(--font-myanmar);
+  border: none;
+  border-radius: var(--pink-radius-pill);
+  box-shadow: 0 8px 24px rgba(194, 24, 91, 0.32);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.template-root.floral-pink-theme .btn-pink-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(194, 24, 91, 0.45);
+}
+
+.template-root.floral-pink-theme .btn-rsvp-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.85rem 1.4rem;
+  background: #ffffff;
+  color: var(--pink-primary-dark);
+  font-size: 0.98rem;
+  font-weight: 600;
+  border: 1.5px solid #ffccd8;
+  border-radius: var(--pink-radius-pill);
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.template-root.floral-pink-theme .btn-rsvp-outline:hover {
+  background: #fff5f8;
+  border-color: var(--pink-primary);
+}
+
+
+/* ── CARD 4: WEDDING COUNTDOWN TIMER ─────────────────────────────────────── */
+.template-root.floral-pink-theme .countdown-heading {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--pink-primary-dark);
+}
+
+.template-root.floral-pink-theme .countdown-sub-text {
+  font-size: 0.95rem;
+  color: var(--pink-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.template-root.floral-pink-theme .timer-boxes-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.template-root.floral-pink-theme .timer-box {
+  background: #ffffff;
+  border: 1.5px solid #ffccd8;
+  border-radius: 18px;
+  padding: 1.1rem 0.5rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 6px 18px rgba(233, 30, 99, 0.06);
+  transition: transform 0.25s ease;
+}
+
+.template-root.floral-pink-theme .timer-box:hover {
+  transform: translateY(-3px);
+  border-color: var(--pink-primary);
+}
+
+.template-root.floral-pink-theme .timer-digit {
+  font-size: clamp(1.4rem, 4.5vw, 1.9rem);
+  font-weight: 800;
+  color: var(--pink-primary-dark);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.template-root.floral-pink-theme .timer-unit {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--pink-text-muted);
+  margin-top: 0.45rem;
+}
+
+
+/* ── CARD 5: GUEST WISHES & INTERACTIVE HEARTS ───────────────────────────── */
+.template-root.floral-pink-theme .wishes-heading {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--pink-primary-dark);
+}
+
+.template-root.floral-pink-theme .wishes-sub-text {
+  font-size: 0.93rem;
+  color: var(--pink-text-muted);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+/* Heart Button */
+.template-root.floral-pink-theme .heart-sender-block {
+  margin-bottom: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.template-root.floral-pink-theme .btn-love-heart {
+  max-width: 260px;
+  padding: 1rem 1.8rem;
+  font-size: 1.05rem;
+}
+
+.template-root.floral-pink-theme .heart-pulse-icon {
+  font-size: 1.3rem;
+  animation: pinkHeartPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pinkHeartPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.3); }
+}
+
+.template-root.floral-pink-theme .love-counter-display {
+  font-size: 0.98rem;
+  color: var(--pink-primary-dark);
+  font-weight: 600;
+}
+
+.template-root.floral-pink-theme .love-counter-display strong {
+  font-size: 1.25rem;
+  color: var(--pink-primary);
+}
+
+/* Guest Wish Form */
+.template-root.floral-pink-theme .guest-wish-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.template-root.floral-pink-theme .wish-input,
+.template-root.floral-pink-theme .wish-textarea {
+  width: 100%;
+  padding: 0.85rem 1.1rem;
+  border: 1.5px solid #ffccd8;
+  border-radius: 14px;
+  font-family: var(--font-myanmar);
+  font-size: 0.96rem;
+  color: var(--pink-text-title);
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.template-root.floral-pink-theme .wish-input:focus,
+.template-root.floral-pink-theme .wish-textarea:focus {
+  border-color: var(--pink-primary);
+  box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.15);
+}
+
+.template-root.floral-pink-theme .wish-textarea {
+  resize: vertical;
+}
+
+.template-root.floral-pink-theme .btn-submit-wish {
+  align-self: center;
+  max-width: 260px;
+  padding: 0.85rem 1.8rem;
+}
+
+/* Wishes List */
+.template-root.floral-pink-theme .wishes-stream-wrapper {
+  text-align: left;
+  border-top: 1px dashed #ffd2df;
+  padding-top: 1.5rem;
+}
+
+.template-root.floral-pink-theme .stream-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--pink-primary-dark);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.template-root.floral-pink-theme .wishes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 0.3rem;
+}
+
+.template-root.floral-pink-theme .wish-bubble {
+  background: #fff5f8;
+  border: 1px solid #ffdde7;
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  animation: pinkFadeIn 0.4s ease;
+}
+
+.template-root.floral-pink-theme .wish-author {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--pink-primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.template-root.floral-pink-theme .wish-time {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--pink-text-muted);
+}
+
+.template-root.floral-pink-theme .wish-message-text {
+  font-size: 0.92rem;
+  color: var(--pink-text-body);
+  line-height: 1.55;
+}
+
+@keyframes pinkFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ── Floating Burst Hearts on Heart Click ────────────────────────────────── */
+.pink-burst-heart {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  font-size: 24px;
+  animation: pinkFloatUp 1.6s ease-out forwards;
+}
+
+@keyframes pinkFloatUp {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.6) rotate(0deg);
+  }
+  50% {
+    transform: translate(calc(-50% + var(--dx, 20px)), calc(-50% - 100px)) scale(1.3) rotate(var(--rot, 20deg));
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx2, -30px)), calc(-50% - 220px)) scale(1.6) rotate(var(--rot2, -40deg));
+    opacity: 0;
+  }
+}
+
+
+/* ── Romantic Footer ─────────────────────────────────────────────────────── */
+.template-root.floral-pink-theme .pink-template-footer {
+  text-align: center;
+  padding: 3rem 1.25rem 2rem;
+  color: var(--pink-text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.template-root.floral-pink-theme .footer-rings {
+  font-size: 1.6rem;
+  letter-spacing: 0.25em;
+  margin-bottom: 0.2rem;
+}
+
+.template-root.floral-pink-theme .footer-couple-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--pink-primary-dark);
+}
+
+.template-root.floral-pink-theme .footer-thanks {
+  font-size: 0.9rem;
+  max-width: 420px;
+  line-height: 1.6;
+}
+
+.template-root.floral-pink-theme .btn-back-to-top {
+  margin-top: 1rem;
+  padding: 0.55rem 1.4rem;
+  background: #ffffff;
+  border: 1.5px solid #ffccd8;
+  border-radius: var(--pink-radius-pill);
+  font-family: var(--font-myanmar);
+  font-size: 0.88rem;
+  color: var(--pink-primary);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.template-root.floral-pink-theme .btn-back-to-top:hover {
+  background: #fff0f4;
+  border-color: var(--pink-primary);
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN (Tablets & Desktops)
+   ═════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
+  .template-root.floral-pink-theme {
+    padding-bottom: 6rem;
+  }
+
+  .template-root.floral-pink-theme .cards-container {
+    max-width: 620px;
+    gap: 2.4rem;
+  }
+
+  .template-root.floral-pink-theme .wedding-card {
+    padding: 2.8rem 2.2rem;
+  }
+
+  .template-root.floral-pink-theme .couple-photo-arch {
+    max-width: 320px;
+  }
+
+  .template-root.floral-pink-theme .memory-polaroid-frame {
+    max-width: 420px;
+  }
+
+  .template-root.floral-pink-theme .timer-box {
+    padding: 1.4rem 0.8rem 1rem;
+  }
+
+  .template-root.floral-pink-theme .timer-digit {
+    font-size: 2.2rem;
+  }
+}

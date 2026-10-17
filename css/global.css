@@ -1,0 +1,380 @@
+/* =============================================================================
+   css/global.css — Digital Wedding Invitation Platform
+   Core Design System: Variables, Reset, Heart Animation, Utilities
+   ============================================================================= */
+
+/* ─── CSS Custom Properties ──────────────────────────────────────────────── */
+:root {
+  /* Color Palette */
+  --color-primary:         #C9A96E;   /* warm gold        */
+  --color-primary-light:   #E8CFA0;   /* light gold       */
+  --color-primary-dark:    #A07840;   /* deep gold        */
+  --color-secondary:       #8B2252;   /* deep rose        */
+  --color-secondary-light: #C4547A;   /* light rose       */
+  --color-accent:          #F4E4C1;   /* champagne        */
+  --color-dark:            #1A0A2E;   /* midnight purple  */
+  --color-dark-2:          #2D1555;   /* mid purple       */
+  --color-light:           #FFF8F0;   /* ivory white      */
+  --color-text:            #3D2B1F;   /* warm brown       */
+  --color-text-muted:      #7A6352;   /* muted brown      */
+
+  /* Typography */
+  --font-heading: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-body:    'Pyidaungsu', 'Myanmar Text', 'Noto Sans Myanmar', system-ui, sans-serif;
+
+  /* Spacing */
+  --space-xs:  0.25rem;
+  --space-sm:  0.5rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+
+  /* Layout */
+  --max-width:            1300px;
+  --template-left-width:  40%;
+  --template-right-width: 60%;
+
+  /* Shadows */
+  --shadow-gold:  0 4px 24px rgba(201, 169, 110, 0.35);
+  --shadow-card:  0 8px 40px rgba(26, 10, 46, 0.18);
+  --shadow-hover: 0 16px 48px rgba(201, 169, 110, 0.45);
+
+  /* Glass / Blur */
+  --glass-bg:     rgba(255, 248, 240, 0.08);
+  --glass-bg-2:   rgba(255, 248, 240, 0.12);
+  --glass-border: rgba(201, 169, 110, 0.22);
+
+  /* Transitions */
+  --transition-fast:   0.15s ease;
+  --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:   0.65s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Border Radius */
+  --radius-sm:   6px;
+  --radius-md:   12px;
+  --radius-lg:   20px;
+  --radius-xl:   32px;
+  --radius-full: 9999px;
+
+  /* Z-index Layers */
+  --z-base:    0;
+  --z-card:    10;
+  --z-overlay: 100;
+  --z-hearts:  200;
+  --z-loading: 1000;
+}
+
+/* ─── Reset ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-text);
+  background-color: var(--color-dark);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Heart Fall Container ───────────────────────────────────────────────── */
+#hearts-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: var(--z-hearts);
+}
+
+/* Falling heart — each spawned by engine.js */
+.falling-heart {
+  position: absolute;
+  top: -60px;
+  will-change: transform, opacity;
+  animation: heartFall linear forwards;
+  user-select: none;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 6px rgba(201, 169, 110, 0.5));
+}
+
+@keyframes heartFall {
+  0% {
+    transform: translateY(0) rotate(-15deg) scale(1);
+    opacity: 0.95;
+  }
+  25% {
+    transform: translateY(25vh) rotate(10deg) scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(50vh) rotate(-8deg) scale(0.85);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateY(78vh) rotate(12deg) scale(0.7);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(115vh) rotate(0deg) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .falling-heart { display: none; }
+}
+
+/* ─── Loading Screen ─────────────────────────────────────────────────────── */
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-loading);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 30%, var(--color-dark-2) 0%, var(--color-dark) 70%);
+  transition: opacity 0.7s ease, visibility 0.7s ease;
+}
+
+#loading-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Triple spinning rings */
+.loading-rings {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin-bottom: var(--space-xl);
+}
+
+.loading-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid transparent;
+}
+
+.loading-ring:nth-child(1) {
+  border-top-color: var(--color-primary);
+  animation: spin 1.2s linear infinite;
+}
+
+.loading-ring:nth-child(2) {
+  inset: 10px;
+  border-right-color: var(--color-secondary);
+  animation: spin 1.8s linear infinite reverse;
+}
+
+.loading-ring:nth-child(3) {
+  inset: 22px;
+  border-bottom-color: var(--color-accent);
+  animation: spin 0.9s linear infinite;
+}
+
+/* Center heart pulse */
+.loading-rings::after {
+  content: '❤';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: var(--color-secondary-light);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin  { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+
+.loading-text {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  color: var(--color-accent);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.loading-sub {
+  font-size: 0.88rem;
+  color: var(--color-primary);
+  margin-top: var(--space-xs);
+  letter-spacing: 0.08em;
+  animation: pulse 2.2s ease-in-out infinite;
+}
+
+/* ─── Error Screen ───────────────────────────────────────────────────────── */
+#error-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-overlay) + 1);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-xl);
+  background: radial-gradient(ellipse at 50% 30%, var(--color-dark-2) 0%, var(--color-dark) 70%);
+}
+
+#error-screen.visible {
+  display: flex;
+}
+
+.error-icon {
+  font-size: 4.5rem;
+  margin-bottom: var(--space-lg);
+  animation: floatUpDown 3.5s ease-in-out infinite;
+}
+
+.error-title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  color: var(--color-accent);
+  margin-bottom: var(--space-md);
+}
+
+.error-message {
+  font-size: 1rem;
+  color: var(--color-primary-light);
+  max-width: 420px;
+  line-height: 1.9;
+  white-space: pre-line;
+}
+
+.error-retry-btn {
+  margin-top: var(--space-xl);
+  padding: 0.75rem 2rem;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-dark);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  box-shadow: var(--shadow-gold);
+  cursor: pointer;
+  border: none;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+}
+
+.error-retry-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+@keyframes floatUpDown {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-14px); }
+}
+
+/* ─── Template Container ─────────────────────────────────────────────────── */
+#template-container {
+  min-height: 100vh;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+#template-container.visible {
+  opacity: 1;
+}
+
+/* ─── Scroll Entrance Animation Utility ──────────────────────────────────── */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(44px);
+  transition: opacity 0.75s ease, transform 0.75s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-on-scroll.animated {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays for sequential siblings */
+.animate-on-scroll:nth-child(2) { transition-delay: 80ms;  }
+.animate-on-scroll:nth-child(3) { transition-delay: 160ms; }
+.animate-on-scroll:nth-child(4) { transition-delay: 240ms; }
+.animate-on-scroll:nth-child(5) { transition-delay: 320ms; }
+.animate-on-scroll:nth-child(6) { transition-delay: 400ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-on-scroll { opacity: 1; transform: none; transition: none; }
+}
+
+/* ─── Shared Utility Classes (used in templates) ─────────────────────────── */
+.glass-card {
+  background: var(--glass-bg-2);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-lg);
+}
+
+.gold-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
+}
+
+.gold-divider::before,
+.gold-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+}
+
+.gold-divider span {
+  color: var(--color-primary);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}

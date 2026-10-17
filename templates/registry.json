@@ -1,0 +1,10 @@
+[
+  {
+    "id"          : "floral-pink",
+    "name"        : "Sweet Pink Romance (ဖိတ်စာအသစ်)",
+    "description" : "ပန်းရောင်စွဲမက်ဖွယ် ဒီဇိုင်း — စာအိတ်ဖွင့်လှစ်ခြင်း၊ ဓာတ်ပုံ ၂ ပုံ ထည့်သွင်းပြသခြင်း၊ Countdown အချိန်မှတ်တမ်းနှင့် Interactive ဆုမွန်ကောင်းတောင်းပေးခြင်းတို့ အပြည့်အစုံ ပါဝင်ပါသည်",
+    "thumbnail"   : "templates/floral-pink/thumbnail.jpg",
+    "tags"        : ["romantic", "pink", "envelope", "photos", "interactive"],
+    "available"   : true
+  }
+]

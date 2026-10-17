@@ -1,0 +1,72 @@
+# =============================================================================
+# .gitignore - Digital Wedding Invitation Platform
+# =============================================================================
+
+# Environment & Sensitive Files (NEVER COMMIT)
+# ---------------------------------------------
+.env
+.env.*
+.env.example
+*.pem
+*.key
+*.cert
+
+# Agent & Workspace Tooling (Not needed for deployment)
+# -----------------------------------------------------
+.agents/
+skills-lock.json
+AGENTS.md
+
+# Database Schema & Migrations (Backend only, not deployed to static web)
+# ----------------------------------------------------------------------
+supabase/
+
+# Operating System Files
+# ----------------------
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+
+# Editor & IDE Directories
+# ------------------------
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary, Logs & Cache
+# -----------------------
+*.log
+logs/
+temp/
+tmp/
+scratch/
+.cache/
+
+# Package & Dependencies (if tooling used later)
+# ---------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

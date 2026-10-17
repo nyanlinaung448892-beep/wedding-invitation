@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Digital Wedding Invitation Partner Dashboard">
+  <meta name="theme-color" content="#1A0A2E">
+  <title>Partner Dashboard — Digital Wedding Invitation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/global.css?v=3">
+  <link rel="stylesheet" href="css/partner.css?v=3">
+</head>
+<body class="partner-body">
+  <main>
+    <section id="partner-login-view" class="partner-auth" aria-labelledby="partner-login-title">
+      <form id="partner-login-form" class="partner-login-card" novalidate>
+        <p class="partner-kicker">Digital Wedding Invitation</p>
+        <h1 id="partner-login-title">Partner ဝင်ရောက်ရန်</h1>
+        <p>Partner code နှင့် passcode ဖြင့် referral စာရင်းကို ကြည့်ပါ။</p>
+        <div id="partner-login-error" class="partner-alert" role="alert" tabindex="-1" hidden></div>
+        <label for="login-partner-code">Partner code</label>
+        <input id="login-partner-code" name="partner_code" autocomplete="username" required>
+        <label for="login-passcode">Passcode</label>
+        <input id="login-passcode" name="passcode" type="password" autocomplete="current-password" required>
+        <button class="partner-button partner-button-primary" type="submit">ဝင်ရောက်မည်</button>
+      </form>
+    </section>
+
+    <section id="partner-dashboard" class="partner-dashboard" hidden>
+      <header class="partner-header">
+        <div><p class="partner-kicker">Partner Dashboard</p><h1 id="partner-shop-name">—</h1><p id="partner-code-display" class="partner-code">—</p></div>
+        <button id="partner-logout-button" class="partner-button partner-button-quiet" type="button">ထွက်မည်</button>
+      </header>
+
+      <section class="partner-stats" aria-label="Bonus အကျဉ်းချုပ်">
+        <article class="stat-card"><p>Default Bonus နှုန်း</p><strong id="default-bonus-value">0 MMK</strong></article>
+        <article class="stat-card"><p>မရသေးသော Bonus (Unpaid)</p><strong id="unpaid-bonus-value" style="color: #ffe0a1;">0 MMK</strong></article>
+        <article class="stat-card"><p>ပေးချေပြီး Bonus (Paid)</p><strong id="paid-bonus-value" style="color: #b9ffd1;">0 MMK</strong></article>
+      </section>
+
+      <section class="partner-section" aria-labelledby="referrals-title">
+        <div class="partner-section-heading"><div><h2 id="referrals-title">Referral စာရင်း</h2><p id="referral-count">—</p></div></div>
+        <div id="partner-status" class="partner-status" role="status" aria-live="polite"></div>
+        <div class="partner-table-wrap"><table><thead><tr><th>စုံတွဲ</th><th>ဖိတ်စာ</th><th>Template</th><th>ရက်စွဲ</th><th>Bonus</th><th>အခြေအနေ</th></tr></thead><tbody id="referral-list"></tbody></table></div>
+      </section>
+
+      <section class="partner-section" aria-labelledby="paid-title">
+        <div class="partner-section-heading"><div><h2 id="paid-title">Paid history</h2><p>ပေးချေပြီးသား bonus များ</p></div></div>
+        <div id="paid-history" class="paid-history"></div>
+      </section>
+    </section>
+  </main>
+  <script type="module" src="js/partner.js?v=3"></script>
+</body>
+</html>

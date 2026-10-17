@@ -1,0 +1,372 @@
+<!-- =============================================================================
+     templates/floral-pink/layout.html
+     Sweet Pink Romance — Digital Wedding Invitation Template
+     Scoped to .template-root.floral-pink-theme
+     ============================================================================= -->
+
+<div class="template-root floral-pink-theme">
+
+  <!-- ── Floating Music Player ─────────────────────────────────────────────── -->
+  <button id="pink-music-btn" class="pink-floating-music" type="button" aria-label="သီချင်း ဖွင့်/ပိတ် မည်" title="မင်္ဂလာတေးသံသာ ဖွင့်/ပိတ် မည်">
+    <span class="music-icon" aria-hidden="true">🎵</span>
+    <span class="music-ripple" aria-hidden="true"></span>
+  </button>
+
+  <!-- ═════════════════════════════════════════════════════════════════════════
+       SCREEN 1: INTERACTIVE ENVELOPE OPENING HERO
+       ═════════════════════════════════════════════════════════════════════════ -->
+  <header class="envelope-hero-screen" id="envelope-section">
+    <!-- Top Pill Badge -->
+    <div class="top-kicker-badge animate-on-scroll">
+      <span class="badge-text">WEDDING MEMORIAL INVITATION</span>
+    </div>
+
+    <!-- Couple Names Hero Header -->
+    <h1 class="envelope-couple-names animate-on-scroll">
+      <span data-bind="groom_name" class="name-part">ကိုဟိန်းသူအောင်</span>
+      <span class="name-heart" aria-hidden="true">♥</span>
+      <span data-bind="bride_name" class="name-part">မပန်းအိဖြူ</span>
+    </h1>
+
+    <!-- Realistic 3D Pink Envelope Container -->
+    <div class="envelope-stage animate-on-scroll" id="envelope-stage">
+      <div class="envelope-wrapper" id="envelope-box" role="button" tabindex="0" aria-label="ဖိတ်စာ စာအိတ် ဖွင့်ရန် နှိပ်ပါ">
+        <!-- Back of Envelope -->
+        <div class="envelope-back"></div>
+
+        <!-- Letter inside that peeks & slides up -->
+        <div class="envelope-letter" id="envelope-letter">
+          <div class="letter-top-seal">
+            <span class="rings-mini">💍</span>
+            <span class="letter-script">Wedding Invitation</span>
+          </div>
+          <p class="letter-names">
+            <span data-bind="groom_name">မောင်ဟိန်းသူအောင်</span> &amp; <span data-bind="bride_name">မပန်းအိဖြူ</span>
+          </p>
+          <div class="letter-line"></div>
+        </div>
+
+        <!-- Front Pocket of Envelope -->
+        <div class="envelope-pocket"></div>
+
+        <!-- Envelope Flap (3D Animated) -->
+        <div class="envelope-flap" id="envelope-flap">
+          <!-- Wax Seal Heart -->
+          <div class="envelope-wax-seal" id="wax-seal" title="ဖိတ်စာဖွင့်ရန် နှိပ်ပါ">
+            <svg class="seal-heart-svg" viewBox="0 0 24 24" width="28" height="28" fill="white">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Button to Open Envelope / Scroll -->
+    <div class="envelope-action-wrap animate-on-scroll">
+      <button type="button" id="btn-open-envelope" class="btn-open-envelope">
+        <span class="btn-icon">✉️</span>
+        <span class="btn-text">ဖိတ်စာဖွင့်ကြည့်ရန်နှိပ်ပါ</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═════════════════════════════════════════════════════════════════════════
+       MAIN INVITATION BODY (CARDS SHOWCASE)
+       ═════════════════════════════════════════════════════════════════════════ -->
+  <main class="cards-container" id="invitation-main-cards">
+
+    <!-- ── CARD 1: MAIN WEDDING INVITATION CARD (with Couple Photo 1) ──────── -->
+    <section class="wedding-card main-intro-card animate-on-scroll" id="card-couple">
+      <!-- Floating Rings Icon -->
+      <div class="card-icon-badge ring-badge" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="34" height="34" class="ring-svg">
+          <circle cx="20" cy="24" r="14" fill="none" stroke="#e91e63" stroke-width="3" stroke-dasharray="88" stroke-linecap="round"/>
+          <circle cx="28" cy="24" r="14" fill="none" stroke="#c2185b" stroke-width="3" stroke-linecap="round"/>
+          <polygon points="20,7 24,11 20,15 16,11" fill="#ffb2c9"/>
+        </svg>
+      </div>
+
+      <h2 class="card-script-title">Wedding Invitation</h2>
+      <p class="card-sub-script">မင်္ဂလာအမှတ်တရ ဖိတ်ကြားလွှာ</p>
+
+      <!-- PHOTO 1: Couple Photo Arched Frame -->
+      <div class="photo-frame-wrapper couple-photo-arch" data-photo-wrapper>
+        <div class="photo-frame-inner">
+          <img
+            data-bind-src="couple_photo_url"
+            alt="သတို့သားနှင့်သတို့သမီး မင်္ဂလာဓာတ်ပုံ"
+            class="photo-element couple-portrait-img"
+            loading="lazy"
+          >
+          <div class="photo-fallback-placeholder" aria-hidden="true">
+            <span class="fallback-icon">💍</span>
+            <span class="fallback-text">မင်္ဂလာအမှတ်တရ ဓာတ်ပုံ</span>
+          </div>
+        </div>
+        <div class="photo-frame-decor" aria-hidden="true">✨ 💕 ✨</div>
+      </div>
+
+      <!-- Couple Names in Myanmar Script -->
+      <div class="couple-names-block">
+        <div class="groom-row">
+          <span class="title-prefix">မောင်</span>
+          <span class="name-main" data-bind="groom_name">ဟိန်းသူအောင်</span>
+          <span class="name-en" data-bind="groom_name_en"></span>
+        </div>
+
+        <div class="heart-divider-circle">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+
+        <div class="bride-row">
+          <span class="title-prefix">မ</span>
+          <span class="name-main" data-bind="bride_name">ပန်းအိဖြူ</span>
+          <span class="name-en" data-bind="bride_name_en"></span>
+        </div>
+      </div>
+
+      <!-- Wedding Date Pill Badge -->
+      <div class="date-pill-badge">
+        <span class="calendar-emoji">📅</span>
+        <span class="date-text">
+          <span data-bind="wedding_date_formatted">၁၃ . ၀၉ . ၂၀၂၆</span>
+          <span class="day-part">(<span data-bind="wedding_day">Sunday</span>)</span>
+        </span>
+      </div>
+    </section>
+
+
+    <!-- ── CARD 2: WELCOME & INVITATION LETTER CARD ────────────────────────── -->
+    <section class="wedding-card welcome-message-card animate-on-scroll" id="card-welcome">
+      <div class="card-header-with-icon">
+        <span class="card-header-icon" aria-hidden="true">🪶</span>
+        <h3 class="welcome-heading">ချစ်ခင်လေးစားရပါသော မိတ်ဆွေများခင်ဗျာ</h3>
+      </div>
+
+      <div class="invitation-text-body">
+        <p class="tradition-intro">
+          နှစ်ဖက်သောမိဘများ၏ ခွင့်ပြုချက်ဖြင့် ကျွန်တော် <strong class="name-highlight">မောင်<span data-bind="groom_name">ဟိန်းသူအောင်</span></strong> နှင့် ကျွန်မ <strong class="name-highlight">မ<span data-bind="bride_name">ပန်းအိဖြူ</span></strong> တို့၏
+        </p>
+        <p class="tradition-middle">
+          ဘဝတစ်သက်တာ အမှတ်တရ မင်္ဂလာဧည့်ခံပွဲ အခမ်းအနားသို့
+        </p>
+        <p class="tradition-invitation">
+          ချစ်ခင်ရပါသော ဆွေမျိုးမိတ်သင်္ဂဟများ အားလုံး ကြွရောက်ချီးမြှင့်ပေးပါရန် လေးစားစွာဖြင့် ဖိတ်ကြားအပ်ပါသည်။
+        </p>
+
+        <!-- Custom personalized note if admin entered custom message -->
+        <div class="custom-note-wrap" data-bind="message"></div>
+      </div>
+    </section>
+
+
+    <!-- ── PHOTO 2: ROMANTIC MEMORY SHOWCASE CARD ──────────────────────────── -->
+    <section class="wedding-card memory-photo-card animate-on-scroll" id="card-photo-showcase">
+      <div class="memory-card-header">
+        <span class="sparkle-icon">✨</span>
+        <h3 class="memory-heading">Forever &amp; Always</h3>
+        <span class="sparkle-icon">✨</span>
+      </div>
+
+      <!-- Photo 2 Frame -->
+      <div class="photo-frame-wrapper memory-polaroid-frame" data-photo-wrapper>
+        <div class="photo-frame-inner">
+          <img
+            data-bind-src="cover_photo_url"
+            alt="မင်္ဂလာအမှတ်တရ ချစ်သက်သေပုံရိပ်"
+            class="photo-element memory-showcase-img"
+            loading="lazy"
+          >
+          <div class="photo-fallback-placeholder" aria-hidden="true">
+            <span class="fallback-icon">🌹</span>
+            <span class="fallback-text">မင်္ဂလာအမှတ်တရ ချစ်သက်သေပုံရိပ်</span>
+          </div>
+        </div>
+        <div class="memory-caption">
+          <p class="caption-quote">“မေတ္တာနှင့် သစ္စာတရားတို့ဖြင့် တည်ဆောက်မည့် ကျွန်ုပ်တို့၏ ချစ်ခရီးစဉ်”</p>
+          <p class="caption-credit">
+            <span data-bind="groom_name">ဟိန်းသူအောင်</span> ♥ <span data-bind="bride_name">ပန်းအိဖြူ</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ── CARD 3: WEDDING SCHEDULE & VENUE DETAILS ────────────────────────── -->
+    <section class="wedding-card schedule-card animate-on-scroll" id="card-schedule">
+      <div class="card-header-with-icon">
+        <span class="card-header-icon" aria-hidden="true">🪄</span>
+        <h3 class="schedule-heading">မင်္ဂလာအခမ်းအနား အစီအစဉ်</h3>
+      </div>
+
+      <div class="schedule-items-list">
+        <!-- Date Item -->
+        <div class="schedule-item-row">
+          <div class="item-icon-box calendar-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
+              <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+            </svg>
+          </div>
+          <div class="item-content">
+            <span class="item-label">မင်္ဂလာနေ့ရက်</span>
+            <span class="item-value">
+              <span data-bind="wedding_date_formatted">၁၃ . ၀၉ . ၂၀၂၆</span>
+              <span class="item-day-tag">(<span data-bind="wedding_day">တနင်္ဂနွေနေ့</span>)</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Time Item -->
+        <div class="schedule-item-row">
+          <div class="item-icon-box clock-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
+              <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+            </svg>
+          </div>
+          <div class="item-content">
+            <span class="item-label">မင်္ဂလာအချိန်</span>
+            <span class="item-value" data-bind="wedding_time">နံနက် ၉:၃၀ နာရီ မှ နေ့လယ် ၁၂:၃၀ နာရီ ထိ</span>
+          </div>
+        </div>
+
+        <!-- Venue Location Item -->
+        <div class="schedule-item-row">
+          <div class="item-icon-box pin-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+          </div>
+          <div class="item-content">
+            <span class="item-label">မင်္ဂလာခန်းမနေရာ</span>
+            <span class="item-value venue-name-highlight">
+              "<span data-bind="venue_name">ဟုတ်ဝမ်မင်္ဂလာခန်းမ</span>"
+            </span>
+            <span class="venue-address-text" data-bind="venue_address">ကန်လမ်း၊ တောင်ငူမြို့။</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons: Google Maps & RSVP -->
+      <div class="schedule-actions-wrap">
+        <a data-bind-href="map_url" class="btn-pink-gradient btn-map-link" target="_blank" rel="noopener">
+          <span class="btn-icon">🗺️</span>
+          <span>Google Map ဖြင့် လမ်းညွှန်ကြည့်ရန်</span>
+        </a>
+
+        <a data-bind-href="rsvp_phone_href" class="btn-rsvp-outline">
+          <span class="btn-icon">📞</span>
+          <span>RSVP ဖုန်းဆက်ရန် : <span data-bind="rsvp_phone"></span></span>
+        </a>
+      </div>
+    </section>
+
+
+    <!-- ── CARD 4: WEDDING MEMORIAL COUNTDOWN TIMER ────────────────────────── -->
+    <section class="wedding-card countdown-card animate-on-scroll" id="card-countdown">
+      <div class="card-header-with-icon">
+        <span class="card-header-icon" aria-hidden="true">⌛</span>
+        <h3 class="countdown-heading">မင်္ဂလာအမှတ်တရ အချိန်မှတ်တမ်း</h3>
+      </div>
+      <p class="countdown-sub-text" id="countdown-status-text">
+        မင်္ဂလာဆောင်မည့်အချိန်အထိ စောင့်မျှော်ရေတွက်မှု 💕
+      </p>
+
+      <!-- 4 Rounded Timer Boxes -->
+      <div class="timer-boxes-grid" id="wedding-timer-grid">
+        <div class="timer-box">
+          <span class="timer-digit" id="timer-days">00</span>
+          <span class="timer-unit">ရက်</span>
+        </div>
+        <div class="timer-box">
+          <span class="timer-digit" id="timer-hours">00</span>
+          <span class="timer-unit">နာရီ</span>
+        </div>
+        <div class="timer-box">
+          <span class="timer-digit" id="timer-minutes">00</span>
+          <span class="timer-unit">မိနစ်</span>
+        </div>
+        <div class="timer-box">
+          <span class="timer-digit" id="timer-seconds">00</span>
+          <span class="timer-unit">စက္ကန့်</span>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ── CARD 5: GUEST WISHES & INTERACTIVE HEARTS ───────────────────────── -->
+    <section class="wedding-card wishes-card animate-on-scroll" id="card-wishes">
+      <div class="card-header-with-icon">
+        <span class="card-header-icon" aria-hidden="true">💖</span>
+        <h3 class="wishes-heading">မင်္ဂလာဆုမွန်ကောင်းတောင်းပေးရန်</h3>
+      </div>
+      <p class="wishes-sub-text">
+        သတို့သားနှင့် သတို့သမီးအတွက် အသည်းပုံလေးများ နှိပ်ပြီး ဆုမွန်ကောင်းတောင်းပေးနိုင်ပါသည်
+      </p>
+
+      <!-- Interactive Send Heart Button -->
+      <div class="heart-sender-block">
+        <button type="button" id="btn-send-love-heart" class="btn-pink-gradient btn-love-heart">
+          <span class="heart-pulse-icon">❤️</span>
+          <span>အသည်းပေးပို့မည်</span>
+        </button>
+
+        <p class="love-counter-display">
+          ချစ်ခြင်းမေတ္တာ ပေးပို့မှုပေါင်း — <strong id="love-heart-count">139</strong> ကြိမ် 💖
+        </p>
+      </div>
+
+      <!-- Guest Wish Form -->
+      <form id="pink-guest-wish-form" class="guest-wish-form" novalidate>
+        <div class="form-field-group">
+          <input
+            type="text"
+            id="guest-name-input"
+            class="wish-input"
+            placeholder="သင့်အမည် ရေးပါ..."
+            maxlength="50"
+            required
+          >
+        </div>
+
+        <div class="form-field-group">
+          <textarea
+            id="guest-message-input"
+            class="wish-textarea"
+            rows="3"
+            placeholder="မင်္ဂလာဆုတောင်းစကား ရေးပေးပါ..."
+            maxlength="300"
+            required
+          ></textarea>
+        </div>
+
+        <button type="submit" id="btn-submit-wish" class="btn-pink-gradient btn-submit-wish">
+          <span>ဆုမွန်ကောင်း ပေးပို့မည် ✨</span>
+        </button>
+      </form>
+
+      <!-- Wishes List Stream -->
+      <div class="wishes-stream-wrapper">
+        <h4 class="stream-title">ဧည့်သည်တော်များ၏ ဆုမွန်ကောင်းလွှာများ</h4>
+        <div class="wishes-list" id="pink-wishes-list">
+          <!-- Dynamically populated or pre-seeded -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Romantic Footer ────────────────────────────────────────────────── -->
+  <footer class="pink-template-footer">
+    <div class="footer-rings">💍 💕 💍</div>
+    <p class="footer-couple-text">
+      <span data-bind="groom_name">ဟိန်းသူအောင်</span> &amp; <span data-bind="bride_name">ပန်းအိဖြူ</span>
+    </p>
+    <p class="footer-thanks">ကျွန်ုပ်တို့၏ မင်္ဂလာပွဲသို့ ကြွရောက်ချီးမြှင့်ပေးသည့်အတွက် ကျေးဇူးအထူးတင်ရှိပါသည်</p>
+    <button type="button" class="btn-back-to-top" id="btn-pink-back-to-top" aria-label="ထိပ်ဆုံးသို့ ပြန်သွားမည်">
+      ↑ ထိပ်ဆုံးသို့
+    </button>
+  </footer>
+
+</div>
