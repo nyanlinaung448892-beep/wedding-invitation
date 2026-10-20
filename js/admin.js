@@ -1,4 +1,6 @@
-import { supabase, TABLES, STORAGE_BUCKET, fetchAllPartners } from './supabase-config.js';
+import { getSupabaseClient, TABLES, STORAGE_BUCKET, fetchAllPartners } from './supabase-config.js';
+
+const supabase = await getSupabaseClient();
 
 const state = { invitations: [], partners: [], templates: [] };
 const photoRemovals = { cover: false, couple: false };

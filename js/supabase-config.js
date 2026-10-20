@@ -73,9 +73,15 @@ function _makeChainProxy(promiseFn) {
 
 export const supabase = new Proxy({}, {
     get(_target, topProp) {
-        return (...topArgs) => _makeChainProxy(
-            () => getSupabaseClient().then(client => client[topProp](...topArgs))
-        );
+        const targetPromise = getSupabaseClient().then(client => client[topProp]);
+        return new Proxy((...args) => _makeChainProxy(() => getSupabaseClient().then(c => c[topProp](...args))), {
+            get(_t, subProp) {
+                if (subProp === 'then' || subProp === 'catch' || subProp === 'finally') {
+                    return targetPromise[subProp].bind(targetPromise);
+                }
+                return (...subArgs) => _makeChainProxy(() => getSupabaseClient().then(c => c[topProp][subProp](...subArgs)));
+            }
+        });
     }
 });
 
