@@ -20,16 +20,16 @@
 
   <title>ထိမ်းမြားမင်္ဂလာ ဖိတ်ကြားလွှာ</title>
 
-  <!-- Google Fonts: Cormorant Garamond, Alex Brush, Playfair Display -->
+  <!-- Google Fonts: Cormorant Garamond, Alex Brush, Playfair Display (Optimized weights) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
     rel="stylesheet"
   >
 
   <!-- Global Design System CSS -->
-  <link rel="stylesheet" href="css/global.css?v=3">
+  <link rel="stylesheet" href="css/global.css?v=6">
 </head>
 <body>
 
@@ -68,7 +68,17 @@
   <div id="template-container" aria-live="polite"></div>
 
   <!-- Template Engine (ES Module) -->
-  <script type="module" src="js/engine.js?v=3"></script>
+  <script type="module" src="js/engine.js?v=6"></script>
 
+  <!-- Service Worker Registration (100% Offline Support) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js?v=6').catch(err => {
+          console.warn('[SW] ServiceWorker registration notice:', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>

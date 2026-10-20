@@ -41,7 +41,7 @@ function renderPartnerOptions() {
 }
 
 async function loadMetadata() {
-  const [templateResponse, partners] = await Promise.all([fetch('templates/registry.json?v=3'), fetchAllPartners()]);
+  const [templateResponse, partners] = await Promise.all([fetch('templates/registry.json?v=6'), fetchAllPartners()]);
   if (!templateResponse.ok) throw new Error('Template registry ကို ဖတ်၍မရပါ။');
   state.templates = (await templateResponse.json()).filter(template => template.available);
   state.partners = partners;
@@ -203,13 +203,27 @@ function resizeImage(file) {
       const image = new Image(); 
       image.onerror = () => reject(new Error('ရွေးထားသောဖိုင်သည် မှန်ကန်သော ဓာတ်ပုံမဟုတ်ပါ။'));
       image.onload = () => { 
-        const maxDimension = 1600; 
+        // 1080px is optimal for mobile retina display while reducing bandwidth by ~75%
+        const maxDimension = 1080; 
         const scale = Math.min(1, maxDimension / Math.max(image.width, image.height)); 
         const canvas = document.createElement('canvas'); 
         canvas.width = Math.round(image.width * scale); 
         canvas.height = Math.round(image.height * scale); 
-        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height); 
-        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('ဓာတ်ပုံအရွယ်အစားလျှော့၍မရပါ။')), 'image/jpeg', 0.86); 
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height); 
+
+        // Detect if browser supports WebP canvas export
+        const isWebpSupported = canvas.toDataURL('image/webp').startsWith('data:image/webp');
+        const targetType = isWebpSupported ? 'image/webp' : 'image/jpeg';
+        const targetExt  = isWebpSupported ? 'webp' : 'jpg';
+        const quality    = 0.82;
+
+        canvas.toBlob(blob => {
+          if (!blob) return reject(new Error('ဓာတ်ပုံအရွယ်အစားလျှော့၍မရပါ။'));
+          resolve({ blob, contentType: targetType, extension: targetExt });
+        }, targetType, quality);
       }; 
       image.src = reader.result; 
     };
@@ -220,9 +234,13 @@ function resizeImage(file) {
 async function uploadPhoto(file, slug, kind) {
   if (!file) return ''; 
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('JPG, PNG သို့မဟုတ် WebP ဓာတ်ပုံကိုသာ ရွေးပါ။');
-  const resized = await resizeImage(file); 
-  const path = `invitations/${slug}/${kind}-${Date.now()}.jpg`;
-  const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, resized, { contentType: 'image/jpeg', upsert: false }); 
+  const { blob, contentType, extension } = await resizeImage(file); 
+  const path = `invitations/${slug}/${kind}-${Date.now()}.${extension}`;
+  const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, blob, { 
+    contentType: contentType, 
+    cacheControl: '31536000',
+    upsert: false 
+  }); 
   if (error) throw new Error(`ဓာတ်ပုံ upload မအောင်မြင်ပါ — ${error.message}`);
   return supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
 }

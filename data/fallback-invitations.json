@@ -1,0 +1,88 @@
+{
+  "default": {
+    "slug": "default",
+    "template_id": "floral-pink",
+    "is_active": true,
+    "customer_data": {
+      "groom_name": "ဟိန်းသူအောင်",
+      "bride_name": "ပန်းအိဖြူ",
+      "groom_name_en": "",
+      "bride_name_en": "",
+      "wedding_date": "2026-09-13",
+      "wedding_day": "တနင်္ဂနွေနေ့",
+      "wedding_time": "နံနက် ၉:၃၀ နာရီ မှ နေ့လယ် ၁၂:၃၀ နာရီ ထိ",
+      "venue_name": "ဟုတ်ဝမ်မင်္ဂလာခန်းမ",
+      "venue_address": "ကန်လမ်း၊ တောင်ငူမြို့။",
+      "map_url": "",
+      "rsvp_phone": "",
+      "cover_photo_url": "assets/images/wedding-memory-default.jpg",
+      "couple_photo_url": "assets/images/couple-portrait-default.jpg",
+      "message": ""
+    }
+  },
+  "invitations": {
+    "ko-zaw-ma-aye-2025": {
+      "slug": "ko-zaw-ma-aye-2025",
+      "template_id": "floral-pink",
+      "is_active": true,
+      "customer_data": {
+        "groom_name": "ကိုဇော်",
+        "bride_name": "မအေး",
+        "groom_name_en": "Ko Zaw",
+        "bride_name_en": "Ma Aye",
+        "wedding_date": "2025-11-22",
+        "wedding_day": "စနေနေ့",
+        "wedding_time": "၁၁:၀၀ နံနက်",
+        "venue_name": "Novotel Yangon Max",
+        "venue_address": "459/461 Pyay Road, Kamayut, Yangon",
+        "map_url": "",
+        "rsvp_phone": "09-444-555-666",
+        "cover_photo_url": "assets/images/wedding-memory-default.jpg",
+        "couple_photo_url": "assets/images/couple-portrait-default.jpg",
+        "message": "ချစ်မြတ်နိုးသော ညာတိမိတ်ဆွေများကို ဖိတ်ကြားအပ်ပါသည်"
+      }
+    },
+    "ko-aung-ma-thandar-2025": {
+      "slug": "ko-aung-ma-thandar-2025",
+      "template_id": "floral-pink",
+      "is_active": true,
+      "customer_data": {
+        "groom_name": "ကိုအောင်",
+        "bride_name": "မသန်းဒါး",
+        "groom_name_en": "Ko Aung",
+        "bride_name_en": "Ma Thandar",
+        "wedding_date": "2025-12-12",
+        "wedding_day": "သောကြာနေ့",
+        "wedding_time": "၁၀:၀၀ နံနက်",
+        "venue_name": "Sedona Hotel, Yangon",
+        "venue_address": "No.1 Kaba Aye Pagoda Road, Yankin, Yangon",
+        "map_url": "",
+        "rsvp_phone": "09-111-222-333",
+        "cover_photo_url": "assets/images/wedding-memory-default.jpg",
+        "couple_photo_url": "assets/images/couple-portrait-default.jpg",
+        "message": "ကျွန်တော်တို့ရဲ့ ထိမ်းမြားမင်္ဂလာပွဲသို့ ကြိုဆိုပါသည်"
+      }
+    },
+    "heinthu-aung-pan-ei-phyu-2026": {
+      "slug": "heinthu-aung-pan-ei-phyu-2026",
+      "template_id": "floral-pink",
+      "is_active": true,
+      "customer_data": {
+        "groom_name": "ဟိန်းသူအောင်",
+        "bride_name": "ပန်းအိဖြူ",
+        "groom_name_en": "",
+        "bride_name_en": "",
+        "wedding_date": "2026-09-13",
+        "wedding_day": "တနင်္ဂနွေနေ့",
+        "wedding_time": "နံနက် ၉:၃၀ နာရီ မှ နေ့လယ် ၁၂:၃၀ နာရီ ထိ",
+        "venue_name": "ဟုတ်ဝမ်မင်္ဂလာခန်းမ",
+        "venue_address": "ကန်လမ်း၊ တောင်ငူမြို့။",
+        "map_url": "",
+        "rsvp_phone": "",
+        "cover_photo_url": "assets/images/wedding-memory-default.jpg",
+        "couple_photo_url": "assets/images/couple-portrait-default.jpg",
+        "message": ""
+      }
+    }
+  }
+}

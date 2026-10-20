@@ -2,10 +2,136 @@
 // js/engine.js
 // Template Engine — reads ?id=<slug>, fetches invitation from Supabase,
 // dynamically loads template HTML + CSS, and binds data attributes.
+// 100% Zero-Downtime Architecture — never shows error screen to guests.
 // Digital Wedding Invitation Platform
 // =============================================================================
 
 import { fetchInvitationBySlug } from './supabase-config.js';
+import { saveToCalendar, getGoogleCalendarUrl, scheduleWeddingReminder } from './calendar.js';
+
+// ─── Default Invitation (In-Memory Fallback) ──────────────────────────────────
+// Shown when: no ?id= in URL, Supabase offline, or slug not found anywhere.
+// Matches the default data in templates/floral-pink/layout.html.
+
+const DEFAULT_INVITATION = {
+  slug        : 'default',
+  template_id : 'floral-pink',
+  is_active   : true,
+  _isFallbackDefault: true,
+  customer_data: {
+    groom_name      : 'ဟိန်းသူအောင်',
+    bride_name      : 'ပန်းအိဖြူ',
+    groom_name_en   : '',
+    bride_name_en   : '',
+    wedding_date    : '2026-09-13',
+    wedding_day     : 'တနင်္ဂနွေနေ့',
+    wedding_time    : 'နံနက် ၉:၃၀ နာရီ မှ နေ့လယ် ၁၂:၃၀ နာရီ ထိ',
+    venue_name      : 'ဟုတ်ဝမ်မင်္ဂလာခန်းမ',
+    venue_address   : 'ကန်လမ်း၊ တောင်ငူမြို့။',
+    map_url         : '',
+    rsvp_phone      : '',
+    cover_photo_url : 'assets/images/wedding-memory-default.jpg',
+    couple_photo_url: 'assets/images/couple-portrait-default.jpg',
+    message         : '',
+  },
+};
+
+// ─── Static Fallback JSON cache (loaded once) ─────────────────────────────────
+let _fallbackJSON = null;
+
+async function loadFallbackJSON() {
+  if (_fallbackJSON) return _fallbackJSON;
+  try {
+    const res = await fetch('data/fallback-invitations.json?v=6', { cache: 'no-store' });
+    if (res.ok) {
+      _fallbackJSON = await res.json();
+    }
+  } catch (_) {
+    // If even the JSON can't be fetched, _fallbackJSON stays null
+  }
+  return _fallbackJSON;
+}
+
+// ─── Multi-Tier Invitation Resolver ──────────────────────────────────────────
+/**
+ * Resolves invitation data using a 5-tier fallback chain.
+ * NEVER throws — always returns an invitation object.
+ *
+ * Tier 0 — Direct entry (no slug): return fallback default immediately
+ * Tier 1 — Supabase live fetch (5s timeout)
+ * Tier 2 — localStorage cache
+ * Tier 3 — Static fallback-invitations.json
+ * Tier 4 — In-memory DEFAULT_INVITATION
+ *
+ * @param {string|null} slug
+ * @returns {Promise<Object>}
+ */
+async function resolveInvitationData(slug, onLiveUpdate = null) {
+  // Tier 0: No slug → show default immediately, no network call
+  if (!slug) {
+    console.info('[engine.js] No slug in URL — loading default invitation.');
+    const fb = await loadFallbackJSON();
+    if (fb?.default) return fb.default;
+    return DEFAULT_INVITATION;
+  }
+
+  const cleanSlug = String(slug).trim().toLowerCase();
+  const cacheKey  = `wedding_inv_cache_${cleanSlug}`;
+
+  // STALE-WHILE-REVALIDATE: Check local cache first for INSTANT 0ms load!
+  let cachedData = null;
+  try {
+    const raw = localStorage.getItem(cacheKey);
+    if (raw) cachedData = JSON.parse(raw);
+  } catch (_) {}
+
+  // If cached data is available, return immediately for instant guest presentation!
+  if (cachedData) {
+    console.info('[engine.js] Instant Load: serving cached invitation data for slug:', cleanSlug);
+
+    // Asynchronously revalidate in background if online
+    if (navigator.onLine && typeof onLiveUpdate === 'function') {
+      fetchInvitationBySlug(cleanSlug, 4000)
+        .then(remoteData => {
+          if (remoteData) {
+            try { localStorage.setItem(cacheKey, JSON.stringify(remoteData)); } catch (_) {}
+            // If data changed, notify UI to live update
+            if (JSON.stringify(remoteData.customer_data) !== JSON.stringify(cachedData.customer_data) ||
+                remoteData.template_id !== cachedData.template_id) {
+              console.info('[engine.js] Background revalidation found updates — refreshing UI.');
+              onLiveUpdate(remoteData);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+
+    return { ...cachedData, _isCached: true };
+  }
+
+  // Tier 1: Supabase live fetch (for first-time visitors)
+  try {
+    const remoteData = await fetchInvitationBySlug(cleanSlug);
+    if (remoteData) {
+      try { localStorage.setItem(cacheKey, JSON.stringify(remoteData)); } catch (_) {}
+      return remoteData;
+    }
+  } catch (_) {
+    // Network failure — continue to next tier
+  }
+
+  // Tier 3: Static fallback-invitations.json
+  const fb = await loadFallbackJSON();
+  if (fb?.invitations?.[cleanSlug]) {
+    console.warn('[engine.js] Supabase unavailable — using fallback JSON for slug:', cleanSlug);
+    return fb.invitations[cleanSlug];
+  }
+
+  // Tier 4: Ultimate default fallback — never show an error screen
+  console.warn('[engine.js] Slug not found anywhere — showing default invitation.');
+  if (fb?.default) return { ...fb.default, _isFallbackDefault: true };
+  return DEFAULT_INVITATION;
+}
 
 // ─── Myanmar Date Formatting ──────────────────────────────────────────────────
 
@@ -154,6 +280,81 @@ function initScrollAnimations() {
   elements.forEach(el => observer.observe(el));
 }
 
+// ─── Photo CacheStorage Management (100% Offline Photo Reliability) ─────────
+const PHOTO_CACHE_NAME = 'wedding-invitation-photos-v1';
+
+/**
+ * Loads and caches couple/memory photos using the Browser CacheStorage API.
+ * - When online: Displays image and saves response into CacheStorage.
+ * - When offline: Retrieves cached image Blob from CacheStorage and displays it via objectURL.
+ * - Graceful fallback: If photo fails or doesn't exist, displays the romantic placeholder.
+ *
+ * @param {HTMLImageElement} imgEl
+ * @param {HTMLElement|null} wrapperEl
+ * @param {string} rawUrl
+ */
+async function loadAndCachePhoto(imgEl, wrapperEl, rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string' || !rawUrl.trim()) {
+    imgEl.setAttribute('data-no-photo', 'true');
+    if (wrapperEl) wrapperEl.setAttribute('data-no-photo', 'true');
+    return;
+  }
+
+  const cleanUrl = rawUrl.trim();
+
+  // 1. Try CacheStorage (Primary Offline Storage)
+  if ('caches' in window) {
+    try {
+      const cache = await caches.open(PHOTO_CACHE_NAME);
+      const cachedResponse = await cache.match(cleanUrl);
+
+      if (cachedResponse) {
+        // Cached version available — render immediately from offline cache!
+        const blob = await cachedResponse.blob();
+        if (blob && blob.size > 0) {
+          const blobUrl = URL.createObjectURL(blob);
+          imgEl.src = blobUrl;
+          imgEl.removeAttribute('data-no-photo');
+          if (wrapperEl) wrapperEl.removeAttribute('data-no-photo');
+
+          // If online, background refresh in case customer updated their photo
+          if (navigator.onLine) {
+            fetch(cleanUrl, { mode: 'cors' })
+              .then(res => {
+                if (res && res.ok) cache.put(cleanUrl, res.clone());
+              })
+              .catch(() => {});
+          }
+          return;
+        }
+      }
+
+      // Not cached in CacheStorage yet: set src directly so browser loads natively.
+      // The Service Worker (sw.js) automatically caches the photo in PHOTO_CACHE_NAME without double fetching!
+      imgEl.src = cleanUrl;
+      imgEl.removeAttribute('data-no-photo');
+      if (wrapperEl) wrapperEl.removeAttribute('data-no-photo');
+
+      imgEl.onerror = () => {
+        imgEl.setAttribute('data-no-photo', 'true');
+        if (wrapperEl) wrapperEl.setAttribute('data-no-photo', 'true');
+      };
+      return;
+    } catch (err) {
+      console.warn('[engine.js] CacheStorage read error:', err);
+    }
+  }
+
+  // 2. Direct Fallback if CacheStorage is unsupported
+  imgEl.src = cleanUrl;
+  imgEl.removeAttribute('data-no-photo');
+  if (wrapperEl) wrapperEl.removeAttribute('data-no-photo');
+  imgEl.onerror = () => {
+    imgEl.setAttribute('data-no-photo', 'true');
+    if (wrapperEl) wrapperEl.setAttribute('data-no-photo', 'true');
+  };
+}
+
 // ─── Data Binding ─────────────────────────────────────────────────────────────
 
 /**
@@ -168,43 +369,43 @@ function initScrollAnimations() {
  * @param {Object}      data   - Enriched customer_data object
  */
 function bindData(root, data) {
+  const isFallback = data._isFallbackDefault === true;
 
   // ── data-bind → textContent ───────────────────────────────────────────────
   root.querySelectorAll('[data-bind]').forEach(el => {
     const key   = el.dataset.bind;
     const value = data[key];
+
+    // For the fallback default invitation, preserve the existing text in the
+    // template HTML if the element already has meaningful content (e.g. the
+    // hero heading 'ကိုဟိန်းသူအောင်' already includes the 'ကို' prefix, so
+    // we must not overwrite it with just 'ဟိန်းသူအောင်' — which would lose
+    // the prefix — and the Card 1 'မောင်' prefix span sits outside the
+    // data-bind span so no duplication occurs there either).
+    if (isFallback && el.textContent.trim() !== '' && (value === undefined || value === null || String(value).trim() === '')) {
+      // No value → keep placeholder
+      return;
+    }
+
     if (value !== undefined && value !== null && String(value).trim() !== '') {
       el.textContent = value;
     } else {
       // Clear placeholder dummy text from template fragment if no data provided
       if (['wedding_date_formatted', 'wedding_time'].includes(key)) {
         el.textContent = '—';
-      } else {
+      } else if (!isFallback) {
         el.textContent = '';
       }
+      // If isFallback and element already has text, leave it as-is
     }
   });
 
-  // ── data-bind-src → img src ───────────────────────────────────────────────
+  // ── data-bind-src → img src with Offline CacheStorage ─────────────────────
   root.querySelectorAll('[data-bind-src]').forEach(el => {
     const key   = el.dataset.bindSrc;
     const value = data[key];
     const wrapper = el.closest('[data-photo-wrapper]');
-
-    if (value && String(value).trim() !== '') {
-      el.src = value;
-      el.removeAttribute('data-no-photo');
-      if (wrapper) wrapper.removeAttribute('data-no-photo');
-
-      // Gracefully switch to fallback icon if image fails to load (404/offline)
-      el.onerror = () => {
-        el.setAttribute('data-no-photo', 'true');
-        if (wrapper) wrapper.setAttribute('data-no-photo', 'true');
-      };
-    } else {
-      el.setAttribute('data-no-photo', 'true');
-      if (wrapper) wrapper.setAttribute('data-no-photo', 'true');
-    }
+    loadAndCachePhoto(el, wrapper, value);
   });
 
   // ── data-bind-href → anchor href ──────────────────────────────────────────
@@ -283,12 +484,16 @@ function updatePageMeta(data) {
 function loadTemplateCSS(templateId) {
   return new Promise((resolve, reject) => {
     const prev = document.getElementById('template-stylesheet');
+    if (prev && prev.getAttribute('data-template-id') === templateId) {
+      return resolve();
+    }
     if (prev) prev.remove();
 
     const link = document.createElement('link');
     link.id   = 'template-stylesheet';
     link.rel  = 'stylesheet';
-    link.href = `templates/${templateId}/style.css?v=3`;
+    link.setAttribute('data-template-id', templateId);
+    link.href = `templates/${templateId}/style.css?v=6`;
     link.onload  = resolve;
     link.onerror = () => reject(new Error(`Failed to load: templates/${templateId}/style.css`));
 
@@ -377,89 +582,67 @@ function hideLoadingScreen() {
 
 // ─── Main Engine Entry Point ──────────────────────────────────────────────────
 
+function enrichCustomerData(raw = {}) {
+  const data = { ...raw };
+  data.wedding_date_formatted = formatWeddingDateDots(data.wedding_date) || formatWeddingDate(data.wedding_date);
+  data.wedding_date_traditional = formatWeddingDate(data.wedding_date);
+
+  if (data.wedding_date && !data.wedding_day) {
+    const d = new Date(`${data.wedding_date}T00:00:00`);
+    if (!isNaN(d.getTime())) {
+      data.wedding_day = MM_DAYS[d.getDay()];
+    }
+  }
+
+  if (data.rsvp_phone) {
+    const cleanPhone = toAsciiNumerals(data.rsvp_phone).replace(/[^0-9+]/g, '');
+    data.rsvp_phone_href = cleanPhone ? `tel:${cleanPhone}` : '';
+  }
+
+  data.couple_names = [data.groom_name, data.bride_name].filter(Boolean).join(' & ');
+  return data;
+}
+
 /**
- * Orchestrates the full template loading pipeline
+ * Orchestrates the full template loading pipeline with Parallel Execution & Instant Load
  */
 async function initEngine() {
 
-  // Step 1: Read URL slug
-  const params = new URLSearchParams(window.location.search);
-  const slug   = params.get('id')?.trim();
-
-  if (!slug) {
-    showError('no-slug');
-    return;
-  }
-
-  // Pre-check network state
-  if (typeof navigator !== 'undefined' && !navigator.onLine) {
-    showError('network-error');
-    return;
-  }
+  // Step 1: Read URL slug — accept ?id=, ?slug=, or #hash
+  const params  = new URLSearchParams(window.location.search);
+  const rawSlug = (params.get('id') || params.get('slug') || window.location.hash.replace(/^#/, '') || '').trim().toLowerCase() || null;
 
   try {
-    // Step 2: Fetch invitation from Supabase (anon key, RLS: is_active=true only)
-    const invitation = await fetchInvitationBySlug(slug);
-    if (!invitation) {
-      if (typeof navigator !== 'undefined' && !navigator.onLine) {
-        showError('network-error');
-      } else {
-        showError('not-found');
-      }
-      return;
-    }
+    // Callback for Stale-While-Revalidate live background updates
+    const onLiveUpdate = (remoteData) => {
+      const container = document.getElementById('template-container');
+      if (!container || !container.classList.contains('visible')) return;
+      const freshData = enrichCustomerData(remoteData.customer_data);
+      bindData(container, freshData);
+      updatePageMeta(freshData);
+    };
+
+    // Step 2: Multi-tier resolve with Instant Cache-First return
+    const invitation = await resolveInvitationData(rawSlug, onLiveUpdate);
 
     // Step 3: Enrich customer_data
-    const data = { ...invitation.customer_data };
+    const data = enrichCustomerData(invitation.customer_data);
 
-    // Format date to Myanmar dotted format & traditional format
-    data.wedding_date_formatted = formatWeddingDateDots(data.wedding_date) || formatWeddingDate(data.wedding_date);
-    data.wedding_date_traditional = formatWeddingDate(data.wedding_date);
+    // Step 4: Resolve template ID
+    const templateId = (invitation.template_id && invitation.template_id.trim()) ? invitation.template_id.trim() : 'floral-pink';
 
-    // Compute day of week in Myanmar if not set
-    if (data.wedding_date && !data.wedding_day) {
-      const d = new Date(`${data.wedding_date}T00:00:00`);
-      if (!isNaN(d.getTime())) {
-        data.wedding_day = MM_DAYS[d.getDay()];
-      }
-    }
+    // Step 5 & 6 (PARALLEL PIPELINE): Concurrently fetch layout fragment & inject template CSS
+    const [layoutHTML] = await Promise.all([
+      fetch(`templates/${templateId}/layout.html?v=6`).then(res => {
+        if (!res.ok) throw new Error(`Failed to fetch templates/${templateId}/layout.html`);
+        return res.text();
+      }),
+      loadTemplateCSS(templateId)
+    ]);
 
-    // Build tel: href for RSVP button with Myanmar numerals properly converted
-    if (data.rsvp_phone) {
-      const cleanPhone = toAsciiNumerals(data.rsvp_phone).replace(/[^0-9+]/g, '');
-      data.rsvp_phone_href = cleanPhone ? `tel:${cleanPhone}` : '';
-    }
-
-    // Build couple display name
-    data.couple_names = [data.groom_name, data.bride_name].filter(Boolean).join(' & ');
-
-    // Step 4: Fetch template registry
-    const registryRes = await fetch('templates/registry.json?v=3');
-    if (!registryRes.ok) throw new Error('Failed to fetch templates/registry.json');
-
-    const registry     = await registryRes.json();
-    const templateMeta = registry.find(
-      t => t.id === invitation.template_id && t.available === true
-    );
-
-    if (!templateMeta) {
-      console.error(`[engine.js] Template "${invitation.template_id}" not found or unavailable in registry.`);
-      showError('template-error');
-      return;
-    }
-
-    // Step 5: Fetch template layout HTML fragment
-    const layoutRes = await fetch(`templates/${invitation.template_id}/layout.html?v=3`);
-    if (!layoutRes.ok) throw new Error(`Failed to fetch templates/${invitation.template_id}/layout.html`);
-
-    const layoutHTML = await layoutRes.text();
-
-    // Step 6: Inject HTML into template container
+    // Step 7: Inject HTML into template container
     const container = document.getElementById('template-container');
     container.innerHTML = layoutHTML;
-
-    // Step 7: Load template-specific CSS
-    await loadTemplateCSS(invitation.template_id);
 
     // Step 8: Bind all data-* attributes
     bindData(container, data);
@@ -479,17 +662,34 @@ async function initEngine() {
     startHeartAnimation();
     initScrollAnimations();
 
-    if (invitation.template_id === 'floral-pink') {
-      initFloralPinkTheme(container, data, slug);
+    if (templateId === 'floral-pink') {
+      initFloralPinkTheme(container, data, rawSlug || 'default');
     }
 
   } catch (err) {
-    console.error('[engine.js] Unexpected error:', err);
-    if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      showError('network-error');
-    } else {
-      showError('template-error');
+    console.error('[engine.js] Unexpected error — attempting emergency render:', err);
+    // Emergency Fallback: render default floral-pink template rather than showing an error
+    try {
+      const emergencyLayout = await fetch('templates/floral-pink/layout.html?v=6');
+      if (emergencyLayout.ok) {
+        const container = document.getElementById('template-container');
+        container.innerHTML = await emergencyLayout.text();
+        await loadTemplateCSS('floral-pink');
+        const data = enrichCustomerData(DEFAULT_INVITATION.customer_data);
+        bindData(container, data);
+        updatePageMeta(data);
+        hideLoadingScreen();
+        requestAnimationFrame(() => requestAnimationFrame(() => container.classList.add('visible')));
+        startHeartAnimation();
+        initScrollAnimations();
+        initFloralPinkTheme(container, data, 'default');
+        return;
+      }
+    } catch (emergencyErr) {
+      console.error('[engine.js] Emergency render also failed:', emergencyErr);
     }
+    // Last resort: only show error screen if emergency render also fails
+    showError('template-error');
   }
 }
 
@@ -752,6 +952,9 @@ function initFloralPinkTheme(container, data, slug) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
+  // 7. Save to Calendar
+  initCalendarSection(container, data);
+
   // 6. Music Toggle
   const musicBtn = container.querySelector('#pink-music-btn');
   musicBtn?.addEventListener('click', () => {
@@ -762,6 +965,189 @@ function initFloralPinkTheme(container, data, slug) {
     } else {
       musicBtn.classList.remove('is-playing');
       stopRomanticTune();
+    }
+  });
+}
+
+// ─── Calendar Section Controller ────────────────────────────────────────────
+
+/**
+ * Initialises the Save-to-Calendar card (#card-calendar).
+ * Wires up:
+ *   1. #btn-save-to-calendar  → downloads .ics file
+ *   2. #btn-google-calendar   → sets correct Google Calendar URL
+ *   3. #btn-set-reminder      → requests Notification permission & schedules alert
+ *
+ * @param {HTMLElement} container
+ * @param {Object}      data       — enriched customer_data
+ */
+function initCalendarSection(container, data) {
+  const saveBtn     = container.querySelector('#btn-save-to-calendar');
+  const gcalLink    = container.querySelector('#btn-google-calendar');
+  const reminderBtn = container.querySelector('#btn-set-reminder');
+  const statusEl    = container.querySelector('#calendar-status');
+  const reminderLbl = container.querySelector('#btn-reminder-label');
+
+  if (!saveBtn) return; // card not present in this template
+
+  // Build calendar options from invitation data
+  const calOpts = {
+    groomName   : data.groom_name    || '',
+    brideName   : data.bride_name    || '',
+    weddingDate : data.wedding_date  || '',
+    weddingTime : data.wedding_time  || '',
+    venueName   : data.venue_name    || '',
+    venueAddress: data.venue_address || '',
+    mapUrl      : data.map_url       || '',
+  };
+
+  // ── Helper: show status message ───────────────────────────────────────────
+  function showStatus(message, type = 'info') {
+    if (!statusEl) return;
+    statusEl.textContent = message;
+    statusEl.className   = `calendar-status-msg is-${type}`;
+    statusEl.hidden      = false;
+    // Auto-hide after 6 seconds
+    setTimeout(() => {
+      statusEl.hidden = true;
+      statusEl.className = 'calendar-status-msg';
+    }, 6000);
+  }
+
+  // ── 1. Prefill Google Calendar link ──────────────────────────────────────
+  if (gcalLink && calOpts.weddingDate) {
+    try {
+      gcalLink.href = getGoogleCalendarUrl(calOpts);
+    } catch (_) {
+      gcalLink.style.display = 'none';
+    }
+  } else if (gcalLink) {
+    gcalLink.style.display = 'none';
+  }
+
+  // ── 2. ICS Download button ────────────────────────────────────────────────
+  saveBtn.addEventListener('click', () => {
+    if (!calOpts.weddingDate) {
+      showStatus('⚠️ မင်္ဂလာနေ့ရက် သတ်မှတ်မထားသောကြောင့် Calendar ထဲ သိမ်း၍ မရသေးပါ။', 'warning');
+      return;
+    }
+
+    saveBtn.classList.add('is-loading');
+    saveBtn.disabled = true;
+
+    // Small delay so loading shimmer is visible before file dialog
+    setTimeout(() => {
+      saveToCalendar(
+        calOpts,
+        ({ platform, googleUrl }) => {
+          saveBtn.classList.remove('is-loading');
+          saveBtn.disabled = false;
+
+          if (platform === 'ios') {
+            showStatus(
+              '📅 Calendar ဖိုင် ဒေါင်းလုပ် ဆင်းနေပါသည်။ "Files" app မှ .ics ဖိုင်ကို ဖွင့်ပြီး "Add All" ကိုနှိပ်ပါ — ✅ Reminder ပါ အလိုအလျောက် ထည့်ပေးပါလိမ့်မည်။',
+              'success'
+            );
+          } else if (platform === 'android') {
+            showStatus(
+              '📅 .ics ဖိုင် ဒေါင်းလုပ် ဆင်းပြီးပါပြီ — Calendar app မှ ဖွင့်ပါ သို့မဟုတ် Google Calendar ခလုတ်ကို နှိပ်၍ တိုက်ရိုက် ထည့်နိုင်ပါသည်။',
+              'success'
+            );
+          } else {
+            showStatus(
+              '📅 .ics ဖိုင် ဒေါင်းလုပ် ဆင်းပြီးပါပြီ — ဖိုင်ကို Double-click နှိပ်ပါ။ Outlook, Apple Calendar, Google Calendar, Thunderbird စသည်တို့တွင် အလိုအလျောက် ပွင့်ပါလိမ့်မည်။',
+              'success'
+            );
+          }
+        },
+        (err) => {
+          saveBtn.classList.remove('is-loading');
+          saveBtn.disabled = false;
+          showStatus('❌ Calendar ဖိုင် ထုတ်ယူ၍ မရပါ။ Google Calendar ခလုတ်ကို အသုံးပြုပါ သို့မဟုတ် ထပ်မံ ကြိုးစားပါ။', 'error');
+          console.error('[calendar] ICS download failed:', err);
+        }
+      );
+    }, 80);
+  });
+
+  // ── 3. Reminder (Browser Notification) button ──────────────────────────────
+  // Check if already granted and reminder is set
+  const existingReminderKey = calOpts.weddingDate ? `wedding_reminder_${calOpts.weddingDate}` : null;
+  let reminderSet = false;
+
+  try {
+    if (existingReminderKey && localStorage.getItem(existingReminderKey)) {
+      const stored = JSON.parse(localStorage.getItem(existingReminderKey));
+      if (stored && !stored.fired && stored.reminderTime > Date.now()) {
+        reminderSet = true;
+      }
+    }
+  } catch (_) {}
+
+  function updateReminderBtnState(active) {
+    if (!reminderBtn || !reminderLbl) return;
+    if (active) {
+      reminderBtn.classList.add('is-active');
+      reminderLbl.textContent = 'Reminder ဖွင့်ထားပြီး ✓';
+    } else {
+      reminderBtn.classList.remove('is-active');
+      reminderLbl.textContent = 'မင်္ဂလာနေ့ Reminder ဖွင့်မည်';
+    }
+  }
+
+  if (reminderSet) updateReminderBtnState(true);
+
+  // Hide reminder button if Notifications not supported
+  if (!('Notification' in window)) {
+    if (reminderBtn) reminderBtn.style.display = 'none';
+  }
+
+  reminderBtn?.addEventListener('click', async () => {
+    if (!calOpts.weddingDate) {
+      showStatus('⚠️ မင်္ဂလာနေ့ရက် မသတ်မှတ်ရသေးသောကြောင့် Reminder မဖွင့်နိုင်ပါ။', 'warning');
+      return;
+    }
+
+    // Toggle off if already active
+    if (reminderSet) {
+      try {
+        if (existingReminderKey) localStorage.removeItem(existingReminderKey);
+      } catch (_) {}
+      reminderSet = false;
+      updateReminderBtnState(false);
+      showStatus('🔕 Reminder ပိတ်ပြီးပါပြီ။', 'info');
+      return;
+    }
+
+    reminderBtn.disabled = true;
+    const result = await scheduleWeddingReminder({
+      ...calOpts,
+      venueName: calOpts.venueName,
+    });
+    reminderBtn.disabled = false;
+
+    if (result === 'granted') {
+      reminderSet = true;
+      updateReminderBtnState(true);
+      showStatus(
+        '🔔 Reminder ဖွင့်ပြီးပါပြီ! မင်္ဂလာနေ့ နံနက် ၈ နာရီတွင် Notification ပေးပို့မည်ဖြစ်ပါသည် — Browser / PWA ကိုမပိတ်ပါနှင့်။',
+        'success'
+      );
+    } else if (result === 'denied') {
+      showStatus(
+        '🚫 Notification ခွင့်ပြုချက် မပေးသောကြောင့် Reminder မဖွင့်နိုင်ပါ။ Browser Setting မှ Notification ကို "Allow" လုပ်ပြီး ပြန်လာကြိုးစားပါ။',
+        'error'
+      );
+    } else if (result === 'past') {
+      showStatus(
+        '📅 မင်္ဂလာနေ့ ကျော်လွန်သွားသောကြောင့် Reminder မဖွင့်နိုင်ပါ။ Calendar ဖိုင် သိမ်းမည် ခလုတ်ကို နှိပ်ပါ။',
+        'warning'
+      );
+    } else {
+      showStatus(
+        '⚠️ ဤ Browser တွင် Notification Feature မပံ့ပိုးပါ။ Calendar ဖိုင် သိမ်းမည် ခလုတ်ကို အသုံးပြု၍ .ics ဖိုင်ထဲ Reminder ပါ ထည့်ပါ။',
+        'warning'
+      );
     }
   });
 }

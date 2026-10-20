@@ -1,6 +1,6 @@
 // =============================================================================
 // js/supabase-config.js
-// Supabase Client Initialization
+// Supabase Client + CDN-Independent Guest REST Fetch
 // Digital Wedding Invitation Platform
 // =============================================================================
 //
@@ -12,12 +12,10 @@
 // Anon Key သည် public ဖြစ်သည် — RLS Policies မှ လုံခြုံမှုကို ကာကွယ်သည်။
 // =============================================================================
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+// ─── Configuration (exported for use in engine.js) ───────────────────────────
 
-// ─── Configuration ────────────────────────────────────────────────────────────
-
-const SUPABASE_URL  = 'https://kweylhqnzqnxnopqwrhj.supabase.co';   // ← သင့် Project URL ထည့်ပါ
-const SUPABASE_ANON_KEY = 'sb_publishable_kb9dPHYc_1SgGGsTKQG3-g_CdBFPUmz';                // ← သင့် Anon Key ထည့်ပါ
+export const SUPABASE_URL     = 'https://kweylhqnzqnxnopqwrhj.supabase.co';
+export const SUPABASE_ANON_KEY = 'sb_publishable_kb9dPHYc_1SgGGsTKQG3-g_CdBFPUmz';
 
 // ─── Storage Bucket Name ──────────────────────────────────────────────────────
 
@@ -30,63 +28,113 @@ export const TABLES = {
     PARTNERS    : 'partners',
 };
 
-// ─── Supabase Client ──────────────────────────────────────────────────────────
+// ─── CDN-Independent Supabase Client (lazy loaded — Admin/Partner only) ───────
+// Guest page (engine.js) does NOT use createClient to avoid jsdelivr CDN dependency.
+// Admin/Partner pages import this and then call getSupabaseClient().
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-        // Admin dashboard uses Supabase email/password auth
-        persistSession    : true,
-        autoRefreshToken  : true,
-        detectSessionInUrl: true,
-    },
+let _supabaseClient = null;
+
+/**
+ * Lazily initialises and returns the Supabase JS SDK client.
+ * Uses a dynamic import so that if the CDN is unreachable, only admin/partner
+ * pages are affected — NOT the guest invitation page.
+ * @returns {Promise<import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm').SupabaseClient>}
+ */
+export async function getSupabaseClient() {
+    if (_supabaseClient) return _supabaseClient;
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    _supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+            persistSession    : true,
+            autoRefreshToken  : true,
+            detectSessionInUrl: true,
+        },
+    });
+    return _supabaseClient;
+}
+
+// ─── Convenience alias: supabase (used by admin.js / partner.js) ──────────────
+// These files do: import { supabase } from './supabase-config.js'
+// Lazy-loading facade — the real Supabase SDK client is loaded on first use.
+// Maintains full backward-compat with admin.js / partner.js method-chain style:
+//   const { data } = await supabase.from('table').select('*');
+
+function _makeChainProxy(promiseFn) {
+    return new Proxy({}, {
+        get(_t, prop) {
+            if (prop === 'then' || prop === 'catch' || prop === 'finally') {
+                const p = promiseFn();
+                return p[prop].bind(p);
+            }
+            return (...args) => _makeChainProxy(() => promiseFn().then(r => r[prop](...args)));
+        }
+    });
+}
+
+export const supabase = new Proxy({}, {
+    get(_target, topProp) {
+        return (...topArgs) => _makeChainProxy(
+            () => getSupabaseClient().then(client => client[topProp](...topArgs))
+        );
+    }
 });
 
-// ─── Helper: Get public CDN URL for a storage file ───────────────────────────
+// ─── CDN-Safe Guest Fetch: Native fetch() + AbortController ──────────────────
+// This function deliberately avoids the @supabase/supabase-js SDK so that
+// guest invitations load even when cdn.jsdelivr.net is blocked.
 
 /**
- * Returns the public CDN URL for a file in the wedding-media bucket.
- * @param {string} filePath  - Path inside the bucket, e.g. 'couples/photo.jpg'
- * @returns {string}         - Full public URL
- */
-export function getPublicUrl(filePath) {
-    if (!filePath) return '';
-    const { data } = supabase.storage
-        .from(STORAGE_BUCKET)
-        .getPublicUrl(filePath);
-    return data?.publicUrl ?? '';
-}
-
-// ─── Helper: Fetch invitation record by slug (used by engine.js) ─────────────
-
-/**
- * Fetches a single active invitation by its URL slug.
- * Uses the anon key — RLS ensures only is_active=true rows are returned.
- * @param {string} slug  - e.g. 'ko-aung-ma-thandar-2025'
+ * Fetches a single active invitation by its URL slug using native fetch().
+ * Falls back gracefully if Supabase is unreachable or times out.
+ *
+ * @param {string} slug       - e.g. 'ko-aung-ma-thandar-2025'
+ * @param {number} timeoutMs  - Abort timeout in ms (default 5000)
  * @returns {Promise<Object|null>}
  */
-export async function fetchInvitationBySlug(slug) {
-    const { data, error } = await supabase
-        .from(TABLES.INVITATIONS)
-        .select('*')
-        .eq('slug', slug)
-        .eq('is_active', true)
-        .single();
+export async function fetchInvitationBySlug(slug, timeoutMs = 5000) {
+    if (!slug) return null;
+    const cleanSlug = String(slug).trim().toLowerCase();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-    if (error) {
-        console.error('[supabase-config] fetchInvitationBySlug error:', error.message);
+    try {
+        const url = `${SUPABASE_URL}/rest/v1/${TABLES.INVITATIONS}` +
+                    `?select=*&slug=ilike.${encodeURIComponent(cleanSlug)}&is_active=eq.true&limit=1`;
+
+        const res = await fetch(url, {
+            method : 'GET',
+            headers: {
+                'apikey'       : SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Accept'       : 'application/json',
+            },
+            signal: controller.signal,
+        });
+
+        if (!res.ok) {
+            throw new Error(`Supabase HTTP ${res.status}`);
+        }
+
+        const rows = await res.json();
+        return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+
+    } catch (err) {
+        console.warn('[supabase-config] Direct REST fetch failed or timed out:', err.message);
         return null;
+    } finally {
+        clearTimeout(timer);
     }
-    return data;
 }
 
-// ─── Helper: Fetch all partners (used by admin.js & partner.js) ──────────────
+// ─── Admin/Partner Helpers (use SDK via getSupabaseClient) ───────────────────
 
 /**
- * Fetches all partner records.
+ * Fetches all partner records. (Admin use only — requires authenticated session)
  * @returns {Promise<Array>}
  */
 export async function fetchAllPartners() {
-    const { data, error } = await supabase
+    const sb = await getSupabaseClient();
+    const { data, error } = await sb
         .from(TABLES.PARTNERS)
         .select('*')
         .order('created_at', { ascending: false });
@@ -98,7 +146,23 @@ export async function fetchAllPartners() {
     return data ?? [];
 }
 
-// ─── Helper: Fetch partner by partner_code + passcode (Partner login) ─────────
+// ─── Helper: Get public CDN URL for a storage file ───────────────────────────
+
+/**
+ * Returns the public CDN URL for a file in the wedding-media bucket.
+ * @param {string} filePath  - Path inside the bucket, e.g. 'couples/photo.jpg'
+ * @returns {Promise<string>} - Full public URL
+ */
+export async function getPublicUrl(filePath) {
+    if (!filePath) return '';
+    const sb = await getSupabaseClient();
+    const { data } = sb.storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(filePath);
+    return data?.publicUrl ?? '';
+}
+
+// ─── Helper: Authenticate partner via Supabase RPC ───────────────────────────
 
 /**
  * Validates partner login credentials via secure RPC.
@@ -109,9 +173,10 @@ export async function fetchAllPartners() {
  */
 export async function authenticatePartner(partnerCode, passcode) {
     if (!partnerCode || !passcode) return null;
-    const { data, error } = await supabase.rpc('verify_partner_login', {
+    const sb = await getSupabaseClient();
+    const { data, error } = await sb.rpc('verify_partner_login', {
         p_partner_code: partnerCode.trim(),
-        p_passcode: passcode.trim(),
+        p_passcode    : passcode.trim(),
     });
 
     if (error) {
@@ -132,9 +197,10 @@ export async function authenticatePartner(partnerCode, passcode) {
  */
 export async function fetchPartnerInvitations(partnerCode, passcode) {
     if (!partnerCode || !passcode) return [];
-    const { data, error } = await supabase.rpc('get_partner_invitations', {
+    const sb = await getSupabaseClient();
+    const { data, error } = await sb.rpc('get_partner_invitations', {
         p_partner_code: partnerCode.trim(),
-        p_passcode: passcode.trim(),
+        p_passcode    : passcode.trim(),
     });
 
     if (error) {
@@ -143,4 +209,3 @@ export async function fetchPartnerInvitations(partnerCode, passcode) {
     }
     return Array.isArray(data) ? data : [];
 }
-

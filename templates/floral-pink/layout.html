@@ -96,7 +96,10 @@
             data-bind-src="couple_photo_url"
             alt="သတို့သားနှင့်သတို့သမီး မင်္ဂလာဓာတ်ပုံ"
             class="photo-element couple-portrait-img"
-            loading="lazy"
+            fetchpriority="high"
+            decoding="async"
+            width="280"
+            height="350"
           >
           <div class="photo-fallback-placeholder" aria-hidden="true">
             <span class="fallback-icon">💍</span>
@@ -178,6 +181,9 @@
             alt="မင်္ဂလာအမှတ်တရ ချစ်သက်သေပုံရိပ်"
             class="photo-element memory-showcase-img"
             loading="lazy"
+            decoding="async"
+            width="360"
+            height="248"
           >
           <div class="photo-fallback-placeholder" aria-hidden="true">
             <span class="fallback-icon">🌹</span>
@@ -295,7 +301,68 @@
     </section>
 
 
-    <!-- ── CARD 5: GUEST WISHES & INTERACTIVE HEARTS ───────────────────────── -->
+    <!-- ── CARD 5: SAVE TO CALENDAR ────────────────────────────────────────── -->
+    <section class="wedding-card calendar-card animate-on-scroll" id="card-calendar">
+      <div class="card-header-with-icon">
+        <span class="card-header-icon" aria-hidden="true">📅</span>
+        <h3 class="calendar-heading">Calendar ထဲ သိမ်းမည်</h3>
+      </div>
+      <p class="calendar-sub-text">
+        မင်္ဂလာဆောင်ရက်ကို မမေ့အောင် ဖုန်းထဲ Calendar တွင် တန်းသိမ်းပါ — reminder အသိပေးချက်ပါ ထည့်ပေးမည်
+      </p>
+
+      <!-- Main ICS / Native Calendar Button -->
+      <div class="calendar-actions-wrap">
+        <button
+          type="button"
+          id="btn-save-to-calendar"
+          class="btn-pink-gradient btn-calendar-main"
+          aria-label="ဖုန်းထဲ Calendar ထဲ မင်္ဂလာနေ့ သိမ်းမည်"
+        >
+          <span class="btn-icon" aria-hidden="true">📅</span>
+          <span class="btn-cal-label">Calendar ထဲ သိမ်းမည်</span>
+          <span class="btn-cal-sublabel">(.ics ဖိုင် — iOS, Android, Windows)</span>
+        </button>
+
+        <!-- Google Calendar direct link -->
+        <a
+          id="btn-google-calendar"
+          class="btn-rsvp-outline btn-gcal"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Google Calendar တွင် ထည့်မည်"
+        >
+          <span class="btn-icon" aria-hidden="true">
+            <!-- Google Calendar "G" SVG icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M8 14h2.5M8 17.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="15" cy="14" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          </span>
+          <span>Google Calendar ထဲ ထည့်မည်</span>
+        </a>
+
+        <!-- Browser Notification Reminder Toggle -->
+        <button
+          type="button"
+          id="btn-set-reminder"
+          class="btn-reminder-outline"
+          aria-label="မင်္ဂလာနေ့ Notification reminder ဖွင့်မည်"
+        >
+          <span class="btn-icon" aria-hidden="true">🔔</span>
+          <span id="btn-reminder-label">မင်္ဂလာနေ့ Reminder ဖွင့်မည်</span>
+        </button>
+      </div>
+
+      <!-- Status / Feedback message area -->
+      <div id="calendar-status" class="calendar-status-msg" aria-live="polite" hidden></div>
+    </section>
+
+
+    <!-- ── CARD 6: GUEST WISHES & INTERACTIVE HEARTS ───────────────────────── -->
     <section class="wedding-card wishes-card animate-on-scroll" id="card-wishes">
       <div class="card-header-with-icon">
         <span class="card-header-icon" aria-hidden="true">💖</span>
