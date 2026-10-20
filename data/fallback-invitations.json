@@ -83,6 +83,45 @@
         "couple_photo_url": "assets/images/couple-portrait-default.jpg",
         "message": ""
       }
+    },
+    "aung-birthday-18": {
+      "slug": "aung-birthday-18",
+      "template_id": "neon-birthday",
+      "category": "birthday",
+      "title": "မောင်အေးမင်းထွန်း ၏ ၁၈ နှစ်ပြည့် မွေးနေ့မင်္ဂလာ",
+      "is_active": true,
+      "customer_data": {
+        "celebrant_name": "မောင်အေးမင်းထွန်း",
+        "turning_age": "၁၈",
+        "wedding_date": "2026-07-15",
+        "wedding_day": "ဗုဒ္ဓဟူးနေ့",
+        "wedding_time": "ညနေ ၅:၃၀ နာရီ မှ ည ၈:၃၀ နာရီ ထိ",
+        "venue_name": "Kandawgyi Palace Party Zone",
+        "venue_address": "ကန်တော်ကြီးပတ်လမ်း၊ မင်္ဂလာတောင်ညွန့်၊ ရန်ကုန်မြို့။",
+        "map_url": "https://maps.google.com",
+        "rsvp_phone": "09-777-888-999",
+        "cover_photo_url": "assets/images/wedding-memory-default.jpg",
+        "message": "ချစ်ခင်ရပါသော သူငယ်ချင်း မိတ်ဆွေများအားလုံး ပျော်ရွှင်စွာ ဆင်နွှဲနိုင်ရန် လှိုက်လှဲစွာ ဖိတ်ကြားအပ်ပါသည်"
+      }
+    },
+    "apex-creative-studio": {
+      "slug": "apex-creative-studio",
+      "template_id": "biz-card-minimal",
+      "category": "business",
+      "title": "Apex Creative Studio (Digital Branding)",
+      "is_active": true,
+      "customer_data": {
+        "company_name": "Apex Creative Studio",
+        "industry_tagline": "Digital Branding & Web Solutions",
+        "rsvp_phone": "09-987-654-321",
+        "rsvp_phone_href": "tel:09987654321",
+        "wedding_time": "တနင်္လာ မှ သောကြာ (နံနက် ၉:၀၀ - ညနေ ၅:၃၀)",
+        "venue_name": "ရန်ကုန်မြို့",
+        "venue_address": "အမှတ် (၁၂)၊ ကမ္ဘာအေးဘုရားလမ်း၊ ရန်ကင်းမြို့နယ်၊ ရန်ကုန်မြို့။",
+        "map_url": "https://maps.google.com",
+        "cover_photo_url": "assets/images/wedding-memory-default.jpg",
+        "message": "ကျွန်ုပ်တို့သည် ခေတ်မီဆန်းသစ်သော Digital Branding၊ Web Application များနှင့် Creative ဒီဇိုင်းဝန်ဆောင်မှုများကို စိတ်ချယုံကြည်စွာ ပေးစွမ်းနေသော အဖွဲ့အစည်းဖြစ်ပါသည်။"
+      }
     }
   }
 }

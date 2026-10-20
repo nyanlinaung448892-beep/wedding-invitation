@@ -1,0 +1,114 @@
+<div class="template-root neon-birthday">
+  <!-- Hero Section with Celebrant Portrait and Glowing Cake -->
+  <header class="birthday-hero animate-on-scroll">
+    <div class="hero-sparkles" aria-hidden="true">✨ 🎉 🎈 ✨</div>
+    <span class="hero-badge">HAPPY BIRTHDAY!</span>
+    <h1 class="celebrant-title">
+      <span data-bind="celebrant_name">မောင်အေးမင်းထွန်း</span>
+    </h1>
+    <p class="celebrant-age-tag">
+      <span data-bind="turning_age">၁၈</span> နှစ်ပြည့် မွေးနေ့မင်္ဂလာ
+    </p>
+    <p class="birthday-tagline" data-bind="message">ပျော်ရွှင်ဖွယ် မွေးနေ့ပွဲသို့ ချစ်ခင်ရပါသော မိတ်ဆွေများအား ဖိတ်ကြားအပ်ပါသည်</p>
+
+    <!-- Interactive Glowing Cake Widget -->
+    <div class="interactive-cake-box" id="cake-box">
+      <div class="cake-graphic">
+        <div class="candle-flames" id="candle-flames">
+          <span class="flame flame-1">🔥</span>
+          <span class="flame flame-2">🔥</span>
+          <span class="flame flame-3">🔥</span>
+        </div>
+        <div class="cake-candles">
+          <span class="candle"></span>
+          <span class="candle"></span>
+          <span class="candle"></span>
+        </div>
+        <div class="cake-top-layer">🎂</div>
+      </div>
+      <button type="button" class="btn-blow-candles" id="btn-blow-candles">
+        🎂 ဖယောင်းတိုင်မှုတ်မည် & ဆုတောင်းမည် ✨
+      </button>
+      <p class="cake-status-msg" id="cake-status" hidden>ဆုမွန်ကောင်းများ အပြည့်အဝ ပြည့်စုံပါစေ! 🥳🎉</p>
+    </div>
+  </header>
+
+  <!-- Photo Showcase Card -->
+  <section class="card-birthday-photo animate-on-scroll" data-photo-wrapper>
+    <div class="photo-glow-frame">
+      <img data-bind-src="cover_photo_url" alt="မွေးနေ့ရှင်ဓာတ်ပုံ" class="celebrant-photo" loading="lazy">
+    </div>
+  </section>
+
+  <!-- Event Details Section -->
+  <section class="card-event-details animate-on-scroll">
+    <h2 class="section-title">🎈 မွေးနေ့ပါတီ အစီအစဉ်</h2>
+    <div class="details-grid">
+      <div class="detail-item">
+        <span class="detail-icon">📅</span>
+        <div>
+          <strong>ကျင်းပမည့်နေ့ရက်</strong>
+          <p data-bind="wedding_date_formatted">၁၅ . ၀၇ . ၂၀၂၆</p>
+          <small data-bind="wedding_day">တနင်္ဂနွေနေ့</small>
+        </div>
+      </div>
+      <div class="detail-item">
+        <span class="detail-icon">⏰</span>
+        <div>
+          <strong>အချိန်</strong>
+          <p data-bind="wedding_time">ညနေ ၅:၃၀ နာရီ မှ ည ၈:၃၀ နာရီ ထိ</p>
+        </div>
+      </div>
+      <div class="detail-item">
+        <span class="detail-icon">📍</span>
+        <div>
+          <strong>နေရာ</strong>
+          <p data-bind="venue_name">Kandawgyi Palace Party Zone</p>
+          <small data-bind="venue_address">ကန်တော်ကြီးပတ်လမ်း၊ ရန်ကုန်မြို့။</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons-group">
+      <a class="action-btn map-btn" data-bind-href="map_url" target="_blank" rel="noopener">
+        📍 Google Map လမ်းညွှန်ကြည့်မည်
+      </a>
+      <a class="action-btn phone-btn" data-bind-href="rsvp_phone_href">
+        📞 ဆက်သွယ်ရန်ဖုန်း: <span data-bind="rsvp_phone">09xxxxxxxxx</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Save to Calendar Card -->
+  <section class="card-calendar-action animate-on-scroll" id="card-calendar">
+    <div class="calendar-card-inner">
+      <span class="cal-badge">Calendar & Reminder</span>
+      <h3>📅 မွေးနေ့ရက်စွဲ မမေ့ရအောင် မှတ်ထားမည်</h3>
+      <div class="cal-btn-row">
+        <button type="button" class="cal-btn" id="btn-save-to-calendar">
+          📅 Calendar ဖိုင် သိမ်းမည် (.ics)
+        </button>
+        <a class="cal-btn gcal-btn" id="btn-google-calendar" target="_blank" rel="noopener">
+          🗓️ Google Calendar
+        </a>
+      </div>
+      <div id="calendar-status" class="calendar-status-msg" hidden></div>
+    </div>
+  </section>
+
+  <!-- Birthday Guest Wishes -->
+  <section class="card-birthday-wishes animate-on-scroll">
+    <h2 class="section-title">💌 မွေးနေ့ဆုမွန်ကောင်းများ</h2>
+    <form id="birthday-wish-form" class="wish-form">
+      <input type="text" id="guest-name-input" placeholder="သင့်အမည် ရေးပါ..." required>
+      <textarea id="guest-message-input" rows="3" placeholder="မွေးနေ့ဆုမွန်ကောင်း စာသား ရေးပါ..." required></textarea>
+      <button type="submit" class="wish-submit-btn">ဆုမွန်ကောင်း ပေးပို့မည် ✨</button>
+    </form>
+    <div id="birthday-wishes-list" class="wishes-stream"></div>
+  </section>
+
+  <footer class="birthday-footer">
+    <p>Happy Birthday Celebration • Digital Event Invitation</p>
+  </footer>
+</div>

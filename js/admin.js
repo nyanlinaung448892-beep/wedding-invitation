@@ -1,4 +1,4 @@
-import { getSupabaseClient, TABLES, STORAGE_BUCKET, fetchAllPartners } from './supabase-config.js';
+import { getSupabaseClient, TABLES, STORAGE_BUCKET, fetchAllPartners, resolveDisplayTitle } from './supabase-config.js';
 
 const supabase = await getSupabaseClient();
 
@@ -7,10 +7,21 @@ const photoRemovals = { cover: false, couple: false };
 const $ = (selector) => document.querySelector(selector);
 const escapeHTML = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' })[char]);
 const customerFields = [
-  'groom_name', 'bride_name', 'groom_name_en', 'bride_name_en',
+  'title', 'groom_name', 'bride_name', 'groom_name_en', 'bride_name_en',
+  'celebrant_name', 'turning_age', 'company_name', 'tagline', 'website_url',
   'wedding_date', 'wedding_time', 'venue_name', 'venue_address',
   'map_url', 'rsvp_phone', 'message'
 ];
+
+function updateCategoryFieldVisibility(category = 'wedding') {
+  const weddingFields = $('#wedding-fields');
+  const birthdayFields = $('#birthday-fields');
+  const businessFields = $('#business-fields');
+
+  if (weddingFields) weddingFields.hidden = category !== 'wedding';
+  if (birthdayFields) birthdayFields.hidden = category !== 'birthday';
+  if (businessFields) businessFields.hidden = category !== 'business';
+}
 
 function setView(isAuthenticated) { 
   $('#login-view').hidden = isAuthenticated; 
@@ -36,6 +47,40 @@ function slugify(value) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); 
 }
 
+async function copyToClipboard(text, buttonEl) {
+  let copied = false;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      copied = true;
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-999999px';
+      ta.style.top = '-999999px';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      copied = document.execCommand('copy');
+      ta.remove();
+    }
+  } catch (_) {
+    copied = false;
+  }
+
+  if (copied && buttonEl) {
+    const originalHtml = buttonEl.innerHTML;
+    buttonEl.classList.add('is-copied');
+    buttonEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!`;
+    setTimeout(() => {
+      buttonEl.classList.remove('is-copied');
+      buttonEl.innerHTML = originalHtml;
+    }, 1800);
+  }
+  return copied;
+}
+
 function renderPartnerOptions() {
   $('#partner-code').innerHTML = '<option value="">Partner မသတ်မှတ်ပါ</option>' + state.partners.map(partner => 
     `<option value="${escapeHTML(partner.partner_code)}">${escapeHTML(partner.shop_name)} (${escapeHTML(partner.partner_code)})</option>`
@@ -43,7 +88,7 @@ function renderPartnerOptions() {
 }
 
 async function loadMetadata() {
-  const [templateResponse, partners] = await Promise.all([fetch('templates/registry.json?v=6'), fetchAllPartners()]);
+  const [templateResponse, partners] = await Promise.all([fetch('templates/registry.json?v=10'), fetchAllPartners()]);
   if (!templateResponse.ok) throw new Error('Template registry ကို ဖတ်၍မရပါ။');
   state.templates = (await templateResponse.json()).filter(template => template.available);
   state.partners = partners;
@@ -56,18 +101,30 @@ async function loadInvitations() {
   const { data, error } = await supabase.from(TABLES.INVITATIONS).select('*').order('created_at', { ascending: false });
   if (error) throw error;
   state.invitations = data || [];
+  const basePath = window.location.href.split('admin.html')[0];
+
   $('#invitation-list').innerHTML = state.invitations.length ? state.invitations.map(invitation => {
-    const customer = invitation.customer_data || {};
-    const couple = [customer.groom_name, customer.bride_name].filter(Boolean).join(' & ') || 'အမည်မသတ်မှတ်ရသေးပါ';
+    const title = resolveDisplayTitle(invitation);
+    const category = invitation.category || 'wedding';
+    const guestUrl = `${basePath}index.html?id=${encodeURIComponent(invitation.slug)}`;
     return `<tr>
-      <td><strong>${escapeHTML(couple)}</strong></td>
+      <td><strong>${escapeHTML(title)}</strong></td>
+      <td><span class="category-badge ${escapeHTML(category)}">${escapeHTML(category)}</span></td>
       <td><code>${escapeHTML(invitation.slug)}</code></td>
       <td>${escapeHTML(invitation.template_id)}</td>
       <td>${escapeHTML(invitation.partner_code || '—')}</td>
       <td>${kyat(invitation.bonus_amount)}</td>
       <td><span class="bonus-status ${invitation.bonus_status}">${invitation.bonus_status === 'paid' ? 'Paid' : 'Unpaid'}</span></td>
       <td><span class="status-pill ${invitation.is_active ? 'active' : 'inactive'}">${invitation.is_active ? 'ဖွင့်ထားသည်' : 'ပိတ်ထားသည်'}</span></td>
-      <td><a class="table-button" href="index.html?id=${encodeURIComponent(invitation.slug)}" target="_blank" rel="noopener">ဖွင့်ကြည့်ရန် ↗</a></td>
+      <td>
+        <div class="link-cell">
+          <a class="table-button" href="index.html?id=${encodeURIComponent(invitation.slug)}" target="_blank" rel="noopener">ဖွင့်ကြည့်ရန် ↗</a>
+          <button type="button" class="copy-icon-btn" data-copy-link="${escapeHTML(guestUrl)}" title="Link ကို Copy ကူးမည်" aria-label="Link ကို Copy ကူးမည်">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy
+          </button>
+        </div>
+      </td>
       <td>
         <div class="table-actions">
           <button type="button" class="table-button" data-invitation-action="edit" data-id="${invitation.id}">ပြင်မည်</button>
@@ -76,25 +133,37 @@ async function loadInvitations() {
         </div>
       </td>
     </tr>`;
-  }).join('') : '<tr><td colspan="9" style="text-align: center; padding: 2rem;">ဖိတ်ကြားလွှာ မရှိသေးပါ။ “ဖိတ်စာအသစ်” ကိုနှိပ်၍ စတင်ပါ။</td></tr>';
+  }).join('') : '<tr><td colspan="10" style="text-align: center; padding: 2rem;">ဖိတ်ကြားလွှာ / Profile မရှိသေးပါ။ “ဖိတ်စာအသစ်” ကိုနှိပ်၍ စတင်ပါ။</td></tr>';
   setStatus('#invitation-status', `${state.invitations.length} ခု ရှိပါသည်။`);
 }
 
 function renderPartners() {
-  $('#partner-list').innerHTML = state.partners.length ? state.partners.map(partner => 
-    `<tr>
+  const basePath = window.location.href.split('admin.html')[0];
+  $('#partner-list').innerHTML = state.partners.length ? state.partners.map(partner => {
+    const partnerUrl = `${basePath}partner.html?code=${encodeURIComponent(partner.partner_code)}`;
+    return `<tr>
       <td><strong>${escapeHTML(partner.shop_name)}</strong></td>
       <td><code>${escapeHTML(partner.partner_code)}</code></td>
+      <td><a href="mailto:${escapeHTML(partner.email || '')}" style="color: var(--color-light); text-decoration: underline;">${escapeHTML(partner.email || '—')}</a></td>
       <td>${escapeHTML(partner.phone || '—')}</td>
       <td>${kyat(partner.default_bonus)}</td>
+      <td>
+        <div class="link-cell">
+          <a class="table-button" href="partner.html?code=${encodeURIComponent(partner.partner_code)}" target="_blank" rel="noopener">ဝင်ရန် ↗</a>
+          <button type="button" class="copy-icon-btn" data-copy-link="${escapeHTML(partnerUrl)}" title="Partner Login Link ကို Copy ကူးမည်" aria-label="Partner Login Link Copy ကူးမည်">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy
+          </button>
+        </div>
+      </td>
       <td>
         <div class="table-actions">
           <button type="button" class="table-button" data-partner-action="edit" data-id="${partner.id}">ပြင်မည်</button>
           <button type="button" class="table-button" style="color: #ffd4db;" data-partner-action="delete" data-id="${partner.id}">ဖျက်မည်</button>
         </div>
       </td>
-    </tr>`
-  ).join('') : '<tr><td colspan="5" style="text-align: center; padding: 2rem;">Partner မရှိသေးပါ။ “Partner အသစ်” ကိုနှိပ်၍ စတင်ပါ။</td></tr>';
+    </tr>`;
+  }).join('') : '<tr><td colspan="7" style="text-align: center; padding: 2rem;">Partner မရှိသေးပါ။ “Partner အသစ်” ကိုနှိပ်၍ စတင်ပါ။</td></tr>';
 }
 
 async function refreshPartners() { 
@@ -127,6 +196,10 @@ function openInvitationModal(invitation = null) {
     customerFields.forEach(key => { 
       if (form.elements[key]) form.elements[key].value = customer[key] || ''; 
     });
+    form.elements.title.value = invitation.title || resolveDisplayTitle(invitation);
+    form.elements.category.value = invitation.category || 'wedding';
+    updateCategoryFieldVisibility(form.elements.category.value);
+
     form.elements.slug.value = invitation.slug;
     form.elements.slug.dataset.auto = 'false';
     form.elements.template_id.value = invitation.template_id;
@@ -141,8 +214,12 @@ function openInvitationModal(invitation = null) {
     $('#remove-couple-photo').hidden = !customer.couple_photo_url;
   } else {
     $('#invitation-id').value = '';
+    form.elements.title.value = '';
     form.elements.slug.dataset.auto = 'true';
-    form.elements.template_id.value = state.templates[0]?.id || '';
+    const initialTpl = state.templates[0];
+    form.elements.template_id.value = initialTpl?.id || '';
+    form.elements.category.value = initialTpl?.category || 'wedding';
+    updateCategoryFieldVisibility(form.elements.category.value);
     form.elements.bonus_amount.value = 0;
     form.elements.bonus_status.value = 'unpaid';
     form.elements.is_active.checked = true;
@@ -154,7 +231,7 @@ function openInvitationModal(invitation = null) {
   }
   el.hidden = false;
   el.classList.add('is-open');
-  $('#groom-name').focus();
+  $('#invitation-title').focus();
 }
 
 function closeInvitationModal() {
@@ -179,10 +256,12 @@ function openPartnerModal(partner = null) {
     form.elements.id.value = partner.id;
     form.elements.shop_name.value = partner.shop_name;
     form.elements.partner_code.value = partner.partner_code;
+    form.elements.email.value = partner.email || '';
     form.elements.phone.value = partner.phone || '';
     form.elements.default_bonus.value = partner.default_bonus || 0;
   } else {
     form.elements.id.value = '';
+    form.elements.email.value = '';
   }
   el.hidden = false;
   el.classList.add('is-open');
@@ -281,9 +360,15 @@ async function saveInvitation(event) {
     customerData.cover_photo_url = coverPhotoUrl;
     customerData.couple_photo_url = couplePhotoUrl;
 
+    const title = String(formData.get('title') || '').trim() || resolveDisplayTitle({ customer_data: customerData });
+    const category = String(formData.get('category') || 'wedding').trim();
+    customerData.display_title = title;
+
     const record = { 
       slug, 
       template_id: formData.get('template_id'), 
+      category,
+      title,
       customer_data: customerData, 
       partner_code: formData.get('partner_code') || null, 
       bonus_amount: Number(formData.get('bonus_amount') || 0), 
@@ -317,9 +402,15 @@ async function savePartner(event) {
   const formData = new FormData(form); 
   const id = formData.get('id'); 
   const existing = state.partners.find(item => item.id === id); 
+  const email = String(formData.get('email') || '').trim().toLowerCase();
+  if (!email) {
+    showAlert('#partner-form-error', 'Email ဖြည့်သွင်းရန် လိုအပ်ပါသည်။');
+    return;
+  }
   const record = { 
     shop_name: String(formData.get('shop_name')).trim(), 
     partner_code: existing?.partner_code || String(formData.get('partner_code')).trim().toUpperCase(), 
+    email: email,
     phone: String(formData.get('phone') || '').trim() || null, 
     default_bonus: Number(formData.get('default_bonus') || 0) 
   };
@@ -335,7 +426,10 @@ async function savePartner(event) {
   button.textContent = 'သိမ်းမည်';
 
   if (error) { 
-    showAlert('#partner-form-error', error.code === '23505' ? 'ဤ Partner code ကို အသုံးပြုထားပြီးဖြစ်သည်။' : `သိမ်း၍မရပါ — ${error.message}`); 
+    const msg = error.code === '23505'
+      ? (error.message?.includes('email') ? 'ဤ Email ကို အသုံးပြုထားပြီးဖြစ်သည်။' : 'ဤ Partner code ကို အသုံးပြုထားပြီးဖြစ်သည်။')
+      : `သိမ်း၍မရပါ — ${error.message}`;
+    showAlert('#partner-form-error', msg); 
     return; 
   }
   closePartnerModal(); 
@@ -430,24 +524,34 @@ async function initialiseDashboard() {
 function updateAutoSlug() {
   const slugInput = $('#invitation-slug');
   if (!slugInput.value || slugInput.dataset.auto === 'true') {
-    const groomEn = $('#groom-name-en').value.trim();
-    const brideEn = $('#bride-name-en').value.trim();
-    const groomMm = $('#groom-name').value.trim();
-    const brideMm = $('#bride-name').value.trim();
+    const titleVal = $('#invitation-title')?.value.trim() || '';
+    const groomEn = $('#groom-name-en')?.value.trim() || '';
+    const brideEn = $('#bride-name-en')?.value.trim() || '';
+    const groomMm = $('#groom-name')?.value.trim() || '';
+    const brideMm = $('#bride-name')?.value.trim() || '';
+    const celebrant = $('#celebrant-name')?.value.trim() || '';
+    const company = $('#company-name')?.value.trim() || '';
 
     let base = '';
     if (groomEn || brideEn) {
       base = slugify(`${groomEn}-${brideEn}`);
+    } else if (titleVal) {
+      base = slugify(titleVal);
+    } else if (celebrant) {
+      base = slugify(celebrant);
+    } else if (company) {
+      base = slugify(company);
     } else if (groomMm || brideMm) {
       base = slugify(`${groomMm}-${brideMm}`);
-      if (!base) {
-        base = `wedding-${Date.now().toString(36).slice(-5)}`;
-      }
     }
-    if (base) {
-      slugInput.value = base;
-      slugInput.dataset.auto = 'true';
+
+    if (!base) {
+      const cat = $('#invitation-category')?.value || 'event';
+      base = `${cat}-${Date.now().toString(36).slice(-5)}`;
     }
+
+    slugInput.value = base;
+    slugInput.dataset.auto = 'true';
   }
 }
 
@@ -511,12 +615,28 @@ $('#invitation-form').addEventListener('submit', saveInvitation);
 $('#partner-form').addEventListener('submit', savePartner);
 
 // Auto-slug bindings
-$('#groom-name-en').addEventListener('input', updateAutoSlug);
-$('#bride-name-en').addEventListener('input', updateAutoSlug);
-$('#groom-name').addEventListener('input', updateAutoSlug);
-$('#bride-name').addEventListener('input', updateAutoSlug);
-$('#invitation-slug').addEventListener('input', () => { 
+$('#invitation-title')?.addEventListener('input', updateAutoSlug);
+$('#groom-name-en')?.addEventListener('input', updateAutoSlug);
+$('#bride-name-en')?.addEventListener('input', updateAutoSlug);
+$('#groom-name')?.addEventListener('input', updateAutoSlug);
+$('#bride-name')?.addEventListener('input', updateAutoSlug);
+$('#celebrant-name')?.addEventListener('input', updateAutoSlug);
+$('#company-name')?.addEventListener('input', updateAutoSlug);
+$('#invitation-slug')?.addEventListener('input', () => { 
   $('#invitation-slug').dataset.auto = 'false'; 
+});
+
+// Category & Template sync listeners
+$('#template-id')?.addEventListener('change', event => {
+  const chosenTpl = state.templates.find(t => t.id === event.target.value);
+  if (chosenTpl?.category && $('#invitation-category')) {
+    $('#invitation-category').value = chosenTpl.category;
+    updateCategoryFieldVisibility(chosenTpl.category);
+  }
+});
+
+$('#invitation-category')?.addEventListener('change', event => {
+  updateCategoryFieldVisibility(event.target.value);
 });
 
 // Photo remove buttons
@@ -560,6 +680,19 @@ $('#partner-list').addEventListener('click', event => {
   if (!button) return; 
   if (button.dataset.partnerAction === 'edit') openPartnerModal(state.partners.find(item => item.id === button.dataset.id)); 
   if (button.dataset.partnerAction === 'delete') deletePartner(button.dataset.id); 
+});
+
+// Copy link button handler for both invitations and partners
+document.addEventListener('click', async event => {
+  const copyBtn = event.target.closest('[data-copy-link]');
+  if (!copyBtn) return;
+  const link = copyBtn.dataset.copyLink;
+  if (!link) return;
+  const success = await copyToClipboard(link, copyBtn);
+  if (success) {
+    const isPartner = copyBtn.closest('#partner-list');
+    setStatus(isPartner ? '#partner-status' : '#invitation-status', 'Link ကို ကူးယူပြီးပါပြီ ✓');
+  }
 });
 
 previewSelectedPhoto('#cover-photo', '#cover-preview', '#remove-cover-photo', 'cover'); 

@@ -1,0 +1,433 @@
+/* =============================================================================
+   templates/neon-birthday/style.css
+   Neon Birthday Celebration — Rich Aesthetic & Particle Styling
+   Scoped strictly under .template-root.neon-birthday
+   ============================================================================= */
+
+.template-root.neon-birthday {
+  --nb-bg: #0c071e;
+  --nb-card: rgba(25, 15, 48, 0.75);
+  --nb-border: rgba(186, 104, 255, 0.25);
+  --nb-accent: #ffd166;
+  --nb-cyan: #06d6a0;
+  --nb-pink: #ff477e;
+  --nb-text: #f8f9fa;
+  --nb-muted: #d0c8e8;
+
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% 10%, #2a1154 0%, #0c071e 80%);
+  color: var(--nb-text);
+  font-family: var(--font-myanmar);
+  padding: 1.5rem 1rem 4rem;
+  max-width: 680px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ─── Hero Section ─────────────────────────────────────────────────────────── */
+.neon-birthday .birthday-hero {
+  text-align: center;
+  padding: 2.5rem 1rem 1.5rem;
+}
+
+.neon-birthday .hero-sparkles {
+  font-size: 1.6rem;
+  letter-spacing: 0.35rem;
+  margin-bottom: 0.5rem;
+  animation: nbPulse 2s infinite ease-in-out;
+}
+
+.neon-birthday .hero-badge {
+  display: inline-block;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+  background: rgba(255, 209, 102, 0.15);
+  border: 1px solid var(--nb-accent);
+  color: var(--nb-accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.neon-birthday .celebrant-title {
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin: 0.75rem 0 0.25rem;
+  background: linear-gradient(135deg, #fff 20%, var(--nb-accent) 60%, var(--nb-pink) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.3;
+}
+
+.neon-birthday .celebrant-age-tag {
+  font-size: 1.25rem;
+  color: var(--nb-cyan);
+  font-weight: 700;
+  margin: 0.25rem 0 0.75rem;
+  text-shadow: 0 0 12px rgba(6, 214, 160, 0.4);
+}
+
+.neon-birthday .birthday-tagline {
+  color: var(--nb-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 440px;
+  margin: 0 auto 1.5rem;
+}
+
+/* ─── Interactive Cake & Blow Candles Widget ───────────────────────────────── */
+.neon-birthday .interactive-cake-box {
+  background: var(--nb-card);
+  border: 1px solid var(--nb-border);
+  border-radius: 20px;
+  padding: 1.5rem 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
+  margin-top: 1rem;
+}
+
+.neon-birthday .cake-graphic {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.neon-birthday .cake-top-layer {
+  font-size: 4rem;
+  line-height: 1;
+}
+
+.neon-birthday .candle-flames {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  font-size: 1.3rem;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.neon-birthday .candle-flames.blown-out {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-12px) scale(0.4);
+}
+
+.neon-birthday .flame {
+  animation: flameFlicker 1.2s infinite alternate ease-in-out;
+}
+.neon-birthday .flame-2 { animation-delay: 0.2s; }
+.neon-birthday .flame-3 { animation-delay: 0.4s; }
+
+@keyframes flameFlicker {
+  0% { transform: scale(0.9) rotate(-3deg); filter: drop-shadow(0 0 4px #ffbe0b); }
+  100% { transform: scale(1.15) rotate(4deg); filter: drop-shadow(0 0 10px #ff006e); }
+}
+
+.neon-birthday .btn-blow-candles {
+  background: linear-gradient(135deg, var(--nb-accent) 0%, var(--nb-pink) 100%);
+  color: #120326;
+  border: none;
+  border-radius: 999px;
+  padding: 0.85rem 1.75rem;
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255, 71, 126, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.neon-birthday .btn-blow-candles:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 26px rgba(255, 71, 126, 0.6);
+}
+
+.neon-birthday .btn-blow-candles:active {
+  transform: scale(0.98);
+}
+
+.neon-birthday .cake-status-msg {
+  color: var(--nb-cyan);
+  font-weight: 700;
+  margin-top: 0.75rem;
+  font-size: 1.05rem;
+  animation: nbFadeIn 0.5s ease;
+}
+
+/* ─── Photo Showcase ───────────────────────────────────────────────────────── */
+.neon-birthday .card-birthday-photo {
+  margin: 1.75rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+.neon-birthday .photo-glow-frame {
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  padding: 6px;
+  background: linear-gradient(135deg, var(--nb-cyan), var(--nb-pink), var(--nb-accent));
+  box-shadow: 0 0 35px rgba(255, 71, 126, 0.35);
+}
+
+.neon-birthday .celebrant-photo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #1b1035;
+}
+
+/* ─── Cards & Sections ─────────────────────────────────────────────────────── */
+.neon-birthday .card-event-details,
+.neon-birthday .card-calendar-action,
+.neon-birthday .card-birthday-wishes {
+  background: var(--nb-card);
+  border: 1px solid var(--nb-border);
+  border-radius: 20px;
+  padding: 1.75rem 1.4rem;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.neon-birthday .section-title {
+  color: var(--nb-accent);
+  font-size: 1.3rem;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 209, 102, 0.2);
+  padding-bottom: 0.6rem;
+}
+
+.neon-birthday .details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.neon-birthday .detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.neon-birthday .detail-icon {
+  font-size: 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.neon-birthday .detail-item strong {
+  display: block;
+  color: var(--nb-accent);
+  font-size: 0.88rem;
+  margin-bottom: 0.15rem;
+}
+
+.neon-birthday .detail-item p {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+.neon-birthday .detail-item small {
+  display: block;
+  color: var(--nb-muted);
+  margin-top: 0.15rem;
+  font-size: 0.85rem;
+}
+
+/* ─── Action Buttons ───────────────────────────────────────────────────────── */
+.neon-birthday .action-buttons-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.neon-birthday .action-btn {
+  display: block;
+  text-align: center;
+  padding: 0.85rem;
+  border-radius: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.neon-birthday .map-btn {
+  background: rgba(6, 214, 160, 0.15);
+  border: 1px solid var(--nb-cyan);
+  color: var(--nb-cyan);
+}
+
+.neon-birthday .phone-btn {
+  background: rgba(255, 71, 126, 0.15);
+  border: 1px solid var(--nb-pink);
+  color: #ff9bbb;
+}
+
+.neon-birthday .action-btn:hover {
+  filter: brightness(1.2);
+  transform: translateY(-1px);
+}
+
+/* ─── Calendar Card ────────────────────────────────────────────────────────── */
+.neon-birthday .cal-badge {
+  color: var(--nb-cyan);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.neon-birthday .card-calendar-action h3 {
+  margin: 0.35rem 0 1rem;
+  font-size: 1.15rem;
+  color: #fff;
+}
+
+.neon-birthday .cal-btn-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.neon-birthday .cal-btn {
+  background: rgba(255, 209, 102, 0.14);
+  border: 1px solid var(--nb-accent);
+  color: var(--nb-accent);
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.neon-birthday .cal-btn:hover {
+  background: var(--nb-accent);
+  color: #120326;
+}
+
+.neon-birthday .calendar-status-msg {
+  margin-top: 0.75rem;
+  padding: 0.65rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  background: rgba(6, 214, 160, 0.2);
+  color: #b9ffd1;
+}
+
+/* ─── Birthday Guest Wishes ────────────────────────────────────────────────── */
+.neon-birthday .wish-form input,
+.neon-birthday .wish-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(12, 7, 30, 0.85);
+  border: 1px solid var(--nb-border);
+  border-radius: 10px;
+  color: #fff;
+  font-family: inherit;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.neon-birthday .wish-submit-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: linear-gradient(135deg, var(--nb-pink), var(--nb-cyan));
+  color: #0c071e;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(6, 214, 160, 0.3);
+}
+
+.neon-birthday .wishes-stream {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.neon-birthday .wish-bubble {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.85rem;
+}
+
+.neon-birthday .wish-author {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--nb-accent);
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.neon-birthday .wish-message-text {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #f0f0f5;
+  line-height: 1.5;
+}
+
+.neon-birthday .birthday-footer {
+  text-align: center;
+  color: var(--nb-muted);
+  font-size: 0.82rem;
+  padding: 1rem 0;
+  opacity: 0.75;
+}
+
+/* ─── Confetti Flying Particles ────────────────────────────────────────────── */
+.birthday-confetti-particle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  font-size: 1.4rem;
+  user-select: none;
+  animation: confettiBlast 2.2s forwards cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes confettiBlast {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.5) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(var(--rot));
+  }
+}
+
+@keyframes nbPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@keyframes nbFadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}

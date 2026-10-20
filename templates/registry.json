@@ -1,10 +1,73 @@
 [
   {
-    "id"          : "floral-pink",
-    "name"        : "Sweet Pink Romance (ဖိတ်စာအသစ်)",
-    "description" : "ပန်းရောင်စွဲမက်ဖွယ် ဒီဇိုင်း — စာအိတ်ဖွင့်လှစ်ခြင်း၊ ဓာတ်ပုံ ၂ ပုံ ထည့်သွင်းပြသခြင်း၊ Countdown အချိန်မှတ်တမ်းနှင့် Interactive ဆုမွန်ကောင်းတောင်းပေးခြင်းတို့ အပြည့်အစုံ ပါဝင်ပါသည်",
-    "thumbnail"   : "templates/floral-pink/thumbnail.jpg",
-    "tags"        : ["romantic", "pink", "envelope", "photos", "interactive"],
-    "available"   : true
+    "id": "floral-pink",
+    "name": "Sweet Pink Romance (မင်္ဂလာဖိတ်ကြားလွှာ)",
+    "category": "wedding",
+    "description": "ပန်းရောင်စွဲမက်ဖွယ် ဒီဇိုင်း — စာအိတ်ဖွင့်လှစ်ခြင်း၊ ဓာတ်ပုံ ၂ ပုံ ထည့်သွင်းပြသခြင်း၊ Countdown အချိန်မှတ်တမ်းနှင့် Interactive ဆုမွန်ကောင်းတောင်းပေးခြင်းတို့ အပြည့်အစုံ ပါဝင်ပါသည်",
+    "thumbnail": "templates/floral-pink/thumbnail.jpg",
+    "tags": ["romantic", "pink", "envelope", "photos", "interactive", "wedding"],
+    "required_fields": [
+      "groom_name",
+      "bride_name",
+      "wedding_date"
+    ],
+    "optional_fields": [
+      "groom_name_en",
+      "bride_name_en",
+      "wedding_time",
+      "venue_name",
+      "venue_address",
+      "map_url",
+      "rsvp_phone",
+      "message",
+      "cover_photo",
+      "couple_photo"
+    ],
+    "available": true
+  },
+  {
+    "id": "neon-birthday",
+    "name": "Neon Party Birthday (မွေးနေ့ဖိတ်ကြားလွှာ)",
+    "category": "birthday",
+    "description": "တောက်ပဆန်းသစ်သော Neon အပြင်အဆင် — ဖယောင်းတိုင်မှုတ်ခြင်း၊ Confetti မိုးပျံလွင့်ပျံခြင်း၊ Birthday Chime အသံနှင့် ဆုမွန်ကောင်းတောင်းပေးခြင်း Interactive Feature များ အပြည့်အစုံ ပါဝင်ပါသည်",
+    "thumbnail": "templates/neon-birthday/thumbnail.jpg",
+    "tags": ["birthday", "party", "candles", "confetti", "interactive", "modern"],
+    "required_fields": [
+      "celebrant_name",
+      "turning_age",
+      "wedding_date"
+    ],
+    "optional_fields": [
+      "wedding_time",
+      "venue_name",
+      "venue_address",
+      "map_url",
+      "rsvp_phone",
+      "message",
+      "cover_photo"
+    ],
+    "available": true
+  },
+  {
+    "id": "biz-card-minimal",
+    "name": "Apex Business Profile (စီးပွားရေးလုပ်ငန်း Profile)",
+    "category": "business",
+    "description": "ခေတ်မီစီးပွားရေးလုပ်ငန်းသုံး Digital Profile — လုပ်ငန်းမိတ်ဆက်၊ ဝန်ဆောင်မှုများ၊ တိုက်ရိုက်ဖုန်းခေါ်ဆိုမှု၊ Google Map လမ်းညွှန်နှင့် vCard (.vcf) ဖုန်းထဲသိမ်းဆည်းမှု စနစ်များ ပါဝင်ပါသည်",
+    "thumbnail": "templates/biz-card-minimal/thumbnail.jpg",
+    "tags": ["business", "portfolio", "vcard", "contact", "corporate", "professional"],
+    "required_fields": [
+      "company_name",
+      "industry_tagline",
+      "rsvp_phone"
+    ],
+    "optional_fields": [
+      "message",
+      "venue_name",
+      "venue_address",
+      "wedding_time",
+      "map_url",
+      "cover_photo"
+    ],
+    "available": true
   }
 ]

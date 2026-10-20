@@ -18,12 +18,14 @@
       <form id="partner-login-form" class="partner-login-card" novalidate>
         <p class="partner-kicker">Digital Wedding Invitation</p>
         <h1 id="partner-login-title">Partner ဝင်ရောက်ရန်</h1>
-        <p>Partner code နှင့် passcode ဖြင့် referral စာရင်းကို ကြည့်ပါ။</p>
+        <p>Email, Partner code နှင့် Password ဖြင့် referral စာရင်းကို ကြည့်ပါ။</p>
         <div id="partner-login-error" class="partner-alert" role="alert" tabindex="-1" hidden></div>
-        <label for="login-partner-code">Partner code</label>
-        <input id="login-partner-code" name="partner_code" autocomplete="username" required>
-        <label for="login-passcode">Passcode</label>
-        <input id="login-passcode" name="passcode" type="password" autocomplete="current-password" required>
+        <label for="login-partner-code">Partner code *</label>
+        <input id="login-partner-code" name="partner_code" placeholder="ဥပမာ SHOP-001" autocomplete="username" required>
+        <label for="login-email">Email *</label>
+        <input id="login-email" name="email" type="email" placeholder="partner@shop.com" autocomplete="email" required>
+        <label for="login-passcode">Password *</label>
+        <input id="login-passcode" name="passcode" type="password" placeholder="••••••••" autocomplete="current-password" required>
         <button class="partner-button partner-button-primary" type="submit">ဝင်ရောက်မည်</button>
       </form>
     </section>
@@ -43,7 +45,7 @@
       <section class="partner-section" aria-labelledby="referrals-title">
         <div class="partner-section-heading"><div><h2 id="referrals-title">Referral စာရင်း</h2><p id="referral-count">—</p></div></div>
         <div id="partner-status" class="partner-status" role="status" aria-live="polite"></div>
-        <div class="partner-table-wrap"><table><thead><tr><th>စုံတွဲ</th><th>ဖိတ်စာ</th><th>Template</th><th>ရက်စွဲ</th><th>Bonus</th><th>အခြေအနေ</th></tr></thead><tbody id="referral-list"></tbody></table></div>
+        <div class="partner-table-wrap"><table><thead><tr><th>အမည် / ခေါင်းစဉ်</th><th>ဖိတ်စာ</th><th>Template</th><th>ရက်စွဲ</th><th>Bonus</th><th>အခြေအနေ</th></tr></thead><tbody id="referral-list"></tbody></table></div>
       </section>
 
       <section class="partner-section" aria-labelledby="paid-title">
@@ -52,6 +54,6 @@
       </section>
     </section>
   </main>
-  <script type="module" src="js/partner.js?v=6"></script>
+  <script type="module" src="js/partner.js?v=8"></script>
 </body>
 </html>

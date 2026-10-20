@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/global.css?v=6">
-  <link rel="stylesheet" href="css/admin.css?v=6">
+  <link rel="stylesheet" href="css/admin.css?v=7">
 </head>
 <body class="admin-body">
   <main>
@@ -22,9 +22,9 @@
         <div id="login-error" class="form-alert" role="alert" tabindex="-1" hidden></div>
         <div id="login-info" class="form-info" role="status" tabindex="-1" hidden></div>
         <label for="login-email">Email</label>
-        <input id="login-email" name="email" type="email" autocomplete="email" value="admin123@gmail.com" required>
+        <input id="login-email" name="email" type="email" autocomplete="email" placeholder="admin@example.com" required>
         <label for="login-password">Password</label>
-        <input id="login-password" name="password" type="password" autocomplete="current-password" value="240919" required>
+        <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
         <button id="login-submit-button" class="button button-primary" type="submit">ဝင်ရောက်မည်</button>
       </form>
     </section>
@@ -45,7 +45,7 @@
         <div id="invitation-status" class="status-message" role="status" aria-live="polite"></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>စုံတွဲ</th><th>Slug</th><th>Template</th><th>Partner</th><th>Bonus</th><th>Bonus အခြေအနေ</th><th>အခြေအနေ</th><th>ဧည့်သည် Link</th><th><span class="visually-hidden">လုပ်ဆောင်ချက်</span></th></tr></thead>
+            <thead><tr><th>အမည် / ခေါင်းစဉ်</th><th>အမျိုးအစား</th><th>Slug</th><th>Template</th><th>Partner</th><th>Bonus</th><th>Bonus အခြေအနေ</th><th>အခြေအနေ</th><th>Link</th><th><span class="visually-hidden">လုပ်ဆောင်ချက်</span></th></tr></thead>
             <tbody id="invitation-list"></tbody>
           </table>
         </div>
@@ -54,43 +54,65 @@
       <section id="partners-panel" class="admin-panel" role="tabpanel" aria-labelledby="partners-tab" hidden>
         <div class="panel-heading"><div><h2>Partners</h2><p>Referral shop များနှင့် default bonus ကို စီမံပါ။</p></div><button id="new-partner-button" class="button button-primary" type="button">Partner အသစ်</button></div>
         <div id="partner-status" class="status-message" role="status" aria-live="polite"></div>
-        <div class="table-wrap"><table><thead><tr><th>Shop</th><th>Code</th><th>ဖုန်း</th><th>Default bonus</th><th><span class="visually-hidden">လုပ်ဆောင်ချက်</span></th></tr></thead><tbody id="partner-list"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Shop</th><th>Code</th><th>Email</th><th>ဖုန်း</th><th>Default bonus</th><th>Login URL</th><th><span class="visually-hidden">လုပ်ဆောင်ချက်</span></th></tr></thead><tbody id="partner-list"></tbody></table></div>
       </section>
     </section>
   </main>
 
   <div id="invitation-modal" class="modal-backdrop" role="presentation" hidden>
     <section class="invitation-modal" role="dialog" aria-modal="true" aria-labelledby="invitation-form-title">
-      <div class="modal-heading"><div><p class="admin-kicker">Invitation</p><h2 id="invitation-form-title">ဖိတ်စာအသစ်</h2></div><button id="close-modal-button" class="icon-button" type="button" aria-label="Form ပိတ်မည်">×</button></div>
+      <div class="modal-heading"><div><p class="admin-kicker">Invitation & Profile</p><h2 id="invitation-form-title">ဖိတ်စာ / Profile အသစ်</h2></div><button id="close-modal-button" class="icon-button" type="button" aria-label="Form ပိတ်မည်">×</button></div>
       <div id="form-error-summary" class="form-alert" role="alert" tabindex="-1" hidden></div>
       <form id="invitation-form" novalidate>
         <input id="invitation-id" name="id" type="hidden">
         <div class="form-grid">
-          <div><label for="groom-name">သတို့သားအမည် *</label><input id="groom-name" name="groom_name" placeholder="ဥပမာ ကိုအောင်" required></div>
-          <div><label for="bride-name">သတို့သမီးအမည် *</label><input id="bride-name" name="bride_name" placeholder="ဥပမာ မသန်းဒါး" required></div>
-          <div><label for="groom-name-en">သတို့သားအမည် (English)</label><input id="groom-name-en" name="groom_name_en" placeholder="Ko Aung"></div>
-          <div><label for="bride-name-en">သတို့သမီးအမည် (English)</label><input id="bride-name-en" name="bride_name_en" placeholder="Ma Thandar"></div>
-          <div class="form-span-full"><label for="invitation-slug">Slug *</label><input id="invitation-slug" name="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" aria-describedby="slug-hint" required><small id="slug-hint">ဖိတ်စာ URL အတွက်ဖြစ်သည် (lowercase English, number နှင့် hyphen သာ သုံးပါ — ဥပမာ ko-aung-ma-thandar-2025)</small></div>
+          <div class="form-span-full"><label for="invitation-title">ခေါင်းစဉ် / အမည် (Title) *</label><input id="invitation-title" name="title" placeholder="ဥပမာ ကိုအောင် & မသန်းဒါး မင်္ဂလာဖိတ်ကြားလွှာ" required></div>
           <div><label for="template-id">Template *</label><select id="template-id" name="template_id" required></select></div>
-          <div><label for="wedding-date">မင်္ဂလာနေ့</label><input id="wedding-date" name="wedding_date" type="date"></div>
-          <div><label for="wedding-time">ကျင်းပချိန်</label><input id="wedding-time" name="wedding_time" placeholder="ဥပမာ ၁၀:၀၀ နံနက်"></div>
-          <div><label for="venue-name">ပွဲကျင်းပမည့်နေရာ</label><input id="venue-name" name="venue_name"></div>
-          <div><label for="rsvp-phone">RSVP ဖုန်း</label><input id="rsvp-phone" name="rsvp_phone" type="tel"></div>
-          <div class="form-span-full"><label for="venue-address">လိပ်စာ</label><textarea id="venue-address" name="venue_address" rows="2"></textarea></div>
+          <div><label for="invitation-category">Category</label><select id="invitation-category" name="category"><option value="wedding">Wedding (မင်္ဂလာဆောင်)</option><option value="birthday">Birthday (မွေးနေ့)</option><option value="ahlu">Ah-lhu (အလှူမင်္ဂလာ)</option><option value="business">Business (စီးပွားရေး/လုပ်ငန်း)</option></select></div>
+          <div class="form-span-full"><label for="invitation-slug">Slug *</label><input id="invitation-slug" name="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" aria-describedby="slug-hint" required><small id="slug-hint">URL အတွက်ဖြစ်သည် (lowercase English, number နှင့် hyphen သာ သုံးပါ — ဥပမာ ko-aung-ma-thandar-2025)</small></div>
+
+          <!-- Wedding Specific Fields -->
+          <div id="wedding-fields" class="form-span-full form-grid" style="padding: 0; margin: 0;">
+            <div><label for="groom-name">သတို့သားအမည်</label><input id="groom-name" name="groom_name" placeholder="ဥပမာ ကိုအောင်"></div>
+            <div><label for="bride-name">သတို့သမီးအမည်</label><input id="bride-name" name="bride_name" placeholder="ဥပမာ မသန်းဒါး"></div>
+            <div><label for="groom-name-en">သတို့သားအမည် (English)</label><input id="groom-name-en" name="groom_name_en" placeholder="Ko Aung"></div>
+            <div><label for="bride-name-en">သတို့သမီးအမည် (English)</label><input id="bride-name-en" name="bride_name_en" placeholder="Ma Thandar"></div>
+          </div>
+
+          <!-- Birthday Specific Fields -->
+          <div id="birthday-fields" class="form-span-full form-grid" style="padding: 0; margin: 0;" hidden>
+            <div><label for="celebrant-name">မွေးနေ့ရှင်အမည်</label><input id="celebrant-name" name="celebrant_name" placeholder="ဥပမာ မောင်အေးမင်းထွန်း"></div>
+            <div><label for="turning-age">ပြည့်မြောက်မည့်အသက် (Age)</label><input id="turning-age" name="turning_age" type="number" placeholder="ဥပမာ 18"></div>
+          </div>
+
+          <!-- Business Specific Fields -->
+          <div id="business-fields" class="form-span-full form-grid" style="padding: 0; margin: 0;" hidden>
+            <div><label for="company-name">လုပ်ငန်း / ဆိုင်အမည်</label><input id="company-name" name="company_name" placeholder="ဥပမာ Shwe Digital Studio"></div>
+            <div><label for="tagline">Tagline / ဆောင်ပုဒ်</label><input id="tagline" name="tagline" placeholder="ဥပမာ အရည်အသွေးမြင့် စာပုံနှိပ်လုပ်ငန်း"></div>
+            <div class="form-span-full"><label for="website-url">Website / Facebook Page Link</label><input id="website-url" name="website_url" type="url" placeholder="https://facebook.com/..."></div>
+          </div>
+
+          <!-- Common Event Fields -->
+          <div><label for="wedding-date">ကျင်းပမည့်ရက်စွဲ (Date)</label><input id="wedding-date" name="wedding_date" type="date"></div>
+          <div><label for="wedding-time">အချိန် (Time)</label><input id="wedding-time" name="wedding_time" placeholder="ဥပမာ ၁၀:၀၀ နံနက်"></div>
+          <div><label for="venue-name">နေရာ / ခန်းမ (Venue)</label><input id="venue-name" name="venue_name"></div>
+          <div><label for="rsvp-phone">ဆက်သွယ်ရန်ဖုန်း (Phone)</label><input id="rsvp-phone" name="rsvp_phone" type="tel"></div>
+          <div class="form-span-full"><label for="venue-address">လိပ်စာ (Address)</label><textarea id="venue-address" name="venue_address" rows="2"></textarea></div>
           <div class="form-span-full"><label for="map-url">Map URL</label><input id="map-url" name="map_url" type="url" placeholder="https://maps.google.com/..."></div>
-          <div class="form-span-full"><label for="invitation-message">ဖိတ်စာ မေတ္တာပို့စာသား</label><textarea id="invitation-message" name="message" rows="3"></textarea></div>
+          <div class="form-span-full"><label for="invitation-message">မေတ္တာပို့ / မိတ်ဆက် စာသား</label><textarea id="invitation-message" name="message" rows="3"></textarea></div>
+
           <div class="form-span-full photo-fields">
-            <p class="field-label">ဓာတ်ပုံများ</p>
+            <p class="field-label">ဓာတ်ပုံများ (Photos & Graphics)</p>
             <p class="photo-hint">JPG, PNG, WebP ကိုသာရွေးပါ။ Upload မပြုမီ အရွယ်အစားကို အလိုအလျောက် လျှော့ချပေးပါမည်။</p>
             <div class="photo-grid">
               <div>
-                <label for="cover-photo">Cover photo</label>
+                <label for="cover-photo">Cover / Banner / Logo</label>
                 <input id="cover-photo" name="cover_photo" type="file" accept="image/jpeg,image/png,image/webp">
                 <img id="cover-preview" class="photo-preview" alt="Cover photo preview" hidden>
                 <button type="button" id="remove-cover-photo" class="table-button" style="color: #ffd4db; margin-top: 0.35rem;" hidden>ပုံဖယ်ရှားမည်</button>
               </div>
               <div>
-                <label for="couple-photo">Couple photo</label>
+                <label for="couple-photo">Couple / Portrait / Secondary photo</label>
                 <input id="couple-photo" name="couple_photo" type="file" accept="image/jpeg,image/png,image/webp">
                 <img id="couple-preview" class="photo-preview" alt="Couple photo preview" hidden>
                 <button type="button" id="remove-couple-photo" class="table-button" style="color: #ffd4db; margin-top: 0.35rem;" hidden>ပုံဖယ်ရှားမည်</button>
@@ -110,9 +132,20 @@
     <section class="invitation-modal partner-modal" role="dialog" aria-modal="true" aria-labelledby="partner-form-title">
       <div class="modal-heading"><div><p class="admin-kicker">Partner</p><h2 id="partner-form-title">Partner အသစ်</h2></div><button id="close-partner-modal-button" class="icon-button" type="button" aria-label="Partner form ပိတ်မည်">×</button></div>
       <div id="partner-form-error" class="form-alert" role="alert" tabindex="-1" hidden></div>
-      <form id="partner-form" novalidate><input id="partner-id" name="id" type="hidden"><div class="form-grid"><div><label for="shop-name">Shop name *</label><input id="shop-name" name="shop_name" required></div><div><label for="partner-code-input">Partner code *</label><input id="partner-code-input" name="partner_code" pattern="[A-Za-z0-9-]+" required></div><div><label for="partner-phone">ဖုန်း</label><input id="partner-phone" name="phone" type="tel"></div><div><label for="default-bonus">Default bonus (MMK)</label><input id="default-bonus" name="default_bonus" type="number" min="0" step="0.01" value="0"></div><div class="form-span-full"><label for="partner-passcode">Passcode <span id="passcode-optional" hidden>(မပြောင်းလိုလျှင် ဗလာထားပါ)</span></label><input id="partner-passcode" name="passcode" type="password" autocomplete="new-password" required></div></div><div class="modal-actions"><button id="cancel-partner-modal-button" class="button button-quiet" type="button">မလုပ်တော့ပါ</button><button id="save-partner-button" class="button button-primary" type="submit">သိမ်းမည်</button></div></form>
+      <form id="partner-form" novalidate>
+        <input id="partner-id" name="id" type="hidden">
+        <div class="form-grid">
+          <div><label for="shop-name">Shop name *</label><input id="shop-name" name="shop_name" placeholder="ဥပမာ ရွှေမင်္ဂလာ စာပုံနှိပ်တိုက်" required></div>
+          <div><label for="partner-code-input">Partner code *</label><input id="partner-code-input" name="partner_code" pattern="[A-Za-z0-9-]+" placeholder="SHOP-001" required></div>
+          <div><label for="partner-email">Email *</label><input id="partner-email" name="email" type="email" placeholder="shop@example.com" required></div>
+          <div><label for="partner-phone">ဖုန်း</label><input id="partner-phone" name="phone" type="tel" placeholder="09xxxxxxxxx"></div>
+          <div class="form-span-full"><label for="default-bonus">Default bonus (MMK)</label><input id="default-bonus" name="default_bonus" type="number" min="0" step="0.01" value="0"></div>
+          <div class="form-span-full"><label for="partner-passcode">Password (Passcode) * <span id="passcode-optional" hidden>(မပြောင်းလိုလျှင် ဗလာထားပါ)</span></label><input id="partner-passcode" name="passcode" type="password" autocomplete="new-password" placeholder="••••••••" required></div>
+        </div>
+        <div class="modal-actions"><button id="cancel-partner-modal-button" class="button button-quiet" type="button">မလုပ်တော့ပါ</button><button id="save-partner-button" class="button button-primary" type="submit">သိမ်းမည်</button></div>
+      </form>
     </section>
   </div>
-  <script type="module" src="js/admin.js?v=7"></script>
+  <script type="module" src="js/admin.js?v=9"></script>
 </body>
 </html>

@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="ထိမ်းမြားမင်္ဂလာ ဖိတ်ကြားလွှာ — Digital Wedding Invitation">
+  <meta name="description" content="Digital Invitation & Event Profile — ဖိတ်ကြားလွှာနှင့် အချက်အလက်စာမျက်နှာ">
   <meta name="theme-color" content="#1A0A2E">
   <meta name="robots" content="noindex, nofollow">
 
   <!-- Open Graph / Social Share -->
   <meta property="og:type"        content="website">
-  <meta property="og:title"       content="ထိမ်းမြားမင်္ဂလာ ဖိတ်ကြားလွှာ">
-  <meta property="og:description" content="ထိမ်းမြားမင်္ဂလာပွဲသို့ ကြိုဆိုပါသည်">
+  <meta property="og:title"       content="Digital Invitation & Profile">
+  <meta property="og:description" content="ဖိတ်ကြားလွှာစာမျက်နှာသို့ ကြိုဆိုပါသည်">
   <meta property="og:image"       content="">
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image">
-  <meta name="twitter:title"       content="ထိမ်းမြားမင်္ဂလာ ဖိတ်ကြားလွှာ">
-  <meta name="twitter:description" content="ထိမ်းမြားမင်္ဂလာပွဲသို့ ကြိုဆိုပါသည်">
+  <meta name="twitter:title"       content="Digital Invitation & Profile">
+  <meta name="twitter:description" content="ဖိတ်ကြားလွှာစာမျက်နှာသို့ ကြိုဆိုပါသည်">
 
-  <title>ထိမ်းမြားမင်္ဂလာ ဖိတ်ကြားလွှာ</title>
+  <title>Digital Invitation & Profile</title>
 
   <!-- Google Fonts: Cormorant Garamond, Alex Brush, Playfair Display (Optimized weights) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,21 +34,16 @@
 <body>
 
   <!-- ═══════════════════════════════════════════════════════════
-       Hearts Container — falling hearts spawned by engine.js
-       ═══════════════════════════════════════════════════════════ -->
-  <div id="hearts-container" aria-hidden="true" role="presentation"></div>
-
-  <!-- ═══════════════════════════════════════════════════════════
        Loading Screen — shown while engine fetches data & template
        ═══════════════════════════════════════════════════════════ -->
-  <div id="loading-screen" role="status" aria-label="ဖိတ်ကြားလွှာ ဖွင့်နေပါသည်" aria-live="polite">
+  <div id="loading-screen" role="status" aria-label="စာမျက်နှာ ဖွင့်နေပါသည်" aria-live="polite">
     <div class="loading-rings" aria-hidden="true">
       <div class="loading-ring"></div>
       <div class="loading-ring"></div>
       <div class="loading-ring"></div>
     </div>
-    <p class="loading-text">Wedding Invitation</p>
-    <p class="loading-sub">ဖိတ်ကြားလွှာ ဖွင့်နေပါသည်...</p>
+    <p class="loading-text">Digital Invitation & Profile</p>
+    <p class="loading-sub">စာမျက်နှာ ဖွင့်နေပါသည်...</p>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════
@@ -68,13 +63,13 @@
   <div id="template-container" aria-live="polite"></div>
 
   <!-- Template Engine (ES Module) -->
-  <script type="module" src="js/engine.js?v=6"></script>
+  <script type="module" src="js/engine.js?v=8"></script>
 
   <!-- Service Worker Registration (100% Offline Support) -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=6').catch(err => {
+        navigator.serviceWorker.register('./sw.js?v=8').catch(err => {
           console.warn('[SW] ServiceWorker registration notice:', err);
         });
       });

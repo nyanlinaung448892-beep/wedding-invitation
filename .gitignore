@@ -16,6 +16,7 @@
 .agents/
 skills-lock.json
 AGENTS.md
+plan.md
 
 # Database Schema & Migrations (Backend only, not deployed to static web)
 # ----------------------------------------------------------------------

@@ -172,18 +172,34 @@ export async function getPublicUrl(filePath) {
 
 /**
  * Validates partner login credentials via secure RPC.
+ * Supports (email, partnerCode, passcode) or legacy (partnerCode, passcode).
  * Does not expose the partners table or passcodes to anon SELECT.
- * @param {string} partnerCode  - e.g. 'SHOP-001'
- * @param {string} passcode     - Partner's passcode
- * @returns {Promise<Object|null>}  - Safe partner row or null if not found/wrong credentials
+ * @param {string} [emailOrCode]
+ * @param {string} [codeOrPass]
+ * @param {string} [passcode]
+ * @returns {Promise<Object|null>}
  */
-export async function authenticatePartner(partnerCode, passcode) {
+export async function authenticatePartner(arg1, arg2, arg3) {
+    let email = null;
+    let partnerCode = '';
+    let passcode = '';
+
+    if (arg3 !== undefined) {
+        email = String(arg1 || '').trim().toLowerCase();
+        partnerCode = String(arg2 || '').trim().toUpperCase();
+        passcode = String(arg3 || '').trim();
+    } else {
+        partnerCode = String(arg1 || '').trim().toUpperCase();
+        passcode = String(arg2 || '').trim();
+    }
+
     if (!partnerCode || !passcode) return null;
     const sb = await getSupabaseClient();
-    const { data, error } = await sb.rpc('verify_partner_login', {
-        p_partner_code: partnerCode.trim(),
-        p_passcode    : passcode.trim(),
-    });
+    const params = email
+        ? { p_email: email, p_partner_code: partnerCode, p_passcode: passcode }
+        : { p_partner_code: partnerCode, p_passcode: passcode };
+
+    const { data, error } = await sb.rpc('verify_partner_login', params);
 
     if (error) {
         console.warn('[supabase-config] authenticatePartner error:', error.message);
@@ -196,18 +212,34 @@ export async function authenticatePartner(partnerCode, passcode) {
 
 /**
  * Securely fetches all referral invitations for a verified partner.
+ * Supports (email, partnerCode, passcode) or legacy (partnerCode, passcode).
  * Includes both active and inactive invitations so partner stats remain accurate.
- * @param {string} partnerCode
- * @param {string} passcode
+ * @param {string} [emailOrCode]
+ * @param {string} [codeOrPass]
+ * @param {string} [passcode]
  * @returns {Promise<Array>}
  */
-export async function fetchPartnerInvitations(partnerCode, passcode) {
+export async function fetchPartnerInvitations(arg1, arg2, arg3) {
+    let email = null;
+    let partnerCode = '';
+    let passcode = '';
+
+    if (arg3 !== undefined) {
+        email = String(arg1 || '').trim().toLowerCase();
+        partnerCode = String(arg2 || '').trim().toUpperCase();
+        passcode = String(arg3 || '').trim();
+    } else {
+        partnerCode = String(arg1 || '').trim().toUpperCase();
+        passcode = String(arg2 || '').trim();
+    }
+
     if (!partnerCode || !passcode) return [];
     const sb = await getSupabaseClient();
-    const { data, error } = await sb.rpc('get_partner_invitations', {
-        p_partner_code: partnerCode.trim(),
-        p_passcode    : passcode.trim(),
-    });
+    const params = email
+        ? { p_email: email, p_partner_code: partnerCode, p_passcode: passcode }
+        : { p_partner_code: partnerCode, p_passcode: passcode };
+
+    const { data, error } = await sb.rpc('get_partner_invitations', params);
 
     if (error) {
         console.error('[supabase-config] fetchPartnerInvitations error:', error.message);
@@ -215,3 +247,55 @@ export async function fetchPartnerInvitations(partnerCode, passcode) {
     }
     return Array.isArray(data) ? data : [];
 }
+
+// ─── Multi-Category Helper Utilities ──────────────────────────────────────────
+
+/**
+ * Derives a human-readable title for any invitation or profile across categories.
+ * Fallback order: record.title -> customer_data.display_title ->
+ * Wedding couple names -> Birthday celebrant -> Business company name -> slug
+ * @param {Object} record - Invitation row
+ * @returns {string}
+ */
+export function resolveDisplayTitle(record = {}) {
+    if (record.title && String(record.title).trim()) {
+        return String(record.title).trim();
+    }
+    const customer = record.customer_data || {};
+    if (customer.display_title && String(customer.display_title).trim()) {
+        return String(customer.display_title).trim();
+    }
+    const couple = [customer.groom_name, customer.bride_name].filter(Boolean).join(' & ');
+    if (couple) return couple;
+    if (customer.celebrant_name) return `${customer.celebrant_name}${customer.turning_age ? ` (${customer.turning_age} နှစ်ပြည့် မွေးနေ့)` : ' ၏ မွေးနေ့'}`;
+    if (customer.company_name) return customer.company_name;
+    if (customer.donor_name) return `${customer.donor_name} အလှူတော်မင်္ဂလာ`;
+    return record.slug || 'အမည်မသတ်မှတ်ရသေးပါ';
+}
+
+/**
+ * Fetches invitations filtered by category (e.g. 'wedding', 'birthday', 'business').
+ * @param {string} category
+ * @param {number} [limit=100]
+ * @returns {Promise<Array>}
+ */
+export async function fetchInvitationsByCategory(category, limit = 100) {
+    const sb = await getSupabaseClient();
+    let query = sb
+        .from(TABLES.INVITATIONS)
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+    if (category && category !== 'all') {
+        query = query.eq('category', category);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+        console.error('[supabase-config] fetchInvitationsByCategory error:', error.message);
+        return [];
+    }
+    return data ?? [];
+}
+

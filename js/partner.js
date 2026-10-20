@@ -1,4 +1,4 @@
-import { authenticatePartner, fetchPartnerInvitations } from './supabase-config.js';
+import { authenticatePartner, fetchPartnerInvitations, resolveDisplayTitle } from './supabase-config.js';
 
 const SESSION_KEY = 'weddingPartnerSession';
 const $ = (selector) => document.querySelector(selector);
@@ -28,6 +28,7 @@ function safePartner(partner, passcode) {
     id: partner.id, 
     partner_code: partner.partner_code, 
     shop_name: partner.shop_name, 
+    email: partner.email || '',
     phone: partner.phone, 
     default_bonus: partner.default_bonus,
     passcode: passcode
@@ -39,7 +40,7 @@ async function loadPartnerDashboard(session) {
   statusEl.innerHTML = '<span>Referral စာရင်း ဖွင့်နေပါသည်…</span>';
   
   try {
-    const invitations = await fetchPartnerInvitations(session.partner_code, session.passcode);
+    const invitations = await fetchPartnerInvitations(session.email, session.partner_code, session.passcode);
     
     const paidList = invitations.filter(inv => inv.bonus_status === 'paid');
     const unpaidList = invitations.filter(inv => inv.bonus_status === 'unpaid');
@@ -56,13 +57,12 @@ async function loadPartnerDashboard(session) {
     $('#referral-count').textContent = `${invitations.length} ခု (စုစုပေါင်း Bonus: ${kyat(totalBonus)})`;
 
     $('#referral-list').innerHTML = invitations.length ? invitations.map(invitation => {
-      const customer = invitation.customer_data || {};
-      const couple = [customer.groom_name, customer.bride_name].filter(Boolean).join(' & ') || 'အမည်မသတ်မှတ်ရသေးပါ';
+      const title = resolveDisplayTitle(invitation);
       const linkHtml = invitation.is_active 
         ? `<a class="invitation-link" href="index.html?id=${encodeURIComponent(invitation.slug)}" target="_blank" rel="noopener">ဖွင့်ကြည့်ရန်</a>`
         : `<span style="color: #ffd0d0; font-size: 0.85rem;" title="Admin မှ ပိတ်ထားသည်">ပိတ်ထားသည်</span>`;
       return `<tr>
-        <td>${escapeHTML(couple)}</td>
+        <td><strong>${escapeHTML(title)}</strong></td>
         <td>${linkHtml}</td>
         <td>${escapeHTML(invitation.template_id)}</td>
         <td>${displayDate(invitation.created_at)}</td>
@@ -72,11 +72,10 @@ async function loadPartnerDashboard(session) {
     }).join('') : '<tr><td colspan="6" style="text-align: center; padding: 2rem;">Referral စာရင်း မရှိသေးပါ။</td></tr>';
 
     $('#paid-history').innerHTML = paidList.length ? paidList.map(invitation => {
-      const customer = invitation.customer_data || {};
-      const couple = [customer.groom_name, customer.bride_name].filter(Boolean).join(' & ') || invitation.slug;
+      const title = resolveDisplayTitle(invitation);
       return `<article class="paid-item">
         <div>
-          <strong>${escapeHTML(couple)}</strong>
+          <strong>${escapeHTML(title)}</strong>
           <p>${displayDate(invitation.created_at)}</p>
         </div>
         <strong>${kyat(invitation.bonus_amount)}</strong>
@@ -95,7 +94,7 @@ $('#partner-login-form').addEventListener('submit', async event => {
   $('#partner-login-error').hidden = true;
   const form = event.currentTarget;
   if (!form.checkValidity()) {
-    showLoginError('Partner code နှင့် passcode ကို ဖြည့်ပေးပါ။');
+    showLoginError('Email၊ Partner code နှင့် Password ကို အပြည့်အစုံ ဖြည့်ပေးပါ။');
     form.reportValidity();
     return;
   }
@@ -104,10 +103,11 @@ $('#partner-login-form').addEventListener('submit', async event => {
   submitButton.textContent = 'ဝင်ရောက်နေပါသည်…';
   try {
     const code = form.partner_code.value.trim().toUpperCase();
+    const email = form.email.value.trim().toLowerCase();
     const pass = form.passcode.value.trim();
-    const partner = await authenticatePartner(code, pass);
+    const partner = await authenticatePartner(email, code, pass);
     if (!partner) {
-      showLoginError('Partner code သို့မဟုတ် passcode မမှန်ပါ။ သေချာစစ်ဆေးပြီး ထပ်မံကြိုးစားပါ။');
+      showLoginError('Email၊ Partner code သို့မဟုတ် Password မမှန်ပါ။ သေချာစစ်ဆေးပြီး ထပ်မံကြိုးစားပါ။');
       return;
     }
     const session = safePartner(partner, pass);
@@ -127,6 +127,15 @@ $('#partner-logout-button').addEventListener('click', () => {
   setView(false); 
   $('#partner-login-form').reset(); 
 });
+
+// Auto-fill partner code from URL query parameter (e.g. ?code=SHOP-001)
+try {
+  const urlParams = new URLSearchParams(window.location.search);
+  const codeParam = urlParams.get('code');
+  if (codeParam && $('#login-partner-code')) {
+    $('#login-partner-code').value = codeParam.trim().toUpperCase();
+  }
+} catch (_) {}
 
 try { 
   const saved = sessionStorage.getItem(SESSION_KEY); 
