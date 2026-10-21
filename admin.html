@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/global.css?v=12">
-  <link rel="stylesheet" href="css/admin.css?v=12">
+  <link rel="stylesheet" href="css/global.css?v=13">
+  <link rel="stylesheet" href="css/admin.css?v=13">
 </head>
 <body class="admin-body">
   <main>
@@ -38,6 +38,7 @@
       <nav class="admin-tabs" aria-label="Dashboard menu">
         <button class="admin-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="invitations-panel" id="invitations-tab">ဖိတ်ကြားလွှာများ</button>
         <button class="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="partners-panel" id="partners-tab">Partners</button>
+        <button class="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="errors-panel" id="errors-tab">Error စီမံခန့်ခွဲမှု <span id="error-badge" class="error-badge" hidden>0</span></button>
       </nav>
 
       <section id="invitations-panel" class="admin-panel" role="tabpanel" aria-labelledby="invitations-tab">
@@ -55,6 +56,56 @@
         <div class="panel-heading"><div><h2>Partners</h2><p>Referral shop များနှင့် default bonus ကို စီမံပါ။</p></div><button id="new-partner-button" class="button button-primary" type="button">Partner အသစ်</button></div>
         <div id="partner-status" class="status-message" role="status" aria-live="polite"></div>
         <div class="table-wrap"><table><thead><tr><th>Shop</th><th>Code</th><th>Email</th><th>ဖုန်း</th><th>Default bonus</th><th>Login URL</th><th><span class="visually-hidden">လုပ်ဆောင်ချက်</span></th></tr></thead><tbody id="partner-list"></tbody></table></div>
+      </section>
+
+      <section id="errors-panel" class="admin-panel" role="tabpanel" aria-labelledby="errors-tab" hidden>
+        <div class="panel-heading">
+          <div>
+            <h2>Error စီမံခန့်ခွဲမှု (System Logs)</h2>
+            <p>စနစ်တစ်ခုလုံး၏ ချို့ယွင်းချက်များနှင့် API error များကို တိကျစွာ စောင့်ကြည့်ဖြေရှင်းပါ။</p>
+          </div>
+          <div class="panel-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button id="clear-resolved-errors-btn" class="button button-quiet" type="button" title="ဖြေရှင်းပြီးသား error များကို ဖျက်ထုတ်မည်">🧹 ရှင်းထုတ်မည်</button>
+            <button id="refresh-errors-btn" class="button button-quiet" type="button" title="Error စာရင်း ပြန်လည်ရယူမည်">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <!-- Filter & Stats Bar -->
+        <div class="error-filter-bar">
+          <div class="filter-group">
+            <button class="filter-pill is-active" data-error-filter="all" type="button">အားလုံး (<span id="count-all-errors">0</span>)</button>
+            <button class="filter-pill" data-error-filter="unresolved" type="button">မဖြေရှင်းရသေး (<span id="count-unresolved-errors">0</span>)</button>
+            <button class="filter-pill" data-error-filter="resolved" type="button">ဖြေရှင်းပြီး (<span id="count-resolved-errors">0</span>)</button>
+          </div>
+          <div class="filter-select-wrap">
+            <select id="error-severity-select" class="error-select" aria-label="Severity ရွေးချယ်မှု">
+              <option value="all">Severity အားလုံး</option>
+              <option value="critical">🔴 Critical</option>
+              <option value="error">🟠 Error</option>
+              <option value="warning">🟡 Warning</option>
+              <option value="info">🔵 Info</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="error-status" class="status-message" role="status" aria-live="polite"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Source</th>
+                <th>Error Message</th>
+                <th>Route / URL</th>
+                <th>အချိန် (Time)</th>
+                <th>အခြေအနေ</th>
+                <th>လုပ်ဆောင်ချက်</th>
+              </tr>
+            </thead>
+            <tbody id="error-list"></tbody>
+          </table>
+        </div>
       </section>
     </section>
   </main>
@@ -222,6 +273,57 @@
     </section>
   </div>
 
-  <script type="module" src="js/admin.js?v=12"></script>
+  <!-- Error Detail Inspector Modal -->
+  <div id="error-detail-modal" class="modal-backdrop" role="presentation" hidden>
+    <section class="invitation-modal error-inspector-modal" role="dialog" aria-modal="true" aria-labelledby="error-modal-title">
+      <div class="modal-heading">
+        <div>
+          <p class="admin-kicker">System Error Inspector</p>
+          <h2 id="error-modal-title">Error အသေးစိတ် အချက်အလက်</h2>
+        </div>
+        <button id="close-error-modal-btn" class="icon-button" type="button" aria-label="Modal ပိတ်မည်">×</button>
+      </div>
+
+      <div class="error-inspector-body">
+        <div class="error-meta-grid">
+          <div><span class="meta-label">Severity:</span> <span id="error-modal-severity" class="severity-badge">—</span></div>
+          <div><span class="meta-label">Source:</span> <span id="error-modal-source" class="source-tag">—</span></div>
+          <div><span class="meta-label">အခြေအနေ:</span> <span id="error-modal-status" class="status-tag">—</span></div>
+          <div><span class="meta-label">အချိန်:</span> <span id="error-modal-time">—</span></div>
+          <div class="meta-span-full"><span class="meta-label">URL / Route:</span> <code id="error-modal-url" class="code-pill">—</code></div>
+        </div>
+
+        <div class="error-section-block">
+          <label class="block-label">Error Message</label>
+          <div id="error-modal-message" class="error-message-box">—</div>
+        </div>
+
+        <div class="error-section-block">
+          <div class="block-header">
+            <label class="block-label">Stack Trace</label>
+            <button id="copy-stack-btn" type="button" class="copy-input-btn">📋 Copy Stack</button>
+          </div>
+          <pre id="error-modal-stack" class="error-stack-box">Stack trace မရှိပါ</pre>
+        </div>
+
+        <div class="error-section-block">
+          <label class="block-label">JSON Context / Details</label>
+          <pre id="error-modal-details" class="error-json-box">{}</pre>
+        </div>
+
+        <div class="error-section-block">
+          <label class="block-label">Device & User Agent</label>
+          <p id="error-modal-ua" class="error-ua-text">—</p>
+        </div>
+
+        <div class="error-modal-footer">
+          <button id="toggle-resolve-btn" type="button" class="button button-primary">✓ ဖြေရှင်းပြီးအဖြစ် မှတ်သားမည်</button>
+          <button id="close-error-modal-footer-btn" type="button" class="button button-quiet">ပိတ်မည်</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="js/admin.js?v=13"></script>
 </body>
 </html>

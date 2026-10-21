@@ -2,7 +2,8 @@ import {
   authenticatePartner,
   fetchPartnerInvitations,
   resolveDisplayTitle,
-  resolveInvitationUrl
+  resolveInvitationUrl,
+  reportSystemError
 } from './supabase-config.js';
 import {
   renderQrToCanvas,
@@ -141,7 +142,13 @@ async function loadPartnerDashboard(session) {
 
     statusEl.textContent = '';
   } catch (err) {
-    statusEl.innerHTML = `<span style="color: #ffd4db;">စာရင်းဖွင့်၍မရပါ — ${escapeHTML(err.message || 'Error')} </span> <button type="button" id="partner-retry-btn" class="invitation-link" style="margin-left: 0.5rem; background: none; border: none; cursor: pointer;">ပြန်လည်ကြိုးစားမည်</button>`;
+    reportSystemError({
+      severity: 'error',
+      source: 'partner',
+      message: `Partner Dashboard Load Failed: ${err.message}`,
+      details: { stack: err.stack, partnerCode: session?.partner_code, email: session?.email }
+    });
+    statusEl.innerHTML = `<span style="color: #ffd4db;">အချက်အလက်များ ခေတ္တရယူ၍မရသေးပါ — ခေတ္တစောင့်ဆိုင်းပြီး ပြန်လည်ကြိုးစားပေးပါ။ </span> <button type="button" id="partner-retry-btn" class="invitation-link" style="margin-left: 0.5rem; background: none; border: none; cursor: pointer;">ပြန်လည်ကြိုးစားမည်</button>`;
     $('#partner-retry-btn')?.addEventListener('click', () => loadPartnerDashboard(session));
   }
 }
@@ -172,7 +179,13 @@ $('#partner-login-form').addEventListener('submit', async event => {
     setView(true);
     await loadPartnerDashboard(session);
   } catch (err) {
-    showLoginError(`ချိတ်ဆက်မှု မအောင်မြင်ပါ — ${err.message || 'Error ဖြစ်ပေါ်နေပါသည်'}`);
+    reportSystemError({
+      severity: 'error',
+      source: 'partner',
+      message: `Partner Authentication Exception: ${err.message}`,
+      details: { stack: err.stack }
+    });
+    showLoginError('ဆာဗာချိတ်ဆက်မှု ခေတ္တအဆင်မပြေဖြစ်နေပါသည်။ ခေတ္တစောင့်ဆိုင်းပြီး ထပ်မံကြိုးစားပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည်။');
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = 'ဝင်ရောက်မည်';

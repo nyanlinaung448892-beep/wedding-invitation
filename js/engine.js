@@ -7,7 +7,7 @@
 // Digital Wedding & Event Invitation Platform
 // =============================================================================
 
-import { fetchInvitationBySlug, fetchLatestActiveInvitation, fetchWishesBySlug, submitGuestWish } from './supabase-config.js';
+import { fetchInvitationBySlug, fetchLatestActiveInvitation, fetchWishesBySlug, submitGuestWish, reportSystemError } from './supabase-config.js';
 import { saveToCalendar, getGoogleCalendarUrl, scheduleWeddingReminder } from './calendar.js';
 
 // ─── Default Invitation (In-Memory Fallback) ──────────────────────────────────
@@ -382,13 +382,13 @@ function loadTemplateCSS(templateId) {
 
 const ERROR_MESSAGES = {
   'not-found': {
-    title:   'ဖိတ်ကြားလွှာ မရှိတော့ပါ',
-    message: 'ဤ URL ကို ရှာမတွေ့ပါ သို့မဟုတ် ဖိတ်ကြားလွှာ ပိတ်ထားသည်။',
+    title:   'ဖိတ်ကြားလွှာ ရှာမတွေ့ပါ',
+    message: 'ဖိတ်ကြားလွှာ URL မှားယွင်းနေပါသည် သို့မဟုတ် ဖိတ်ကြားလွှာ ပိတ်ထားခြင်း ဖြစ်နိုင်ပါသည်။',
     canRetry: false,
   },
   'template-error': {
-    title:   'Template ဖွင့်၍ မရပါ',
-    message: 'ဖိတ်ကြားလွှာ ဖိုင် ပျောက်ဆုံးနေသည်။',
+    title:   'မင်္ဂလာဖိတ်ကြားလွှာ',
+    message: 'ဆာဗာချိတ်ဆက်မှု ခေတ္တအဆင်မပြေဖြစ်နေပါသည်။ ခေတ္တစောင့်ဆိုင်းပြီး ပြန်လည်ကြိုးစားပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည်။',
     canRetry: true,
   },
 };
@@ -580,6 +580,12 @@ async function initEngine() {
 
   } catch (err) {
     console.error('[engine.js] Unexpected error — attempting emergency fallback render:', err);
+    reportSystemError({
+      severity: 'error',
+      source: 'engine',
+      message: `Engine render failure (${rawSlug || 'default'}): ${err.message || 'Unknown error'}`,
+      details: { stack: err.stack, slug: rawSlug, url: window.location.href }
+    });
     try {
       const emergencyLayout = await fetch('templates/floral-pink/layout.html?v=10');
       if (emergencyLayout.ok) {

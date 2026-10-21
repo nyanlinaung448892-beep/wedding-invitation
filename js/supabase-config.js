@@ -27,6 +27,7 @@ export const TABLES = {
     INVITATIONS : 'invitations',
     PARTNERS    : 'partners',
     WISHES      : 'wishes',
+    ERROR_LOGS  : 'error_logs',
 };
 
 // ─── CDN-Independent Supabase Client (lazy loaded — Admin/Partner only) ───────
@@ -345,7 +346,13 @@ export async function authenticatePartner(arg1, arg2, arg3) {
 
     if (error) {
         console.warn('[supabase-config] authenticatePartner error:', error.message);
-        return null;
+        reportSystemError({
+            severity: 'error',
+            source: 'partner',
+            message: `Partner Login RPC Failed: ${error.message}`,
+            details: { code: error.code, details: error.details, partnerCode, email: email ? `${email.slice(0, 3)}***` : null }
+        });
+        throw new Error(error.message);
     }
     return data;
 }
@@ -385,7 +392,13 @@ export async function fetchPartnerInvitations(arg1, arg2, arg3) {
 
     if (error) {
         console.error('[supabase-config] fetchPartnerInvitations error:', error.message);
-        return [];
+        reportSystemError({
+            severity: 'error',
+            source: 'partner',
+            message: `Fetch Partner Invitations RPC Failed: ${error.message}`,
+            details: { code: error.code, details: error.details, partnerCode }
+        });
+        throw new Error(error.message);
     }
     return Array.isArray(data) ? data : [];
 }
@@ -564,6 +577,112 @@ export function resolveInvitationUrl(slug, customDomain = null) {
     const base = getBaseUrl(customDomain);
     return `${base}index.html?id=${encodeURIComponent(slug.trim())}`;
 }
+
+// ─── Centralized Error Management & Logging Engine (Phase 8) ──────────────────
+
+/**
+ * Asynchronously logs an error report to Supabase public.error_logs without blocking the UI.
+ * Pure native fetch (Zero-dependency, works seamlessly in Landing, Partner, Engine, Admin).
+ * Fail-safe: if Supabase is unreachable, logs to console and returns false without breaking caller flow.
+ * @param {Object} options
+ * @param {'info'|'warning'|'error'|'critical'} [options.severity='error']
+ * @param {'landing'|'partner'|'admin'|'engine'|'network'} [options.source='landing']
+ * @param {string} options.message
+ * @param {Object} [options.details={}]
+ * @param {string} [options.url]
+ * @returns {Promise<boolean>}
+ */
+export async function reportSystemError({ severity = 'error', source = 'landing', message, details = {}, url = null } = {}) {
+    try {
+        const payload = {
+            severity   : ['info', 'warning', 'error', 'critical'].includes(severity) ? severity : 'error',
+            source     : ['landing', 'partner', 'admin', 'engine', 'network'].includes(source) ? source : 'landing',
+            message    : String(message || 'Unknown system anomaly').slice(0, 2000),
+            details    : typeof details === 'object' && details !== null ? details : { raw: String(details) },
+            url        : String(url || (typeof window !== 'undefined' ? window.location.href : '')).slice(0, 1000),
+            user_agent : typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 500) : null,
+        };
+
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${TABLES.ERROR_LOGS}`, {
+            method : 'POST',
+            headers: {
+                'apikey'       : SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Content-Type' : 'application/json',
+                'Prefer'       : 'return=minimal',
+            },
+            body: JSON.stringify(payload)
+        });
+
+        return res.ok;
+    } catch (err) {
+        console.warn('[supabase-config] Failed to dispatch error log:', err?.message);
+        return false;
+    }
+}
+
+/**
+ * Fetches system error logs for Admin Dashboard.
+ * Protected by Supabase Auth (authenticated role).
+ * @param {Object} [options]
+ * @param {'all'|'unresolved'|'resolved'} [options.statusFilter='all']
+ * @param {string} [options.severityFilter='all']
+ * @param {number} [options.limit=100]
+ * @returns {Promise<Array>}
+ */
+export async function fetchSystemErrorLogs({ statusFilter = 'all', severityFilter = 'all', limit = 100 } = {}) {
+    const sb = await getSupabaseClient();
+    let query = sb.from(TABLES.ERROR_LOGS).select('*').order('created_at', { ascending: false }).limit(limit);
+
+    if (statusFilter === 'unresolved') {
+        query = query.eq('is_resolved', false);
+    } else if (statusFilter === 'resolved') {
+        query = query.eq('is_resolved', true);
+    }
+
+    if (severityFilter && severityFilter !== 'all') {
+        query = query.eq('severity', severityFilter);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+        console.error('[supabase-config] fetchSystemErrorLogs error:', error.message);
+        throw error;
+    }
+    return Array.isArray(data) ? data : [];
+}
+
+/**
+ * Updates an error log resolution status.
+ * @param {string} id
+ * @param {boolean} isResolved
+ * @returns {Promise<boolean>}
+ */
+export async function resolveSystemErrorLog(id, isResolved = true) {
+    if (!id) return false;
+    const sb = await getSupabaseClient();
+    const { error } = await sb.from(TABLES.ERROR_LOGS).update({ is_resolved: isResolved }).eq('id', id);
+    if (error) {
+        console.error('[supabase-config] resolveSystemErrorLog error:', error.message);
+        throw error;
+    }
+    return true;
+}
+
+/**
+ * Clears/deletes all resolved error logs.
+ * @returns {Promise<boolean>}
+ */
+export async function clearResolvedErrorLogs() {
+    const sb = await getSupabaseClient();
+    const { error } = await sb.from(TABLES.ERROR_LOGS).delete().eq('is_resolved', true);
+    if (error) {
+        console.error('[supabase-config] clearResolvedErrorLogs error:', error.message);
+        throw error;
+    }
+    return true;
+}
+
 
 
 

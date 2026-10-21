@@ -7,7 +7,10 @@ import {
   generatePartnerCode,
   isPartnerCodeAvailable,
   generateUniquePartnerCode,
-  resolveInvitationUrl
+  resolveInvitationUrl,
+  fetchSystemErrorLogs,
+  resolveSystemErrorLog,
+  clearResolvedErrorLogs
 } from './supabase-config.js';
 import {
   renderQrToCanvas,
@@ -16,7 +19,7 @@ import {
 
 const supabase = await getSupabaseClient();
 
-const state = { invitations: [], partners: [], templates: [] };
+const state = { invitations: [], partners: [], templates: [], errorLogs: [], errorFilter: 'all', severityFilter: 'all', currentErrorItem: null };
 const photoRemovals = { cover: false, couple: false };
 const $ = (selector) => document.querySelector(selector);
 const escapeHTML = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' })[char]);
@@ -603,23 +606,164 @@ function previewSelectedPhoto(inputId, previewId, removeBtnId, kind) {
   }); 
 }
 
+function displayDateWithTime(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat('en-GB', { dateStyle: 'short', timeStyle: 'medium' }).format(date);
+}
+
 function activateTab(tabName) { 
   const invitations = tabName === 'invitations'; 
+  const partners = tabName === 'partners';
+  const errors = tabName === 'errors';
+
   $('#invitations-tab').classList.toggle('is-active', invitations); 
   $('#invitations-tab').setAttribute('aria-selected', String(invitations)); 
   $('#invitations-panel').hidden = !invitations; 
-  $('#partners-tab').classList.toggle('is-active', !invitations); 
-  $('#partners-tab').setAttribute('aria-selected', String(!invitations)); 
-  $('#partners-panel').hidden = invitations; 
-}
+
+  $('#partners-tab').classList.toggle('is-active', partners); 
+  $('#partners-tab').setAttribute('aria-selected', String(partners)); 
+  $('#partners-panel').hidden = !partners; 
+
+  $('#errors-tab')?.classList.toggle('is-active', errors);
+  $('#errors-tab')?.setAttribute('aria-selected', String(errors));
+  $('#errors-panel').hidden = !errors;
+
+  if (errors) {
+    loadErrorLogs();
+  }
+} 
 
 async function initialiseDashboard() { 
   try { 
     await loadMetadata(); 
-    await Promise.all([loadInvitations(), refreshPartners()]); 
+    await Promise.all([loadInvitations(), refreshPartners(), loadErrorLogs()]); 
   } catch (error) { 
     setStatus('#invitation-status', `Dashboard data ဖွင့်၍မရပါ — ${error.message}`); 
   } 
+} 
+
+// ─── Error Management Functions (Phase 8) ────────────────────────────────────
+
+async function loadErrorLogs() {
+  setStatus('#error-status', 'Error logs များကို ရယူနေပါသည်…');
+  try {
+    const logs = await fetchSystemErrorLogs({ limit: 150 });
+    state.errorLogs = logs;
+    updateErrorStats();
+    renderErrorLogs();
+    setStatus('#error-status', '');
+  } catch (err) {
+    setStatus('#error-status', `Error logs ဖွင့်၍မရပါ — ${err.message}`);
+  }
+}
+
+function updateErrorStats() {
+  const allCount = state.errorLogs.length;
+  const unresolvedCount = state.errorLogs.filter(l => !l.is_resolved).length;
+  const resolvedCount = state.errorLogs.filter(l => l.is_resolved).length;
+
+  if ($('#count-all-errors')) $('#count-all-errors').textContent = allCount;
+  if ($('#count-unresolved-errors')) $('#count-unresolved-errors').textContent = unresolvedCount;
+  if ($('#count-resolved-errors')) $('#count-resolved-errors').textContent = resolvedCount;
+
+  const badge = $('#error-badge');
+  if (badge) {
+    if (unresolvedCount > 0) {
+      badge.textContent = unresolvedCount > 99 ? '99+' : unresolvedCount;
+      badge.hidden = false;
+    } else {
+      badge.hidden = true;
+    }
+  }
+}
+
+function renderErrorLogs() {
+  const container = $('#error-list');
+  if (!container) return;
+
+  let filtered = [...state.errorLogs];
+  if (state.errorFilter === 'unresolved') {
+    filtered = filtered.filter(item => !item.is_resolved);
+  } else if (state.errorFilter === 'resolved') {
+    filtered = filtered.filter(item => item.is_resolved);
+  }
+
+  if (state.severityFilter && state.severityFilter !== 'all') {
+    filtered = filtered.filter(item => item.severity === state.severityFilter);
+  }
+
+  if (!filtered.length) {
+    container.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--color-primary-light);">
+      ${state.errorLogs.length ? 'ရွေးချယ်ထားသော filter နှင့် ကိုက်ညီသည့် Error မရှိပါ။' : '🎉 ချို့ယွင်းချက် Error log များ မရှိပါ။ စနစ်ကောင်းမွန်စွာ လည်ပတ်နေပါသည်။'}
+    </td></tr>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(item => {
+    const sevIcon = item.severity === 'critical' ? '🔴' : item.severity === 'error' ? '🟠' : item.severity === 'warning' ? '🟡' : '🔵';
+    const cleanRoute = item.url ? item.url.replace(/^https?:\/\/[^/]+/i, '') : '—';
+    const timeStr = displayDateWithTime(item.created_at);
+
+    return `<tr>
+      <td><span class="severity-badge ${escapeHTML(item.severity)}">${sevIcon} ${escapeHTML(item.severity)}</span></td>
+      <td><span class="source-tag">${escapeHTML(item.source)}</span></td>
+      <td><div class="error-msg-cell" title="${escapeHTML(item.message)}">${escapeHTML(item.message)}</div></td>
+      <td><code class="code-pill">${escapeHTML(cleanRoute || '/')}</code></td>
+      <td style="font-size: 0.85rem; white-space: nowrap;">${escapeHTML(timeStr)}</td>
+      <td><span class="status-tag ${item.is_resolved ? 'resolved' : 'open'}">${item.is_resolved ? '✓ ဖြေရှင်းပြီး' : '🔴 Open'}</span></td>
+      <td style="white-space: nowrap;">
+        <button type="button" class="table-button" data-view-error="${escapeHTML(item.id)}">🔍 အသေးစိတ်</button>
+        <button type="button" class="table-button" data-toggle-error-id="${escapeHTML(item.id)}" style="color: ${item.is_resolved ? '#ffd0d0' : '#b9ffd1'}; margin-left: 0.35rem;">
+          ${item.is_resolved ? '↺ Reopen' : '✓ ဖြေရှင်းပြီး'}
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openErrorModal(errorItem) {
+  if (!errorItem) return;
+  state.currentErrorItem = errorItem;
+
+  const sevIcon = errorItem.severity === 'critical' ? '🔴' : errorItem.severity === 'error' ? '🟠' : errorItem.severity === 'warning' ? '🟡' : '🔵';
+  $('#error-modal-severity').className = `severity-badge ${errorItem.severity}`;
+  $('#error-modal-severity').textContent = `${sevIcon} ${errorItem.severity.toUpperCase()}`;
+  $('#error-modal-source').textContent = errorItem.source;
+  $('#error-modal-status').className = `status-tag ${errorItem.is_resolved ? 'resolved' : 'open'}`;
+  $('#error-modal-status').textContent = errorItem.is_resolved ? '✓ ဖြေရှင်းပြီး' : '🔴 Open (မဖြေရှင်းရသေး)';
+  $('#error-modal-time').textContent = displayDateWithTime(errorItem.created_at);
+  $('#error-modal-url').textContent = errorItem.url || '—';
+  $('#error-modal-message').textContent = errorItem.message;
+
+  const stack = errorItem.details?.stack || (typeof errorItem.details === 'string' ? errorItem.details : null);
+  $('#error-modal-stack').textContent = stack || 'Stack trace မရှိပါ';
+
+  const detailsObj = { ...errorItem.details };
+  delete detailsObj.stack;
+  $('#error-modal-details').textContent = Object.keys(detailsObj).length ? JSON.stringify(detailsObj, null, 2) : 'Context details မရှိပါ';
+
+  $('#error-modal-ua').textContent = errorItem.user_agent || 'User agent မရှိပါ';
+
+  const toggleBtn = $('#toggle-resolve-btn');
+  if (toggleBtn) {
+    toggleBtn.textContent = errorItem.is_resolved ? '↺ ပြန်လည်ဖွင့်မည် (Reopen)' : '✓ ဖြေရှင်းပြီးအဖြစ် မှတ်သားမည်';
+    toggleBtn.className = errorItem.is_resolved ? 'button button-quiet' : 'button button-primary';
+  }
+
+  const modal = $('#error-detail-modal');
+  modal.hidden = false;
+  modal.classList.add('is-open');
+}
+
+function closeErrorModal() {
+  const modal = $('#error-detail-modal');
+  if (modal) {
+    modal.classList.remove('is-open');
+    modal.hidden = true;
+  }
+  state.currentErrorItem = null;
 }
 
 // ─── Auto-Slug Generator ──────────────────────────────────────────────────────
@@ -697,6 +841,7 @@ $('#logout-button').addEventListener('click', async () => {
 
 $('#invitations-tab').addEventListener('click', () => activateTab('invitations')); 
 $('#partners-tab').addEventListener('click', () => activateTab('partners'));
+$('#errors-tab')?.addEventListener('click', () => activateTab('errors'));
 $('#new-invitation-button').addEventListener('click', () => openInvitationModal()); 
 $('#close-modal-button').addEventListener('click', closeInvitationModal); 
 $('#cancel-modal-button').addEventListener('click', closeInvitationModal); 
@@ -772,6 +917,7 @@ document.addEventListener('keydown', event => {
     closeInvitationModal(); 
     closePartnerModal(); 
     closeQrModal();
+    closeErrorModal();
   } 
 });
 
@@ -903,6 +1049,106 @@ $('#partner-list').addEventListener('click', event => {
   if (button.dataset.partnerAction === 'delete') deletePartner(button.dataset.id); 
 });
 
+// ─── Error Management Event Listeners (Phase 8) ──────────────────────────────
+
+// Filter pills
+document.querySelectorAll('[data-error-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-error-filter]').forEach(b => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    state.errorFilter = btn.dataset.errorFilter;
+    renderErrorLogs();
+  });
+});
+
+// Severity filter select
+$('#error-severity-select')?.addEventListener('change', event => {
+  state.severityFilter = event.target.value;
+  renderErrorLogs();
+});
+
+// Refresh button
+$('#refresh-errors-btn')?.addEventListener('click', loadErrorLogs);
+
+// Clear resolved button
+$('#clear-resolved-errors-btn')?.addEventListener('click', async () => {
+  const resolvedCount = state.errorLogs.filter(l => l.is_resolved).length;
+  if (!resolvedCount) {
+    alert('ရှင်းထုတ်ရန် ဖြေရှင်းပြီးသား error မရှိသေးပါ။');
+    return;
+  }
+  if (!confirm(`ဖြေရှင်းပြီးသား Error log (${resolvedCount}) ခုကို အပြီးဖျက်ထုတ်မည်မှာ သေချာပါသလား?`)) return;
+  try {
+    setStatus('#error-status', 'ရှင်းလင်းနေပါသည်…');
+    await clearResolvedErrorLogs();
+    await loadErrorLogs();
+    setStatus('#error-status', 'ဖြေရှင်းပြီးသား Error log များကို ရှင်းထုတ်ပြီးပါပြီ။');
+  } catch (err) {
+    setStatus('#error-status', `ရှင်းထုတ်၍မရပါ — ${err.message}`);
+  }
+});
+
+// Error list delegation
+$('#error-list')?.addEventListener('click', async event => {
+  const viewBtn = event.target.closest('[data-view-error]');
+  if (viewBtn) {
+    const errorItem = state.errorLogs.find(l => l.id === viewBtn.dataset.viewError);
+    if (errorItem) openErrorModal(errorItem);
+    return;
+  }
+  const toggleBtn = event.target.closest('[data-toggle-error-id]');
+  if (toggleBtn) {
+    const errorItem = state.errorLogs.find(l => l.id === toggleBtn.dataset.toggleErrorId);
+    if (!errorItem) return;
+    try {
+      toggleBtn.disabled = true;
+      await resolveSystemErrorLog(errorItem.id, !errorItem.is_resolved);
+      await loadErrorLogs();
+    } catch (err) {
+      alert(`အခြေအနေ ပြောင်း၍မရပါ — ${err.message}`);
+    }
+  }
+});
+
+// Error modal controls
+$('#close-error-modal-btn')?.addEventListener('click', closeErrorModal);
+$('#close-error-modal-footer-btn')?.addEventListener('click', closeErrorModal);
+$('#error-detail-modal')?.addEventListener('click', event => {
+  if (event.target === event.currentTarget) closeErrorModal();
+});
+
+$('#toggle-resolve-btn')?.addEventListener('click', async () => {
+  if (!state.currentErrorItem) return;
+  const item = state.currentErrorItem;
+  const newStatus = !item.is_resolved;
+  try {
+    $('#toggle-resolve-btn').disabled = true;
+    await resolveSystemErrorLog(item.id, newStatus);
+    await loadErrorLogs();
+    const updated = state.errorLogs.find(l => l.id === item.id);
+    if (updated) openErrorModal(updated);
+  } catch (err) {
+    alert(`အခြေအနေ ပြောင်း၍မရပါ — ${err.message}`);
+  } finally {
+    $('#toggle-resolve-btn').disabled = false;
+  }
+});
+
+$('#copy-stack-btn')?.addEventListener('click', async () => {
+  const stackText = $('#error-modal-stack')?.textContent || '';
+  if (!stackText) return;
+  const btn = $('#copy-stack-btn');
+  const success = await copyToClipboard(stackText, btn);
+  if (success) {
+    btn.classList.add('is-copied');
+    btn.innerHTML = '✓ Copied!';
+    setTimeout(() => {
+      btn.classList.remove('is-copied');
+      btn.innerHTML = '📋 Copy Stack';
+    }, 1800);
+  }
+});
+
 // Copy link button handler for both invitations and partners
 document.addEventListener('click', async event => {
   const copyBtn = event.target.closest('[data-copy-link]');
@@ -931,3 +1177,4 @@ supabase.auth.getSession().then(({ data: { session } }) => {
   setView(Boolean(session)); 
   if (session) initialiseDashboard(); 
 });
+
