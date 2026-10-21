@@ -26,6 +26,7 @@ export const STORAGE_BUCKET = 'wedding-media';
 export const TABLES = {
     INVITATIONS : 'invitations',
     PARTNERS    : 'partners',
+    WISHES      : 'wishes',
 };
 
 // ─── CDN-Independent Supabase Client (lazy loaded — Admin/Partner only) ───────
@@ -127,6 +128,147 @@ export async function fetchInvitationBySlug(slug, timeoutMs = 5000) {
     } catch (err) {
         console.warn('[supabase-config] Direct REST fetch failed or timed out:', err.message);
         return null;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+/**
+ * Fetches the most recently created active invitation using native fetch().
+ * Used when user enters root landing page without slug parameter.
+ * @param {number} timeoutMs
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchLatestActiveInvitation(timeoutMs = 5000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        const url = `${SUPABASE_URL}/rest/v1/${TABLES.INVITATIONS}` +
+                    `?select=*&is_active=eq.true&order=created_at.desc&limit=1`;
+
+        const res = await fetch(url, {
+            method : 'GET',
+            headers: {
+                'apikey'       : SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Accept'       : 'application/json',
+            },
+            signal: controller.signal,
+        });
+
+        if (!res.ok) {
+            throw new Error(`Supabase HTTP ${res.status}`);
+        }
+
+        const rows = await res.json();
+        return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+
+    } catch (err) {
+        console.warn('[supabase-config] fetchLatestActiveInvitation failed or timed out:', err.message);
+        return null;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+// ─── Guest Wishes Helpers (Native fetch — Zero-Downtime CDN Safe) ─────────────
+
+/**
+ * Fetches all approved/recent guest wishes for a given invitation slug from Supabase.
+ * @param {string} slug
+ * @param {number} [limit=50]
+ * @returns {Promise<Array>}
+ */
+export async function fetchWishesBySlug(slug, limit = 50) {
+    if (!slug) return [];
+    const cleanSlug = String(slug).trim().toLowerCase();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+
+    try {
+        const url = `${SUPABASE_URL}/rest/v1/${TABLES.WISHES}` +
+                    `?select=id,invitation_slug,name,message,created_at` +
+                    `&invitation_slug=eq.${encodeURIComponent(cleanSlug)}` +
+                    `&order=created_at.desc&limit=${limit}`;
+
+        const res = await fetch(url, {
+            method : 'GET',
+            headers: {
+                'apikey'       : SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Accept'       : 'application/json',
+            },
+            signal: controller.signal,
+        });
+
+        if (!res.ok) {
+            return [];
+        }
+
+        const rows = await res.json();
+        return Array.isArray(rows) ? rows : [];
+
+    } catch (err) {
+        console.warn('[supabase-config] fetchWishesBySlug failed or timed out:', err.message);
+        return [];
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+/**
+ * Submits a new guest blessing/wish to Supabase.
+ * @param {Object} param0
+ * @param {string} param0.slug
+ * @param {string} param0.name
+ * @param {string} param0.message
+ * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+ */
+export async function submitGuestWish({ slug, name, message }) {
+    if (!slug || !name || !message) {
+        return { success: false, error: 'အမည်နှင့် ဆုမွန်ကောင်းစာသား ဖြည့်စွက်ပေးပါ။' };
+    }
+
+    const cleanSlug = String(slug).trim().toLowerCase();
+    const cleanName = String(name).trim();
+    const cleanMsg  = String(message).trim();
+
+    const payload = {
+        invitation_slug: cleanSlug,
+        name           : cleanName,
+        message        : cleanMsg
+    };
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 6000);
+
+    try {
+        const url = `${SUPABASE_URL}/rest/v1/${TABLES.WISHES}`;
+        const res = await fetch(url, {
+            method : 'POST',
+            headers: {
+                'apikey'       : SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Content-Type' : 'application/json',
+                'Prefer'       : 'return=representation'
+            },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.message || `HTTP ${res.status}`);
+        }
+
+        const rows = await res.json();
+        const createdWish = Array.isArray(rows) && rows.length > 0 ? rows[0] : payload;
+        return { success: true, data: createdWish };
+
+    } catch (err) {
+        console.warn('[supabase-config] submitGuestWish error:', err.message);
+        return { success: false, error: err.message };
     } finally {
         clearTimeout(timer);
     }

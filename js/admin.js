@@ -196,8 +196,8 @@ function openInvitationModal(invitation = null) {
     customerFields.forEach(key => { 
       if (form.elements[key]) form.elements[key].value = customer[key] || ''; 
     });
-    form.elements.title.value = invitation.title || resolveDisplayTitle(invitation);
-    form.elements.category.value = invitation.category || 'wedding';
+    form.elements.title.value = invitation.title || customer.display_title || resolveDisplayTitle(invitation);
+    form.elements.category.value = invitation.category || customer.category || 'wedding';
     updateCategoryFieldVisibility(form.elements.category.value);
 
     form.elements.slug.value = invitation.slug;
@@ -363,12 +363,11 @@ async function saveInvitation(event) {
     const title = String(formData.get('title') || '').trim() || resolveDisplayTitle({ customer_data: customerData });
     const category = String(formData.get('category') || 'wedding').trim();
     customerData.display_title = title;
+    customerData.category = category;
 
     const record = { 
       slug, 
       template_id: formData.get('template_id'), 
-      category,
-      title,
       customer_data: customerData, 
       partner_code: formData.get('partner_code') || null, 
       bonus_amount: Number(formData.get('bonus_amount') || 0), 
@@ -381,6 +380,9 @@ async function saveInvitation(event) {
 
     closeInvitationModal(); 
     await loadInvitations(); 
+    try {
+      localStorage.removeItem(`wedding_inv_cache_${slug}`);
+    } catch (_) {}
     setStatus('#invitation-status', id ? 'ဖိတ်စာကို ပြင်ဆင်ပြီးပါပြီ။' : 'ဖိတ်စာအသစ် ဖန်တီးပြီးပါပြီ။');
   } catch (error) { 
     showAlert('#form-error-summary', error.code === '23505' ? 'ဤ Slug ကို အသုံးပြုထားပြီးဖြစ်သည်။' : error.message || 'သိမ်း၍မရပါ။'); 

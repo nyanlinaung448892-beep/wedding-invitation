@@ -7,29 +7,29 @@
 // Digital Wedding & Event Invitation Platform
 // =============================================================================
 
-import { fetchInvitationBySlug } from './supabase-config.js';
+import { fetchInvitationBySlug, fetchLatestActiveInvitation, fetchWishesBySlug, submitGuestWish } from './supabase-config.js';
 import { saveToCalendar, getGoogleCalendarUrl, scheduleWeddingReminder } from './calendar.js';
 
 // ─── Default Invitation (In-Memory Fallback) ──────────────────────────────────
 const DEFAULT_INVITATION = {
-  slug        : 'default',
+  slug        : 'heinthu-aung-pan-ei-phyu-2026',
   template_id : 'floral-pink',
   is_active   : true,
   _isFallbackDefault: true,
   customer_data: {
     groom_name      : 'ဟိန်းသူအောင်',
     bride_name      : 'ပန်းအိဖြူ',
-    groom_name_en   : '',
-    bride_name_en   : '',
+    groom_name_en   : 'Hein Thu Aung',
+    bride_name_en   : 'Pann Ei Phyu',
     wedding_date    : '2026-09-13',
     wedding_day     : 'တနင်္ဂနွေနေ့',
     wedding_time    : 'နံနက် ၉:၃၀ နာရီ မှ နေ့လယ် ၁၂:၃၀ နာရီ ထိ',
     venue_name      : 'ဟုတ်ဝမ်မင်္ဂလာခန်းမ',
     venue_address   : 'ကန်လမ်း၊ တောင်ငူမြို့။',
-    map_url         : '',
-    rsvp_phone      : '',
-    cover_photo_url : 'assets/images/wedding-memory-default.jpg',
-    couple_photo_url: 'assets/images/couple-portrait-default.jpg',
+    map_url         : 'https://maps.app.goo.gl/9F1rMzPbByDxeGmh9',
+    rsvp_phone      : '09950351292',
+    cover_photo_url : 'https://kweylhqnzqnxnopqwrhj.supabase.co/storage/v1/object/public/wedding-media/invitations/heinthu-aung-pan-ei-phyu-2026/cover-1792470392282.webp',
+    couple_photo_url: 'https://kweylhqnzqnxnopqwrhj.supabase.co/storage/v1/object/public/wedding-media/invitations/heinthu-aung-pan-ei-phyu-2026/couple-1792470392372.webp',
     message         : '',
   },
 };
@@ -40,7 +40,7 @@ let _fallbackJSON = null;
 async function loadFallbackJSON() {
   if (_fallbackJSON) return _fallbackJSON;
   try {
-    const res = await fetch('data/fallback-invitations.json?v=7', { cache: 'no-store' });
+    const res = await fetch('data/fallback-invitations.json?v=10', { cache: 'no-store' });
     if (res.ok) {
       _fallbackJSON = await res.json();
     }
@@ -55,7 +55,8 @@ async function loadFallbackJSON() {
  * Resolves invitation data using a 5-tier fallback chain.
  * NEVER throws — always returns an invitation object.
  *
- * Tier 0 — Direct entry (no slug): return fallback default immediately
+ * Tier 0 — Direct entry (no slug): dynamically fetch latest active invitation from Supabase,
+ *          then fall back to fallback JSON / DEFAULT_INVITATION
  * Tier 1 — Supabase live fetch
  * Tier 2 — localStorage cache (Stale-while-revalidate for 0ms load)
  * Tier 3 — Static fallback-invitations.json
@@ -67,7 +68,13 @@ async function loadFallbackJSON() {
  */
 async function resolveInvitationData(slug, onLiveUpdate = null) {
   if (!slug) {
-    console.info('[engine.js] No slug in URL — loading default invitation.');
+    console.info('[engine.js] No slug in URL — fetching latest active invitation from Supabase.');
+    try {
+      const latest = await fetchLatestActiveInvitation(4000);
+      if (latest && latest.customer_data) {
+        return latest;
+      }
+    } catch (_) {}
     const fb = await loadFallbackJSON();
     if (fb?.default) return fb.default;
     return DEFAULT_INVITATION;
@@ -306,7 +313,11 @@ function bindData(root, data) {
     const value = data[key];
 
     if (value && String(value).trim() !== '' && String(value).trim() !== 'tel:') {
-      el.href = value;
+      let cleanHref = String(value).trim();
+      if ((key === 'map_url' || key === 'website_url') && !/^https?:\/\//i.test(cleanHref)) {
+        cleanHref = `https://${cleanHref}`;
+      }
+      el.href = cleanHref;
       el.style.display = '';
     } else {
       el.style.display = 'none';
@@ -355,7 +366,7 @@ function loadTemplateCSS(templateId) {
     const link = document.createElement('link');
     link.id   = 'template-style';
     link.rel  = 'stylesheet';
-    link.href = `templates/${templateId}/style.css?v=8`;
+    link.href = `templates/${templateId}/style.css?v=10`;
 
     link.onload  = () => resolve();
     link.onerror = () => {
@@ -445,6 +456,24 @@ function enrichCustomerData(raw = {}) {
     data.rsvp_phone_href = cleanPhone ? `tel:${cleanPhone}` : '';
   }
 
+  if (data.map_url) {
+    const rawMap = String(data.map_url).trim();
+    if (rawMap && !/^https?:\/\//i.test(rawMap)) {
+      data.map_url = `https://${rawMap}`;
+    } else {
+      data.map_url = rawMap;
+    }
+  }
+
+  if (data.website_url) {
+    const rawWeb = String(data.website_url).trim();
+    if (rawWeb && !/^https?:\/\//i.test(rawWeb)) {
+      data.website_url = `https://${rawWeb}`;
+    } else {
+      data.website_url = rawWeb;
+    }
+  }
+
   data.couple_names = [data.groom_name, data.bride_name].filter(Boolean).join(' & ');
   return data;
 }
@@ -462,6 +491,10 @@ const sharedHelpers = {
     saveToCalendar,
     getGoogleCalendarUrl,
     scheduleWeddingReminder
+  },
+  wishes: {
+    fetchWishesBySlug,
+    submitGuestWish
   },
   loadAndCachePhoto
 };
@@ -495,7 +528,7 @@ async function initEngine() {
 
     // Step 4 & 5: Parallel fetch layout HTML fragment & load template CSS
     const [layoutHTML] = await Promise.all([
-      fetch(`templates/${templateId}/layout.html?v=8`).then(res => {
+      fetch(`templates/${templateId}/layout.html?v=10`).then(res => {
         if (!res.ok) throw new Error(`Failed to fetch templates/${templateId}/layout.html`);
         return res.text();
       }),
@@ -525,7 +558,7 @@ async function initEngine() {
 
     // Step 11: Decoupled Plugin Execution — Dynamically mount template's script.js if present
     try {
-      const templateScriptUrl = `../templates/${templateId}/script.js?v=8`;
+      const templateScriptUrl = `../templates/${templateId}/script.js?v=10`;
       const templateModule = await import(templateScriptUrl);
 
       if (templateModule && typeof templateModule.init === 'function') {
@@ -548,7 +581,7 @@ async function initEngine() {
   } catch (err) {
     console.error('[engine.js] Unexpected error — attempting emergency fallback render:', err);
     try {
-      const emergencyLayout = await fetch('templates/floral-pink/layout.html?v=7');
+      const emergencyLayout = await fetch('templates/floral-pink/layout.html?v=10');
       if (emergencyLayout.ok) {
         const container = document.getElementById('template-container');
         container.innerHTML = await emergencyLayout.text();
@@ -561,7 +594,7 @@ async function initEngine() {
         initScrollAnimations();
 
         try {
-          const emergencyModule = await import('../templates/floral-pink/script.js?v=7');
+          const emergencyModule = await import('../templates/floral-pink/script.js?v=10');
           if (emergencyModule && typeof emergencyModule.init === 'function') {
             emergencyModule.init({
               container,

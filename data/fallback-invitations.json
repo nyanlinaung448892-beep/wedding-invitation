@@ -1,26 +1,47 @@
 {
   "default": {
-    "slug": "default",
+    "slug": "heinthu-aung-pan-ei-phyu-2026",
     "template_id": "floral-pink",
     "is_active": true,
     "customer_data": {
       "groom_name": "ဟိန်းသူအောင်",
       "bride_name": "ပန်းအိဖြူ",
-      "groom_name_en": "",
-      "bride_name_en": "",
+      "groom_name_en": "Hein Thu Aung",
+      "bride_name_en": "Pann Ei Phyu",
       "wedding_date": "2026-09-13",
       "wedding_day": "တနင်္ဂနွေနေ့",
       "wedding_time": "နံနက် ၉:၃၀ နာရီ မှ နေ့လယ် ၁၂:၃၀ နာရီ ထိ",
       "venue_name": "ဟုတ်ဝမ်မင်္ဂလာခန်းမ",
       "venue_address": "ကန်လမ်း၊ တောင်ငူမြို့။",
-      "map_url": "",
-      "rsvp_phone": "",
-      "cover_photo_url": "assets/images/wedding-memory-default.jpg",
-      "couple_photo_url": "assets/images/couple-portrait-default.jpg",
+      "map_url": "https://maps.app.goo.gl/9F1rMzPbByDxeGmh9",
+      "rsvp_phone": "09950351292",
+      "cover_photo_url": "https://kweylhqnzqnxnopqwrhj.supabase.co/storage/v1/object/public/wedding-media/invitations/heinthu-aung-pan-ei-phyu-2026/cover-1792470392282.webp",
+      "couple_photo_url": "https://kweylhqnzqnxnopqwrhj.supabase.co/storage/v1/object/public/wedding-media/invitations/heinthu-aung-pan-ei-phyu-2026/couple-1792470392372.webp",
       "message": ""
     }
   },
   "invitations": {
+    "heinthu-aung-pan-ei-phyu-2026": {
+      "slug": "heinthu-aung-pan-ei-phyu-2026",
+      "template_id": "floral-pink",
+      "is_active": true,
+      "customer_data": {
+        "groom_name": "ဟိန်းသူအောင်",
+        "bride_name": "ပန်းအိဖြူ",
+        "groom_name_en": "Hein Thu Aung",
+        "bride_name_en": "Pann Ei Phyu",
+        "wedding_date": "2026-09-13",
+        "wedding_day": "တနင်္ဂနွေနေ့",
+        "wedding_time": "နံနက် ၉:၃၀ နာရီ မှ နေ့လယ် ၁၂:၃၀ နာရီ ထိ",
+        "venue_name": "ဟုတ်ဝမ်မင်္ဂလာခန်းမ",
+        "venue_address": "ကန်လမ်း၊ တောင်ငူမြို့။",
+        "map_url": "https://maps.app.goo.gl/9F1rMzPbByDxeGmh9",
+        "rsvp_phone": "09950351292",
+        "cover_photo_url": "https://kweylhqnzqnxnopqwrhj.supabase.co/storage/v1/object/public/wedding-media/invitations/heinthu-aung-pan-ei-phyu-2026/cover-1792470392282.webp",
+        "couple_photo_url": "https://kweylhqnzqnxnopqwrhj.supabase.co/storage/v1/object/public/wedding-media/invitations/heinthu-aung-pan-ei-phyu-2026/couple-1792470392372.webp",
+        "message": ""
+      }
+    },
     "ko-zaw-ma-aye-2025": {
       "slug": "ko-zaw-ma-aye-2025",
       "template_id": "floral-pink",

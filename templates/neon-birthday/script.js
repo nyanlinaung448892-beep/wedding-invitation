@@ -162,27 +162,33 @@ export function init({ container, data, helpers, slug }) {
   const nameInput = container.querySelector('#guest-name-input');
   const msgInput = container.querySelector('#guest-message-input');
 
-  const defaultWishes = [
-    { name: 'ညီမလေး သီတာ', message: 'မွေးနေ့မှာ ပျော်ရွှင်ချမ်းမြေ့ပြီး လိုအင်ဆန္ဒမှန်သမျှ ပြည့်စုံပါစေ ကိုကြီးရေ! 🎉', time: 'မကြာသေးမီက' },
-    { name: 'အောင်သူ (Friend)', message: 'Happy 18th Birthday bro! အောင်မြင်သော ဘဝခရီးလမ်းကို လျှောက်လှမ်းနိုင်ပါစေ။', time: 'မကြာသေးမီက' }
-  ];
-
   let wishes = [];
   try {
     const raw = localStorage.getItem(wishesKey);
-    wishes = raw ? JSON.parse(raw) : defaultWishes;
+    wishes = raw ? JSON.parse(raw) : [];
   } catch (_) {
-    wishes = defaultWishes;
+    wishes = [];
   }
 
   const renderWishes = () => {
     if (!wishListEl) return;
     const esc = (t = '') => String(t).replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' })[c]);
+
+    if (!wishes || wishes.length === 0) {
+      wishListEl.innerHTML = `
+        <div style="text-align: center; padding: 1.2rem 1rem; color: #a1a1aa; font-size: 0.9rem;">
+          <span style="font-size: 1.6rem; display: block; margin-bottom: 0.3rem;">🎉</span>
+          <p style="margin: 0;">မွေးနေ့ဆုမွန်ကောင်း ဦးဆုံး ပေးပို့လိုက်ပါ!</p>
+        </div>
+      `;
+      return;
+    }
+
     wishListEl.innerHTML = wishes.map(w => `
       <div class="wish-bubble">
         <div class="wish-author">
           <span>🎈 ${esc(w.name)}</span>
-          <span style="opacity:0.7; font-weight:normal;">${esc(w.time)}</span>
+          <span style="opacity:0.7; font-weight:normal;">${esc(w.time || 'အခုလေးတင်')}</span>
         </div>
         <p class="wish-message-text">${esc(w.message)}</p>
       </div>
@@ -191,13 +197,34 @@ export function init({ container, data, helpers, slug }) {
 
   renderWishes();
 
-  wishForm?.addEventListener('submit', (e) => {
+  if (helpers?.wishes?.fetchWishesBySlug) {
+    helpers.wishes.fetchWishesBySlug(slug).then(remoteWishes => {
+      if (Array.isArray(remoteWishes)) {
+        wishes = remoteWishes;
+        try {
+          localStorage.setItem(wishesKey, JSON.stringify(wishes.slice(0, 50)));
+        } catch (_) {}
+        renderWishes();
+      }
+    }).catch(() => {});
+  }
+
+  wishForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = nameInput?.value.trim();
     const message = msgInput?.value.trim();
     if (!name || !message) return;
 
-    wishes.unshift({ name, message, time: 'အခုလေးတင်' });
+    const newWish = { name, message, time: 'အခုလေးတင်', created_at: new Date().toISOString() };
+
+    if (helpers?.wishes?.submitGuestWish) {
+      try {
+        const res = await helpers.wishes.submitGuestWish({ slug, name, message });
+        if (res?.data?.id) newWish.id = res.data.id;
+      } catch (_) {}
+    }
+
+    wishes.unshift(newWish);
     try {
       localStorage.setItem(wishesKey, JSON.stringify(wishes.slice(0, 40)));
     } catch (_) {}

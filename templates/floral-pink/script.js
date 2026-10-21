@@ -251,12 +251,13 @@ export function init({ container, data, helpers, slug }) {
     });
   }
 
-  // 5. Guest Wishes
+  // 5. Guest Wishes (Live Supabase Sync & Persistence)
   const wishesKey = `pink_wishes_${slug || 'default'}`;
   const wishForm = container.querySelector('#pink-guest-wish-form');
   const wishListEl = container.querySelector('#pink-wishes-list');
   const nameInput = container.querySelector('#guest-name-input');
   const msgInput = container.querySelector('#guest-message-input');
+  const submitBtn = container.querySelector('#btn-submit-wish');
 
   const formatWishDate = (val) => {
     if (!val) return 'အခုလေးတင်';
@@ -268,22 +269,28 @@ export function init({ container, data, helpers, slug }) {
     return `${day} ${month} ${year}`;
   };
 
-  const defaultWishes = [
-    { name: 'ကိုအောင်သူ & မစန္ဒာ', message: 'သတို့သားနှင့် သတို့သမီးတို့ ဘဝတစ်သက်တာ လက်တွဲမြဲပြီး ချစ်ခြင်းမေတ္တာ အပြည့်ဖြင့် ပျော်ရွှင်ချမ်းမြေ့ပါစေခင်ဗျာ။', date: '၁၈ အောက်တိုဘာ ၂၀၂၆', time: '၁၈ အောက်တိုဘာ ၂၀၂၆' },
-    { name: 'မသီတာ (Sedona)', message: 'မင်္ဂလာပါရှင်။ ချစ်စဖွယ် အိမ်ထောင်ရှင်ဘဝကို သာယာအေးချမ်းစွာ တည်ဆောက်နိုင်ပါစေရှင်။ ရာသက်ပန် ပျော်ရွှင်ပါစေ။', date: '၁၉ အောက်တိုဘာ ၂၀၂၆', time: '၁၉ အောက်တိုဘာ ၂၀၂၆' }
-  ];
-
   let wishes = [];
   try {
     const raw = localStorage.getItem(wishesKey);
-    wishes = raw ? JSON.parse(raw) : defaultWishes;
+    wishes = raw ? JSON.parse(raw) : [];
   } catch (_) {
-    wishes = defaultWishes;
+    wishes = [];
   }
 
   const renderWishes = () => {
     if (!wishListEl) return;
     const esc = (t = '') => String(t).replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' })[c]);
+
+    if (!wishes || wishes.length === 0) {
+      wishListEl.innerHTML = `
+        <div class="wish-empty-state" style="text-align: center; padding: 1.5rem 1rem; color: var(--pink-text-muted, #8b6b7a); font-size: 0.95rem;">
+          <span style="font-size: 1.8rem; display: block; margin-bottom: 0.4rem;">💌</span>
+          <p style="margin: 0;">မင်္ဂလာဆုမွန်ကောင်း ဦးဆုံး ပေးပို့လိုက်ပါ 💕</p>
+        </div>
+      `;
+      return;
+    }
+
     wishListEl.innerHTML = wishes.map(w => {
       let displayTime = w.date || w.time;
       if (!displayTime || displayTime === 'မကြာသေးမီက' || displayTime === 'အခုလေးတင်') {
@@ -303,7 +310,22 @@ export function init({ container, data, helpers, slug }) {
 
   renderWishes();
 
-  wishForm?.addEventListener('submit', (e) => {
+  // Load live stored wishes from Supabase
+  if (helpers?.wishes?.fetchWishesBySlug) {
+    helpers.wishes.fetchWishesBySlug(slug).then(remoteWishes => {
+      if (Array.isArray(remoteWishes)) {
+        wishes = remoteWishes;
+        try {
+          localStorage.setItem(wishesKey, JSON.stringify(wishes.slice(0, 50)));
+        } catch (_) {}
+        renderWishes();
+      }
+    }).catch(err => {
+      console.warn('[floral-pink] Fetch wishes notice:', err);
+    });
+  }
+
+  wishForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = nameInput?.value.trim();
     const message = msgInput?.value.trim();
@@ -313,9 +335,34 @@ export function init({ container, data, helpers, slug }) {
       return;
     }
 
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>ပေးပို့နေပါသည်… ⏳</span>';
+    }
+
     const now = new Date();
     const formattedDate = formatWishDate(now);
-    wishes.unshift({ name, message, date: formattedDate, time: formattedDate, created_at: now.toISOString() });
+    const newWish = { 
+      name, 
+      message, 
+      date: formattedDate, 
+      time: formattedDate, 
+      created_at: now.toISOString() 
+    };
+
+    // Save to Supabase
+    if (helpers?.wishes?.submitGuestWish) {
+      try {
+        const result = await helpers.wishes.submitGuestWish({ slug, name, message });
+        if (result?.data?.id) {
+          newWish.id = result.data.id;
+        }
+      } catch (err) {
+        console.warn('[floral-pink] Save wish to Supabase warning:', err);
+      }
+    }
+
+    wishes.unshift(newWish);
     try {
       localStorage.setItem(wishesKey, JSON.stringify(wishes.slice(0, 50)));
     } catch (_) {}
@@ -323,6 +370,11 @@ export function init({ container, data, helpers, slug }) {
     renderWishes();
     if (nameInput) nameInput.value = '';
     if (msgInput) msgInput.value = '';
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>ဆုမွန်ကောင်း ပေးပို့မည် ✨</span>';
+    }
 
     for (let i = 0; i < 4; i++) {
       setTimeout(() => spawnPinkBurstHeart(window.innerWidth / 2, window.innerHeight * 0.7), i * 110);
