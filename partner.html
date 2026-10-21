@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/global.css?v=10">
-  <link rel="stylesheet" href="css/partner.css?v=10">
+  <link rel="stylesheet" href="css/global.css?v=12">
+  <link rel="stylesheet" href="css/partner.css?v=12">
 </head>
 <body class="partner-body">
   <main>
@@ -21,7 +21,7 @@
         <p>Email, Partner code နှင့် Password ဖြင့် referral စာရင်းကို ကြည့်ပါ။</p>
         <div id="partner-login-error" class="partner-alert" role="alert" tabindex="-1" hidden></div>
         <label for="login-partner-code">Partner code *</label>
-        <input id="login-partner-code" name="partner_code" placeholder="ဥပမာ SHOP-001" autocomplete="username" required>
+        <input id="login-partner-code" name="partner_code" placeholder="ဥပမာ K7M9P2X4" autocomplete="username" required>
         <label for="login-email">Email *</label>
         <input id="login-email" name="email" type="email" placeholder="partner@shop.com" autocomplete="email" required>
         <label for="login-passcode">Password *</label>
@@ -45,7 +45,7 @@
       <section class="partner-section" aria-labelledby="referrals-title">
         <div class="partner-section-heading"><div><h2 id="referrals-title">Referral စာရင်း</h2><p id="referral-count">—</p></div></div>
         <div id="partner-status" class="partner-status" role="status" aria-live="polite"></div>
-        <div class="partner-table-wrap"><table><thead><tr><th>အမည် / ခေါင်းစဉ်</th><th>ဖိတ်စာ</th><th>Template</th><th>ရက်စွဲ</th><th>Bonus</th><th>အခြေအနေ</th></tr></thead><tbody id="referral-list"></tbody></table></div>
+        <div class="partner-table-wrap"><table><thead><tr><th>အမည် / ခေါင်းစဉ်</th><th>ဖိတ်စာ & QR</th><th>Template</th><th>ရက်စွဲ</th><th>Bonus</th><th>အခြေအနေ</th></tr></thead><tbody id="referral-list"></tbody></table></div>
       </section>
 
       <section class="partner-section" aria-labelledby="paid-title">
@@ -54,6 +54,71 @@
       </section>
     </section>
   </main>
-  <script type="module" src="js/partner.js?v=10"></script>
+
+  <!-- QR Code Modal (Partner Print-Ready Export & Direct Download) -->
+  <div id="qr-modal" class="modal-backdrop" role="presentation" hidden>
+    <section class="invitation-modal qr-modal" role="dialog" aria-modal="true" aria-labelledby="qr-modal-title">
+      <div class="modal-heading">
+        <div>
+          <p class="partner-kicker">Print-Ready QR Code</p>
+          <h2 id="qr-modal-title">ဖိတ်စာ QR Code ရယူရန်</h2>
+        </div>
+        <button id="close-qr-modal-button" class="icon-button" type="button" aria-label="QR Modal ပိတ်မည်">×</button>
+      </div>
+
+      <div class="qr-modal-body">
+        <div class="qr-preview-column">
+          <div class="qr-canvas-card">
+            <canvas id="qr-modal-canvas" width="200" height="200" aria-label="QR Code Preview"></canvas>
+          </div>
+          <p class="qr-scan-hint">ဖုန်းကင်မရာ / Viber ဖြင့် တိုက်ရိုက် စကင်ဖတ်နိုင်ပါသည်</p>
+        </div>
+
+        <div class="qr-details-column">
+          <div class="qr-meta-group">
+            <span class="qr-meta-label">ဖိတ်စာ ခေါင်းစဉ်</span>
+            <p id="qr-modal-title-text" class="qr-meta-title">—</p>
+          </div>
+
+          <div class="qr-meta-group">
+            <span class="qr-meta-label">Digital Landing Page URL</span>
+            <div class="qr-url-box">
+              <input id="qr-modal-url-input" type="text" readonly spellcheck="false" class="qr-url-input">
+              <button id="qr-modal-copy-btn" type="button" class="copy-input-btn" title="URL ကူးယူမည်">📋 Copy</button>
+            </div>
+          </div>
+
+          <div class="qr-meta-group">
+            <span class="qr-meta-label">Resolution / အရွယ်အစား ရွေးချယ်မှု</span>
+            <div class="qr-size-options" id="qr-size-options">
+              <label class="qr-size-pill is-active">
+                <input type="radio" name="qr-size-select" value="1024" checked> 1024px (Print-Ready)
+              </label>
+              <label class="qr-size-pill">
+                <input type="radio" name="qr-size-select" value="2048"> 2048px (Ultra 300 DPI)
+              </label>
+              <label class="qr-size-pill">
+                <input type="radio" name="qr-size-select" value="512"> 512px (Web)
+              </label>
+            </div>
+          </div>
+
+          <div class="qr-action-stack">
+            <button id="qr-download-png-btn" type="button" class="partner-button partner-button-primary" style="margin-top: 0;">
+              📥 Download PNG (ဖုန်း Gallery / ကတ်ရိုက်ရန်)
+            </button>
+            <button id="qr-download-svg-btn" type="button" class="partner-button partner-button-quiet">
+              📥 Download Vector SVG (Illustrator / Photoshop)
+            </button>
+            <a id="qr-open-link-btn" href="#" target="_blank" rel="noopener" class="partner-button partner-button-quiet" style="text-align: center; text-decoration: none;">
+              ↗️ ဖိတ်စာအား ဖွင့်ကြည့်ရန်
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="js/partner.js?v=12"></script>
 </body>
 </html>

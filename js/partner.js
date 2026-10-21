@@ -1,9 +1,62 @@
-import { authenticatePartner, fetchPartnerInvitations, resolveDisplayTitle } from './supabase-config.js';
+import {
+  authenticatePartner,
+  fetchPartnerInvitations,
+  resolveDisplayTitle,
+  resolveInvitationUrl
+} from './supabase-config.js';
+import {
+  renderQrToCanvas,
+  downloadQrFile
+} from './qr-generator.js';
 
 const SESSION_KEY = 'weddingPartnerSession';
 const $ = (selector) => document.querySelector(selector);
 const kyat = (amount) => `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(Number(amount || 0))} MMK`;
 const escapeHTML = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' })[char]);
+
+// ─── Partner QR Code Modal Management ─────────────────────────────────────────
+let currentPartnerQr = null;
+
+function openPartnerQrModal({ slug, title }) {
+  if (!slug) return;
+  currentPartnerQr = { slug, title };
+  const guestUrl = resolveInvitationUrl(slug);
+
+  $('#qr-modal-title-text').textContent = title || slug;
+  $('#qr-modal-url-input').value = guestUrl;
+  $('#qr-open-link-btn').href = guestUrl;
+
+  const canvas = $('#qr-modal-canvas');
+  if (canvas) {
+    renderQrToCanvas(canvas, guestUrl, {
+      size: 400,
+      margin: 4,
+      darkColor: '#1A0A2E',
+      lightColor: '#FFFFFF',
+      ecc: 'M'
+    });
+  }
+
+  // Reset resolution radio pills
+  const sizeInputs = document.querySelectorAll('input[name="qr-size-select"]');
+  sizeInputs.forEach(input => {
+    input.checked = input.value === '1024';
+    input.closest('.qr-size-pill')?.classList.toggle('is-active', input.value === '1024');
+  });
+
+  const modal = $('#qr-modal');
+  modal.hidden = false;
+  modal.classList.add('is-open');
+}
+
+function closePartnerQrModal() {
+  const modal = $('#qr-modal');
+  if (modal) {
+    modal.classList.remove('is-open');
+    modal.hidden = true;
+  }
+  currentPartnerQr = null;
+}
 
 function showLoginError(message) { 
   const element = $('#partner-login-error'); 
@@ -58,8 +111,12 @@ async function loadPartnerDashboard(session) {
 
     $('#referral-list').innerHTML = invitations.length ? invitations.map(invitation => {
       const title = resolveDisplayTitle(invitation);
+      const guestUrl = resolveInvitationUrl(invitation.slug);
       const linkHtml = invitation.is_active 
-        ? `<a class="invitation-link" href="index.html?id=${encodeURIComponent(invitation.slug)}" target="_blank" rel="noopener">ဖွင့်ကြည့်ရန်</a>`
+        ? `<div class="link-cell">
+            <button type="button" class="copy-icon-btn qr-table-btn" data-referral-qr data-slug="${escapeHTML(invitation.slug)}" data-title="${escapeHTML(title)}" title="QR Code ရယူ / ဒေါင်းလုဒ်ဆွဲမည်">📱 QR</button>
+            <a class="invitation-link" href="${escapeHTML(guestUrl)}" target="_blank" rel="noopener">ဖွင့် ↗</a>
+           </div>`
         : `<span style="color: #ffd0d0; font-size: 0.85rem;" title="Admin မှ ပိတ်ထားသည်">ပိတ်ထားသည်</span>`;
       return `<tr>
         <td><strong>${escapeHTML(title)}</strong></td>
@@ -137,6 +194,109 @@ try {
   }
 } catch (_) {}
 
+// ─── Clipboard Helper ────────────────────────────────────────────────────────
+async function copyToClipboard(text, buttonEl) {
+  let copied = false;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      copied = true;
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-999999px';
+      ta.style.top = '-999999px';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      copied = document.execCommand('copy');
+      ta.remove();
+    }
+  } catch (_) {
+    copied = false;
+  }
+  return copied;
+}
+
+// ─── Referral Table Event Delegation (QR Modal trigger) ──────────────────────
+$('#referral-list')?.addEventListener('click', event => {
+  const btn = event.target.closest('[data-referral-qr]');
+  if (!btn) return;
+  const slug = btn.dataset.slug;
+  const title = btn.dataset.title;
+  if (slug) {
+    openPartnerQrModal({ slug, title });
+  }
+});
+
+// ─── QR Modal Event Listeners ────────────────────────────────────────────────
+$('#close-qr-modal-button')?.addEventListener('click', closePartnerQrModal);
+$('#qr-modal')?.addEventListener('click', event => {
+  if (event.target === event.currentTarget) closePartnerQrModal();
+});
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closePartnerQrModal();
+});
+
+// QR Download PNG Handler (Mobile Gallery / Print-Ready)
+$('#qr-download-png-btn')?.addEventListener('click', () => {
+  if (!currentPartnerQr) return;
+  const guestUrl = resolveInvitationUrl(currentPartnerQr.slug);
+  const selectedSize = Number(document.querySelector('input[name="qr-size-select"]:checked')?.value || 1024);
+  const filename = `QR-${currentPartnerQr.slug}-${selectedSize}px.png`;
+
+  downloadQrFile({
+    text: guestUrl,
+    filename,
+    size: selectedSize,
+    format: 'png',
+    darkColor: '#1A0A2E',
+    lightColor: '#FFFFFF'
+  });
+});
+
+// QR Download Vector SVG Handler
+$('#qr-download-svg-btn')?.addEventListener('click', () => {
+  if (!currentPartnerQr) return;
+  const guestUrl = resolveInvitationUrl(currentPartnerQr.slug);
+  const filename = `QR-${currentPartnerQr.slug}.svg`;
+
+  downloadQrFile({
+    text: guestUrl,
+    filename,
+    format: 'svg',
+    darkColor: '#1A0A2E',
+    lightColor: '#FFFFFF'
+  });
+});
+
+// QR Copy URL Handler
+$('#qr-modal-copy-btn')?.addEventListener('click', async () => {
+  const urlInput = $('#qr-modal-url-input');
+  if (!urlInput || !urlInput.value) return;
+  const copyBtn = $('#qr-modal-copy-btn');
+  const success = await copyToClipboard(urlInput.value, copyBtn);
+  if (success) {
+    copyBtn.classList.add('is-copied');
+    copyBtn.innerHTML = '✓ Copied!';
+    setTimeout(() => {
+      copyBtn.classList.remove('is-copied');
+      copyBtn.innerHTML = '📋 Copy';
+    }, 1800);
+  }
+});
+
+// Size selection pill UI update
+$('#qr-size-options')?.addEventListener('change', event => {
+  const radio = event.target.closest('input[type="radio"]');
+  if (!radio) return;
+  document.querySelectorAll('#qr-size-options .qr-size-pill').forEach(pill => {
+    pill.classList.toggle('is-active', pill.querySelector('input') === radio);
+  });
+});
+
 try { 
   const saved = sessionStorage.getItem(SESSION_KEY); 
   if (saved) { 
@@ -154,4 +314,5 @@ try {
   sessionStorage.removeItem(SESSION_KEY); 
   setView(false); 
 }
+
 

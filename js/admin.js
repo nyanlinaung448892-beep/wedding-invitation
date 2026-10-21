@@ -1,4 +1,18 @@
-import { getSupabaseClient, TABLES, STORAGE_BUCKET, fetchAllPartners, resolveDisplayTitle } from './supabase-config.js';
+import {
+  getSupabaseClient,
+  TABLES,
+  STORAGE_BUCKET,
+  fetchAllPartners,
+  resolveDisplayTitle,
+  generatePartnerCode,
+  isPartnerCodeAvailable,
+  generateUniquePartnerCode,
+  resolveInvitationUrl
+} from './supabase-config.js';
+import {
+  renderQrToCanvas,
+  downloadQrFile
+} from './qr-generator.js';
 
 const supabase = await getSupabaseClient();
 
@@ -106,7 +120,7 @@ async function loadInvitations() {
   $('#invitation-list').innerHTML = state.invitations.length ? state.invitations.map(invitation => {
     const title = resolveDisplayTitle(invitation);
     const category = invitation.category || 'wedding';
-    const guestUrl = `${basePath}index.html?id=${encodeURIComponent(invitation.slug)}`;
+    const guestUrl = resolveInvitationUrl(invitation.slug);
     return `<tr>
       <td><strong>${escapeHTML(title)}</strong></td>
       <td><span class="category-badge ${escapeHTML(category)}">${escapeHTML(category)}</span></td>
@@ -118,11 +132,14 @@ async function loadInvitations() {
       <td><span class="status-pill ${invitation.is_active ? 'active' : 'inactive'}">${invitation.is_active ? 'ဖွင့်ထားသည်' : 'ပိတ်ထားသည်'}</span></td>
       <td>
         <div class="link-cell">
-          <a class="table-button" href="index.html?id=${encodeURIComponent(invitation.slug)}" target="_blank" rel="noopener">ဖွင့်ကြည့်ရန် ↗</a>
+          <button type="button" class="copy-icon-btn qr-table-btn" data-invitation-action="qr" data-id="${invitation.id}" title="QR Code ရယူ / ဒေါင်းလုဒ်ဆွဲမည်" aria-label="QR Code">
+            📱 QR
+          </button>
           <button type="button" class="copy-icon-btn" data-copy-link="${escapeHTML(guestUrl)}" title="Link ကို Copy ကူးမည်" aria-label="Link ကို Copy ကူးမည်">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             Copy
           </button>
+          <a class="table-button" href="${escapeHTML(guestUrl)}" target="_blank" rel="noopener" title="ဖိတ်စာအား ဖွင့်ကြည့်ရန်">ဖွင့် ↗</a>
         </div>
       </td>
       <td>
@@ -242,26 +259,45 @@ function closeInvitationModal() {
   }
 }
 
-function openPartnerModal(partner = null) {
+async function openPartnerModal(partner = null) {
   closeInvitationModal();
   const el = $('#partner-modal');
   const form = $('#partner-form');
   form.reset();
   $('#partner-form-error').hidden = true;
+  const alertBox = $('#partner-code-alert');
+  if (alertBox) {
+    alertBox.hidden = true;
+    alertBox.textContent = '';
+  }
   $('#partner-form-title').textContent = partner ? 'Partner ပြင်ဆင်ရန်' : 'Partner အသစ်';
   $('#passcode-optional').hidden = !partner;
-  form.elements.partner_code.disabled = Boolean(partner);
   form.elements.passcode.required = !partner;
+
+  const regenBtn = $('#regenerate-partner-code-btn');
+  const copyBtn = $('#copy-partner-modal-code-btn');
+  if (copyBtn) {
+    copyBtn.classList.remove('is-copied');
+    copyBtn.innerHTML = '📋 Copy';
+  }
+
   if (partner) {
     form.elements.id.value = partner.id;
     form.elements.shop_name.value = partner.shop_name;
     form.elements.partner_code.value = partner.partner_code;
+    form.elements.partner_code.dataset.originalCode = partner.partner_code;
     form.elements.email.value = partner.email || '';
     form.elements.phone.value = partner.phone || '';
     form.elements.default_bonus.value = partner.default_bonus || 0;
+    if (regenBtn) regenBtn.textContent = '🔄 Code အသစ်ပြောင်းမည်';
   } else {
     form.elements.id.value = '';
     form.elements.email.value = '';
+    form.elements.partner_code.dataset.originalCode = '';
+    if (regenBtn) regenBtn.textContent = '🔄 အသစ်ထုတ်မည်';
+    form.elements.partner_code.value = '…';
+    const newCode = await generateUniquePartnerCode(8);
+    form.elements.partner_code.value = newCode;
   }
   el.hidden = false;
   el.classList.add('is-open');
@@ -274,6 +310,54 @@ function closePartnerModal() {
     el.classList.remove('is-open');
     el.hidden = true;
   }
+}
+
+// ─── QR Code Modal Management ────────────────────────────────────────────────
+let currentQrInvitation = null;
+
+function openQrModal(invitation) {
+  if (!invitation) return;
+  currentQrInvitation = invitation;
+  closeInvitationModal();
+  closePartnerModal();
+
+  const title = resolveDisplayTitle(invitation);
+  const guestUrl = resolveInvitationUrl(invitation.slug);
+
+  $('#qr-modal-title-text').textContent = title;
+  $('#qr-modal-url-input').value = guestUrl;
+  $('#qr-open-link-btn').href = guestUrl;
+
+  const canvas = $('#qr-modal-canvas');
+  if (canvas) {
+    renderQrToCanvas(canvas, guestUrl, {
+      size: 400,
+      margin: 4,
+      darkColor: '#1A0A2E',
+      lightColor: '#FFFFFF',
+      ecc: 'M'
+    });
+  }
+
+  // Reset resolution radio pills
+  const sizeInputs = document.querySelectorAll('input[name="qr-size-select"]');
+  sizeInputs.forEach(input => {
+    input.checked = input.value === '1024';
+    input.closest('.qr-size-pill')?.classList.toggle('is-active', input.value === '1024');
+  });
+
+  const modal = $('#qr-modal');
+  modal.hidden = false;
+  modal.classList.add('is-open');
+}
+
+function closeQrModal() {
+  const modal = $('#qr-modal');
+  if (modal) {
+    modal.classList.remove('is-open');
+    modal.hidden = true;
+  }
+  currentQrInvitation = null;
 }
 
 function resizeImage(file) {
@@ -409,9 +493,24 @@ async function savePartner(event) {
     showAlert('#partner-form-error', 'Email ဖြည့်သွင်းရန် လိုအပ်ပါသည်။');
     return;
   }
+  const partnerCode = String(form.elements.partner_code.value || formData.get('partner_code') || '').trim().toUpperCase();
+  if (!partnerCode || !/^[A-Z0-9]{8}$/.test(partnerCode)) {
+    showAlert('#partner-form-error', 'Partner Code သည် အင်္ဂလိပ်စာလုံးကြီးနှင့် ဂဏန်း ၈ လုံး ဖြစ်ရပါမည် (ဥပမာ K7M9P2X4)။');
+    return;
+  }
+
+  // Check code availability if new partner or if code was changed
+  if (!existing || existing.partner_code !== partnerCode) {
+    const isAvailable = await isPartnerCodeAvailable(partnerCode);
+    if (!isAvailable) {
+      showAlert('#partner-form-error', `Partner Code "${partnerCode}" ကို အခြား Partner မှ သုံးစွဲထားပြီးဖြစ်သည်။ ကုဒ်အသစ် ပြန်လည်ထုတ်ယူပေးပါ။`);
+      return;
+    }
+  }
+
   const record = { 
     shop_name: String(formData.get('shop_name')).trim(), 
-    partner_code: existing?.partner_code || String(formData.get('partner_code')).trim().toUpperCase(), 
+    partner_code: partnerCode, 
     email: email,
     phone: String(formData.get('phone') || '').trim() || null, 
     default_bonus: Number(formData.get('default_bonus') || 0) 
@@ -436,6 +535,7 @@ async function savePartner(event) {
   }
   closePartnerModal(); 
   await refreshPartners(); 
+  await loadInvitations();
   setStatus('#partner-status', id ? 'Partner ကို ပြင်ဆင်ပြီးပါပြီ။' : 'Partner အသစ် ဖန်တီးပြီးပါပြီ။');
 }
 
@@ -606,15 +706,132 @@ $('#close-partner-modal-button').addEventListener('click', closePartnerModal);
 $('#cancel-partner-modal-button').addEventListener('click', closePartnerModal);
 $('#partner-modal').addEventListener('click', event => { if (event.target === event.currentTarget) closePartnerModal(); });
 
+// QR Modal listeners
+$('#close-qr-modal-button')?.addEventListener('click', closeQrModal);
+$('#qr-modal')?.addEventListener('click', event => { if (event.target === event.currentTarget) closeQrModal(); });
+
+// QR Download PNG Handler (Direct Mobile Gallery & Desktop Download)
+$('#qr-download-png-btn')?.addEventListener('click', () => {
+  if (!currentQrInvitation) return;
+  const guestUrl = resolveInvitationUrl(currentQrInvitation.slug);
+  const selectedSize = Number(document.querySelector('input[name="qr-size-select"]:checked')?.value || 1024);
+  const filename = `QR-${currentQrInvitation.slug}-${selectedSize}px.png`;
+
+  downloadQrFile({
+    text: guestUrl,
+    filename,
+    size: selectedSize,
+    format: 'png',
+    darkColor: '#1A0A2E',
+    lightColor: '#FFFFFF'
+  });
+});
+
+// QR Download Vector SVG Handler
+$('#qr-download-svg-btn')?.addEventListener('click', () => {
+  if (!currentQrInvitation) return;
+  const guestUrl = resolveInvitationUrl(currentQrInvitation.slug);
+  const filename = `QR-${currentQrInvitation.slug}.svg`;
+
+  downloadQrFile({
+    text: guestUrl,
+    filename,
+    format: 'svg',
+    darkColor: '#1A0A2E',
+    lightColor: '#FFFFFF'
+  });
+});
+
+// QR Copy URL Handler
+$('#qr-modal-copy-btn')?.addEventListener('click', async () => {
+  const urlInput = $('#qr-modal-url-input');
+  if (!urlInput || !urlInput.value) return;
+  const copyBtn = $('#qr-modal-copy-btn');
+  const success = await copyToClipboard(urlInput.value, copyBtn);
+  if (success) {
+    copyBtn.classList.add('is-copied');
+    copyBtn.innerHTML = '✓ Copied!';
+    setTimeout(() => {
+      copyBtn.classList.remove('is-copied');
+      copyBtn.innerHTML = '📋 Copy';
+    }, 1800);
+  }
+});
+
+// Size selection pill UI update
+$('#qr-size-options')?.addEventListener('change', event => {
+  const radio = event.target.closest('input[type="radio"]');
+  if (!radio) return;
+  document.querySelectorAll('#qr-size-options .qr-size-pill').forEach(pill => {
+    pill.classList.toggle('is-active', pill.querySelector('input') === radio);
+  });
+});
+
 document.addEventListener('keydown', event => { 
   if (event.key === 'Escape') { 
     closeInvitationModal(); 
     closePartnerModal(); 
+    closeQrModal();
   } 
 });
 
 $('#invitation-form').addEventListener('submit', saveInvitation); 
 $('#partner-form').addEventListener('submit', savePartner);
+
+// Partner code input sanitization (uppercase, max 8 alphanumeric)
+$('#partner-code-input')?.addEventListener('input', event => {
+  event.target.value = event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+});
+
+// Regenerate partner code button handler
+$('#regenerate-partner-code-btn')?.addEventListener('click', async () => {
+  const form = $('#partner-form');
+  const codeInput = form.elements.partner_code;
+  const isEdit = Boolean(form.elements.id.value);
+  const currentCode = codeInput.value.trim();
+
+  if (isEdit) {
+    const confirmed = window.confirm(
+      `Partner code အသစ် လဲလှယ်ရန် သေချာပါသလား?\n\nလက်ရှိ Code: ${currentCode}\n\nကုဒ်အသစ် ပြောင်းလဲပါက Partner ဝင်ရောက်ရန် Login URL အသစ် သို့မဟုတ် ကုဒ်အသစ် အသုံးပြုရပါမည်။`
+    );
+    if (!confirmed) return;
+  }
+
+  const regenBtn = $('#regenerate-partner-code-btn');
+  regenBtn.disabled = true;
+  const origBtnText = regenBtn.textContent;
+  regenBtn.textContent = 'ထုတ်နေပါသည်…';
+
+  try {
+    const newCode = await generateUniquePartnerCode(8);
+    codeInput.value = newCode;
+    const alertBox = $('#partner-code-alert');
+    if (alertBox) {
+      alertBox.textContent = `⚠️ Code အသစ် (${newCode}) သို့ ပြောင်းလဲထားပါသည်။ အတည်ပြုရန် 'သိမ်းမည်' ကို နှိပ်ပါ။`;
+      alertBox.hidden = false;
+    }
+  } finally {
+    regenBtn.disabled = false;
+    regenBtn.textContent = origBtnText;
+  }
+});
+
+// Copy code from partner modal handler
+$('#copy-partner-modal-code-btn')?.addEventListener('click', async () => {
+  const codeInput = $('#partner-code-input');
+  const code = codeInput ? codeInput.value.trim() : '';
+  if (!code) return;
+  const copyBtn = $('#copy-partner-modal-code-btn');
+  const success = await copyToClipboard(code, copyBtn);
+  if (success) {
+    copyBtn.classList.add('is-copied');
+    copyBtn.innerHTML = '✓ Copied!';
+    setTimeout(() => {
+      copyBtn.classList.remove('is-copied');
+      copyBtn.innerHTML = '📋 Copy';
+    }, 1800);
+  }
+});
 
 // Auto-slug bindings
 $('#invitation-title')?.addEventListener('input', updateAutoSlug);
@@ -666,14 +883,16 @@ $('#partner-code').addEventListener('change', event => {
   }
 });
 
-// Invitation list event delegation (Edit, Toggle, Delete)
+// Invitation list event delegation (Edit, Toggle, Delete, QR)
 $('#invitation-list').addEventListener('click', event => { 
   const button = event.target.closest('[data-invitation-action]'); 
   if (!button) return; 
   const invitation = state.invitations.find(item => item.id === button.dataset.id); 
+  if (!invitation) return;
   if (button.dataset.invitationAction === 'edit') openInvitationModal(invitation); 
   if (button.dataset.invitationAction === 'toggle') toggleInvitation(button.dataset.id); 
   if (button.dataset.invitationAction === 'delete') deleteInvitation(button.dataset.id);
+  if (button.dataset.invitationAction === 'qr') openQrModal(invitation);
 });
 
 // Partner list event delegation (Edit, Delete)

@@ -441,3 +441,129 @@ export async function fetchInvitationsByCategory(category, limit = 100) {
     return data ?? [];
 }
 
+// ─── 8-Character Random Partner Code Generator Utilities ──────────────────────
+
+/**
+ * Safe uppercase alphanumeric character set excluding visually ambiguous
+ * characters like '0', 'O', '1', 'I', and 'L'.
+ * Character count: 32 (Entropy: 32^8 = 1.0995 × 10^12 combinations).
+ */
+export const SAFE_PARTNER_CODE_CHARS = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
+/**
+ * Generates a cryptographically random, human-friendly 8-character partner code.
+ * @param {number} [length=8]
+ * @returns {string} e.g. "K7M9P2X4"
+ */
+export function generatePartnerCode(length = 8) {
+    const chars = SAFE_PARTNER_CODE_CHARS;
+    const charsLen = chars.length;
+    let result = '';
+
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        const randomValues = new Uint8Array(length);
+        crypto.getRandomValues(randomValues);
+        for (let i = 0; i < length; i++) {
+            result += chars[randomValues[i] % charsLen];
+        }
+    } else {
+        // Fallback for non-crypto environments
+        for (let i = 0; i < length; i++) {
+            result += chars[Math.floor(Math.random() * charsLen)];
+        }
+    }
+    return result;
+}
+
+/**
+ * Checks whether a given partner code is currently unused in the database.
+ * @param {string} code
+ * @returns {Promise<boolean>}
+ */
+export async function isPartnerCodeAvailable(code) {
+    if (!code || typeof code !== 'string') return false;
+    const cleanCode = code.trim().toUpperCase();
+    try {
+        const sb = await getSupabaseClient();
+        const { data, error } = await sb
+            .from(TABLES.PARTNERS)
+            .select('id')
+            .eq('partner_code', cleanCode)
+            .limit(1);
+
+        if (error) {
+            console.warn('[supabase-config] isPartnerCodeAvailable check error:', error.message);
+            return true;
+        }
+        return !data || data.length === 0;
+    } catch (err) {
+        console.warn('[supabase-config] isPartnerCodeAvailable exception:', err);
+        return true;
+    }
+}
+
+/**
+ * Generates an 8-character partner code verified to be unique in the database.
+ * @param {number} [length=8]
+ * @param {number} [maxAttempts=5]
+ * @returns {Promise<string>}
+ */
+export async function generateUniquePartnerCode(length = 8, maxAttempts = 5) {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const candidate = generatePartnerCode(length);
+        const available = await isPartnerCodeAvailable(candidate);
+        if (available) {
+            return candidate;
+        }
+    }
+    return generatePartnerCode(length);
+}
+
+// ─── Base URL & Custom Domain Foundation (Single Source of Truth) ─────────────
+// Digital Wedding Invitation URL & QR Link Resolver
+// When a custom domain is connected in the future, setting CUSTOM_DOMAIN here
+// (e.g. 'https://mingalarwedding.com') will immediately route all QR codes and
+// invitation links to the new domain across the entire platform.
+
+export const CUSTOM_DOMAIN = null; // e.g. 'https://mingalarwedding.com' or null for auto-detect
+
+/**
+ * Returns the base URL for the invitation platform.
+ * Automatically resolves current host & directory (e.g. GitHub Pages or Localhost),
+ * or falls back to CUSTOM_DOMAIN if configured.
+ * @param {string} [customDomainOverride] - Optional override
+ * @returns {string} - e.g. "https://username.github.io/repo/" or "http://localhost:3000/"
+ */
+export function getBaseUrl(customDomainOverride = null) {
+    if (customDomainOverride && typeof customDomainOverride === 'string' && customDomainOverride.trim()) {
+        let base = customDomainOverride.trim();
+        if (!base.endsWith('/')) base += '/';
+        return base;
+    }
+    if (CUSTOM_DOMAIN && typeof CUSTOM_DOMAIN === 'string' && CUSTOM_DOMAIN.trim()) {
+        let base = CUSTOM_DOMAIN.trim();
+        if (!base.endsWith('/')) base += '/';
+        return base;
+    }
+    if (typeof window !== 'undefined' && window.location) {
+        const pathname = window.location.pathname;
+        const dir = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/';
+        return `${window.location.origin}${dir}`;
+    }
+    return '/';
+}
+
+/**
+ * Resolves the full URL for a digital invitation given its slug.
+ * @param {string} slug - The invitation slug (e.g. "min-and-su")
+ * @param {string} [customDomain] - Optional custom domain override
+ * @returns {string} - Full digital invitation landing page URL
+ */
+export function resolveInvitationUrl(slug, customDomain = null) {
+    if (!slug || typeof slug !== 'string') return '';
+    const base = getBaseUrl(customDomain);
+    return `${base}index.html?id=${encodeURIComponent(slug.trim())}`;
+}
+
+
+

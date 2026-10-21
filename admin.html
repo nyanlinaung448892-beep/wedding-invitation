@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/global.css?v=6">
-  <link rel="stylesheet" href="css/admin.css?v=7">
+  <link rel="stylesheet" href="css/global.css?v=12">
+  <link rel="stylesheet" href="css/admin.css?v=12">
 </head>
 <body class="admin-body">
   <main>
@@ -45,7 +45,7 @@
         <div id="invitation-status" class="status-message" role="status" aria-live="polite"></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>အမည် / ခေါင်းစဉ်</th><th>အမျိုးအစား</th><th>Slug</th><th>Template</th><th>Partner</th><th>Bonus</th><th>Bonus အခြေအနေ</th><th>အခြေအနေ</th><th>Link</th><th><span class="visually-hidden">လုပ်ဆောင်ချက်</span></th></tr></thead>
+            <thead><tr><th>အမည် / ခေါင်းစဉ်</th><th>အမျိုးအစား</th><th>Slug</th><th>Template</th><th>Partner</th><th>Bonus</th><th>Bonus အခြေအနေ</th><th>အခြေအနေ</th><th>Link & QR</th><th><span class="visually-hidden">လုပ်ဆောင်ချက်</span></th></tr></thead>
             <tbody id="invitation-list"></tbody>
           </table>
         </div>
@@ -136,7 +136,18 @@
         <input id="partner-id" name="id" type="hidden">
         <div class="form-grid">
           <div><label for="shop-name">Shop name *</label><input id="shop-name" name="shop_name" placeholder="ဥပမာ ရွှေမင်္ဂလာ စာပုံနှိပ်တိုက်" required></div>
-          <div><label for="partner-code-input">Partner code *</label><input id="partner-code-input" name="partner_code" pattern="[A-Za-z0-9-]+" placeholder="SHOP-001" required></div>
+          <div>
+            <div class="field-header-row">
+              <label for="partner-code-input">Partner Code *</label>
+              <button id="regenerate-partner-code-btn" type="button" class="field-link-action" title="Random code အသစ်ထုတ်ယူမည်">🔄 အသစ်ထုတ်မည်</button>
+            </div>
+            <div class="code-input-group">
+              <input id="partner-code-input" name="partner_code" pattern="[A-Za-z0-9]{8}" maxlength="8" placeholder="ဥပမာ K7M9P2X4" autocomplete="off" required spellcheck="false">
+              <button id="copy-partner-modal-code-btn" type="button" class="copy-input-btn" title="Code ကူးယူမည်">📋 Copy</button>
+            </div>
+            <div id="partner-code-alert" class="field-code-changed-alert" hidden></div>
+            <small id="partner-code-hint" class="field-hint-text">၈ လုံးပါ Random Partner Code (ဂဏန်းနှင့် စာလုံးကြီး)</small>
+          </div>
           <div><label for="partner-email">Email *</label><input id="partner-email" name="email" type="email" placeholder="shop@example.com" required></div>
           <div><label for="partner-phone">ဖုန်း</label><input id="partner-phone" name="phone" type="tel" placeholder="09xxxxxxxxx"></div>
           <div class="form-span-full"><label for="default-bonus">Default bonus (MMK)</label><input id="default-bonus" name="default_bonus" type="number" min="0" step="0.01" value="0"></div>
@@ -146,6 +157,71 @@
       </form>
     </section>
   </div>
-  <script type="module" src="js/admin.js?v=10"></script>
+
+  <!-- QR Code Modal (Print-Ready Export & Direct Download) -->
+  <div id="qr-modal" class="modal-backdrop" role="presentation" hidden>
+    <section class="invitation-modal qr-modal" role="dialog" aria-modal="true" aria-labelledby="qr-modal-title">
+      <div class="modal-heading">
+        <div>
+          <p class="admin-kicker">Print-Ready QR Code</p>
+          <h2 id="qr-modal-title">ဖိတ်စာ QR Code ရယူရန်</h2>
+        </div>
+        <button id="close-qr-modal-button" class="icon-button" type="button" aria-label="QR Modal ပိတ်မည်">×</button>
+      </div>
+
+      <div class="qr-modal-body">
+        <div class="qr-preview-column">
+          <div class="qr-canvas-card">
+            <canvas id="qr-modal-canvas" width="200" height="200" aria-label="QR Code Preview"></canvas>
+          </div>
+          <p class="qr-scan-hint">ဖုန်းကင်မရာ / Viber ဖြင့် တိုက်ရိုက် စကင်ဖတ်နိုင်ပါသည်</p>
+        </div>
+
+        <div class="qr-details-column">
+          <div class="qr-meta-group">
+            <span class="qr-meta-label">ဖိတ်စာ ခေါင်းစဉ်</span>
+            <p id="qr-modal-title-text" class="qr-meta-title">—</p>
+          </div>
+
+          <div class="qr-meta-group">
+            <span class="qr-meta-label">Digital Landing Page URL</span>
+            <div class="qr-url-box">
+              <input id="qr-modal-url-input" type="text" readonly spellcheck="false" class="qr-url-input">
+              <button id="qr-modal-copy-btn" type="button" class="copy-input-btn" title="URL ကူးယူမည်">📋 Copy</button>
+            </div>
+          </div>
+
+          <div class="qr-meta-group">
+            <span class="qr-meta-label">Resolution / အရွယ်အစား ရွေးချယ်မှု</span>
+            <div class="qr-size-options" id="qr-size-options">
+              <label class="qr-size-pill is-active">
+                <input type="radio" name="qr-size-select" value="1024" checked> 1024px (Print-Ready)
+              </label>
+              <label class="qr-size-pill">
+                <input type="radio" name="qr-size-select" value="2048"> 2048px (Ultra 300 DPI)
+              </label>
+              <label class="qr-size-pill">
+                <input type="radio" name="qr-size-select" value="512"> 512px (Web)
+              </label>
+            </div>
+          </div>
+
+          <div class="qr-action-stack">
+            <button id="qr-download-png-btn" type="button" class="button button-primary">
+              📥 Download PNG (ဖုန်း Gallery / ကတ်ရိုက်ရန်)
+            </button>
+            <button id="qr-download-svg-btn" type="button" class="button button-quiet">
+              📥 Download Vector SVG (Illustrator / Photoshop)
+            </button>
+            <a id="qr-open-link-btn" href="#" target="_blank" rel="noopener" class="button button-quiet">
+              ↗️ ဖိတ်စာအား ဖွင့်ကြည့်ရန်
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="js/admin.js?v=12"></script>
 </body>
 </html>
