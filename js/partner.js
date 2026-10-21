@@ -84,6 +84,8 @@ function safePartner(partner, passcode) {
     shop_name: partner.shop_name, 
     email: partner.email || '',
     phone: partner.phone, 
+    city: partner.city || '',
+    profile_url: partner.profile_url || '',
     default_bonus: partner.default_bonus,
     passcode: passcode
   }; 
@@ -105,6 +107,33 @@ async function loadPartnerDashboard(session) {
 
     $('#partner-shop-name').textContent = session.shop_name;
     $('#partner-code-display').textContent = session.partner_code;
+
+    // Profile photo & City badge
+    const profileImg = $('#partner-profile-img');
+    const avatarPlaceholder = $('#partner-avatar-placeholder');
+    if (session.profile_url) {
+      if (profileImg) {
+        profileImg.src = session.profile_url;
+        profileImg.hidden = false;
+      }
+      if (avatarPlaceholder) avatarPlaceholder.hidden = true;
+    } else {
+      if (profileImg) {
+        profileImg.src = '';
+        profileImg.hidden = true;
+      }
+      if (avatarPlaceholder) avatarPlaceholder.hidden = false;
+    }
+
+    const cityBadge = $('#partner-city-badge');
+    const cityName = $('#partner-city-name');
+    if (session.city) {
+      if (cityName) cityName.textContent = session.city;
+      if (cityBadge) cityBadge.hidden = false;
+    } else {
+      if (cityBadge) cityBadge.hidden = true;
+    }
+
     $('#default-bonus-value').textContent = kyat(session.default_bonus);
     $('#unpaid-bonus-value').textContent = kyat(unpaidBonus);
     $('#paid-bonus-value').textContent = kyat(paidBonus);

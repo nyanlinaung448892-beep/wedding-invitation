@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/global.css?v=13">
-  <link rel="stylesheet" href="css/partner.css?v=13">
+  <link rel="stylesheet" href="css/global.css?v=14">
+  <link rel="stylesheet" href="css/partner.css?v=14">
 </head>
 <body class="partner-body">
   <main>
@@ -32,7 +32,20 @@
 
     <section id="partner-dashboard" class="partner-dashboard" hidden>
       <header class="partner-header">
-        <div><p class="partner-kicker">Partner Dashboard</p><h1 id="partner-shop-name">—</h1><p id="partner-code-display" class="partner-code">—</p></div>
+        <div class="partner-brand-header">
+          <div class="partner-avatar-frame">
+            <img id="partner-profile-img" class="partner-avatar-img" alt="Shop Profile" hidden>
+            <div id="partner-avatar-placeholder" class="partner-avatar-placeholder">🏪</div>
+          </div>
+          <div class="partner-brand-info">
+            <div class="partner-kicker-row">
+              <span class="partner-kicker">Partner Dashboard</span>
+              <span id="partner-city-badge" class="partner-city-badge" hidden>📍 <span id="partner-city-name">—</span></span>
+            </div>
+            <h1 id="partner-shop-name" class="partner-shop-title">—</h1>
+            <p id="partner-code-display" class="partner-code">—</p>
+          </div>
+        </div>
         <button id="partner-logout-button" class="partner-button partner-button-quiet" type="button">ထွက်မည်</button>
       </header>
 
@@ -119,6 +132,6 @@
     </section>
   </div>
 
-  <script type="module" src="js/partner.js?v=13"></script>
+  <script type="module" src="js/partner.js?v=14"></script>
 </body>
 </html>

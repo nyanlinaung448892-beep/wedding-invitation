@@ -3,15 +3,15 @@
 // Provides 100% Offline Caching for Shell, Data, and Couple Photos
 // =============================================================================
 
-const SHELL_CACHE_NAME = 'wedding-shell-v13';
+const SHELL_CACHE_NAME = 'wedding-shell-v14';
 const PHOTO_CACHE_NAME = 'wedding-invitation-photos-v2';
 
 const SHELL_ASSETS = [
   './',
   './index.html',
   './404.html',
-  './css/global.css?v=13',
-  './js/engine.js?v=13',
+  './css/global.css?v=14',
+  './js/engine.js?v=14',
   './js/supabase-config.js',
   './js/calendar.js',
   './templates/registry.json?v=10',

@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/global.css?v=13">
-  <link rel="stylesheet" href="css/admin.css?v=13">
+  <link rel="stylesheet" href="css/global.css?v=14">
+  <link rel="stylesheet" href="css/admin.css?v=14">
 </head>
 <body class="admin-body">
   <main>
@@ -55,7 +55,7 @@
       <section id="partners-panel" class="admin-panel" role="tabpanel" aria-labelledby="partners-tab" hidden>
         <div class="panel-heading"><div><h2>Partners</h2><p>Referral shop များနှင့် default bonus ကို စီမံပါ။</p></div><button id="new-partner-button" class="button button-primary" type="button">Partner အသစ်</button></div>
         <div id="partner-status" class="status-message" role="status" aria-live="polite"></div>
-        <div class="table-wrap"><table><thead><tr><th>Shop</th><th>Code</th><th>Email</th><th>ဖုန်း</th><th>Default bonus</th><th>Login URL</th><th><span class="visually-hidden">လုပ်ဆောင်ချက်</span></th></tr></thead><tbody id="partner-list"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Shop</th><th>Code</th><th>မြို့နယ် (City)</th><th>Email</th><th>ဖုန်း</th><th>Default bonus</th><th>Login URL</th><th><span class="visually-hidden">လုပ်ဆောင်ချက်</span></th></tr></thead><tbody id="partner-list"></tbody></table></div>
       </section>
 
       <section id="errors-panel" class="admin-panel" role="tabpanel" aria-labelledby="errors-tab" hidden>
@@ -200,8 +200,23 @@
             <small id="partner-code-hint" class="field-hint-text">၈ လုံးပါ Random Partner Code (ဂဏန်းနှင့် စာလုံးကြီး)</small>
           </div>
           <div><label for="partner-email">Email *</label><input id="partner-email" name="email" type="email" placeholder="shop@example.com" required></div>
+          <div><label for="partner-city">ဆိုင်တည်ရှိရာ မြို့နယ် (City) *</label><input id="partner-city" name="city" placeholder="ဥပမာ တောင်ငူမြို့ / ရန်ကုန်" required></div>
           <div><label for="partner-phone">ဖုန်း</label><input id="partner-phone" name="phone" type="tel" placeholder="09xxxxxxxxx"></div>
-          <div class="form-span-full"><label for="default-bonus">Default bonus (MMK)</label><input id="default-bonus" name="default_bonus" type="number" min="0" step="0.01" value="0"></div>
+          <div><label for="default-bonus">Default bonus (MMK)</label><input id="default-bonus" name="default_bonus" type="number" min="0" step="0.01" value="0"></div>
+          <div class="form-span-full">
+            <p class="field-label" style="margin-bottom: 0.25rem;">ဆိုင် Profile / Logo ဓာတ်ပုံ</p>
+            <p class="photo-hint">JPG, PNG, WebP ကိုသာရွေးပါ။ Partner Dashboard တွင် Profile Avatar အဖြစ် ပြသပေးပါမည်။</p>
+            <div class="partner-profile-upload-row">
+              <div class="partner-avatar-preview-box">
+                <img id="partner-profile-preview" class="partner-avatar-preview" alt="Profile preview" hidden>
+                <div id="partner-avatar-preview-placeholder" class="partner-table-avatar-placeholder" style="width: 64px; height: 64px; font-size: 1.8rem; margin: 0;">🏪</div>
+              </div>
+              <div style="flex: 1;">
+                <input id="partner-profile-photo" name="profile_photo" type="file" accept="image/jpeg,image/png,image/webp">
+                <button type="button" id="remove-partner-profile-photo" class="table-button" style="color: #ffd4db; margin-top: 0.35rem;" hidden>ဓာတ်ပုံ ဖယ်ရှားမည်</button>
+              </div>
+            </div>
+          </div>
           <div class="form-span-full"><label for="partner-passcode">Password (Passcode) * <span id="passcode-optional" hidden>(မပြောင်းလိုလျှင် ဗလာထားပါ)</span></label><input id="partner-passcode" name="passcode" type="password" autocomplete="new-password" placeholder="••••••••" required></div>
         </div>
         <div class="modal-actions"><button id="cancel-partner-modal-button" class="button button-quiet" type="button">မလုပ်တော့ပါ</button><button id="save-partner-button" class="button button-primary" type="submit">သိမ်းမည်</button></div>
@@ -324,6 +339,6 @@
     </section>
   </div>
 
-  <script type="module" src="js/admin.js?v=13"></script>
+  <script type="module" src="js/admin.js?v=14"></script>
 </body>
 </html>

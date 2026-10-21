@@ -20,7 +20,7 @@ import {
 const supabase = await getSupabaseClient();
 
 const state = { invitations: [], partners: [], templates: [], errorLogs: [], errorFilter: 'all', severityFilter: 'all', currentErrorItem: null };
-const photoRemovals = { cover: false, couple: false };
+const photoRemovals = { cover: false, couple: false, partner: false };
 const $ = (selector) => document.querySelector(selector);
 const escapeHTML = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' })[char]);
 const customerFields = [
@@ -161,10 +161,19 @@ function renderPartners() {
   const basePath = window.location.href.split('admin.html')[0];
   $('#partner-list').innerHTML = state.partners.length ? state.partners.map(partner => {
     const partnerUrl = `${basePath}partner.html?code=${encodeURIComponent(partner.partner_code)}`;
+    const avatarHtml = partner.profile_url
+      ? `<img class="partner-table-avatar" src="${escapeHTML(partner.profile_url)}" alt="${escapeHTML(partner.shop_name)}" loading="lazy">`
+      : `<div class="partner-table-avatar-placeholder" title="No photo">🏪</div>`;
     return `<tr>
-      <td><strong>${escapeHTML(partner.shop_name)}</strong></td>
+      <td>
+        <div class="partner-shop-cell">
+          ${avatarHtml}
+          <strong>${escapeHTML(partner.shop_name)}</strong>
+        </div>
+      </td>
       <td><code>${escapeHTML(partner.partner_code)}</code></td>
       <td><a href="mailto:${escapeHTML(partner.email || '')}" style="color: var(--color-light); text-decoration: underline;">${escapeHTML(partner.email || '—')}</a></td>
+      <td>${escapeHTML(partner.city || '—')}</td>
       <td>${escapeHTML(partner.phone || '—')}</td>
       <td>${kyat(partner.default_bonus)}</td>
       <td>
@@ -183,7 +192,7 @@ function renderPartners() {
         </div>
       </td>
     </tr>`;
-  }).join('') : '<tr><td colspan="7" style="text-align: center; padding: 2rem;">Partner မရှိသေးပါ။ “Partner အသစ်” ကိုနှိပ်၍ စတင်ပါ။</td></tr>';
+  }).join('') : '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Partner မရှိသေးပါ။ “Partner အသစ်” ကိုနှိပ်၍ စတင်ပါ။</td></tr>';
 }
 
 async function refreshPartners() { 
@@ -267,6 +276,7 @@ async function openPartnerModal(partner = null) {
   const el = $('#partner-modal');
   const form = $('#partner-form');
   form.reset();
+  photoRemovals.partner = false;
   $('#partner-form-error').hidden = true;
   const alertBox = $('#partner-code-alert');
   if (alertBox) {
@@ -284,23 +294,45 @@ async function openPartnerModal(partner = null) {
     copyBtn.innerHTML = '📋 Copy';
   }
 
+  const previewImg = $('#partner-profile-preview');
+  const previewPlaceholder = $('#partner-avatar-preview-placeholder');
+  const removePhotoBtn = $('#remove-partner-profile-photo');
+  const photoInput = $('#partner-profile-photo');
+  if (photoInput) photoInput.value = '';
+
   if (partner) {
     form.elements.id.value = partner.id;
     form.elements.shop_name.value = partner.shop_name;
     form.elements.partner_code.value = partner.partner_code;
     form.elements.partner_code.dataset.originalCode = partner.partner_code;
     form.elements.email.value = partner.email || '';
+    form.elements.city.value = partner.city || '';
     form.elements.phone.value = partner.phone || '';
     form.elements.default_bonus.value = partner.default_bonus || 0;
     if (regenBtn) regenBtn.textContent = '🔄 Code အသစ်ပြောင်းမည်';
+
+    if (partner.profile_url) {
+      if (previewImg) { previewImg.src = partner.profile_url; previewImg.hidden = false; }
+      if (previewPlaceholder) previewPlaceholder.hidden = true;
+      if (removePhotoBtn) removePhotoBtn.hidden = false;
+    } else {
+      if (previewImg) { previewImg.src = ''; previewImg.hidden = true; }
+      if (previewPlaceholder) previewPlaceholder.hidden = false;
+      if (removePhotoBtn) removePhotoBtn.hidden = true;
+    }
   } else {
     form.elements.id.value = '';
     form.elements.email.value = '';
+    form.elements.city.value = '';
     form.elements.partner_code.dataset.originalCode = '';
     if (regenBtn) regenBtn.textContent = '🔄 အသစ်ထုတ်မည်';
     form.elements.partner_code.value = '…';
     const newCode = await generateUniquePartnerCode(8);
     form.elements.partner_code.value = newCode;
+
+    if (previewImg) { previewImg.src = ''; previewImg.hidden = true; }
+    if (previewPlaceholder) previewPlaceholder.hidden = false;
+    if (removePhotoBtn) removePhotoBtn.hidden = true;
   }
   el.hidden = false;
   el.classList.add('is-open');
@@ -413,6 +445,20 @@ async function uploadPhoto(file, slug, kind) {
   return supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
 }
 
+async function uploadPartnerPhoto(file, partnerCode) {
+  if (!file) return '';
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('JPG, PNG သို့မဟုတ် WebP ဓာတ်ပုံကိုသာ ရွေးပါ။');
+  const { blob, contentType, extension } = await resizeImage(file);
+  const path = `partners/${partnerCode}/profile-${Date.now()}.${extension}`;
+  const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, blob, {
+    contentType: contentType,
+    cacheControl: '31536000',
+    upsert: false
+  });
+  if (error) throw new Error(`Partner profile photo upload မအောင်မြင်ပါ — ${error.message}`);
+  return supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
 async function saveInvitation(event) {
   event.preventDefault(); 
   const form = event.currentTarget; 
@@ -511,19 +557,42 @@ async function savePartner(event) {
     }
   }
 
+  const city = String(formData.get('city') || '').trim();
+  if (!city) {
+    showAlert('#partner-form-error', 'ဆိုင်တည်ရှိရာ မြို့နယ် (City) ဖြည့်သွင်းရန် လိုအပ်ပါသည်။');
+    return;
+  }
+
+  let profileUrl = photoRemovals.partner ? '' : (existing?.profile_url || '');
+
+  const button = $('#save-partner-button'); 
+  button.disabled = true; 
+  button.textContent = 'သိမ်းနေပါသည်…'; 
+
+  const photoFile = form.elements.profile_photo?.files?.[0];
+  if (photoFile) {
+    try {
+      const uploadedUrl = await uploadPartnerPhoto(photoFile, partnerCode);
+      if (uploadedUrl) profileUrl = uploadedUrl;
+    } catch (uploadErr) {
+      button.disabled = false;
+      button.textContent = 'သိမ်းမည်';
+      showAlert('#partner-form-error', uploadErr.message);
+      return;
+    }
+  }
+
   const record = { 
     shop_name: String(formData.get('shop_name')).trim(), 
     partner_code: partnerCode, 
     email: email,
+    city: city,
+    profile_url: profileUrl,
     phone: String(formData.get('phone') || '').trim() || null, 
     default_bonus: Number(formData.get('default_bonus') || 0) 
   };
   const passcode = String(formData.get('passcode') || '').trim(); 
-  if (passcode) record.passcode = passcode;
-  
-  const button = $('#save-partner-button'); 
-  button.disabled = true; 
-  button.textContent = 'သိမ်းနေပါသည်…'; 
+  if (passcode) record.passcode = passcode; 
 
   const { error } = await (id ? supabase.from(TABLES.PARTNERS).update(record).eq('id', id) : supabase.from(TABLES.PARTNERS).insert(record)); 
   button.disabled = false; 
@@ -1017,6 +1086,41 @@ $('#remove-couple-photo').addEventListener('click', () => {
   setPhotoPreview('#couple-preview', '');
   $('#remove-couple-photo').hidden = true;
   $('#couple-photo').value = '';
+});
+
+$('#remove-partner-profile-photo')?.addEventListener('click', () => {
+  photoRemovals.partner = true;
+  const preview = $('#partner-profile-preview');
+  if (preview) { preview.src = ''; preview.hidden = true; }
+  const placeholder = $('#partner-avatar-preview-placeholder');
+  if (placeholder) placeholder.hidden = false;
+  $('#remove-partner-profile-photo').hidden = true;
+  const input = $('#partner-profile-photo');
+  if (input) input.value = '';
+});
+
+$('#partner-profile-photo')?.addEventListener('change', event => {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    showAlert('#partner-form-error', 'ဓာတ်ပုံဖိုင်ကိုသာ ရွေးပါ။');
+    event.target.value = '';
+    return;
+  }
+  photoRemovals.partner = false;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = $('#partner-profile-preview');
+    if (preview) {
+      preview.src = e.target.result;
+      preview.hidden = false;
+    }
+    const placeholder = $('#partner-avatar-preview-placeholder');
+    if (placeholder) placeholder.hidden = true;
+    const removeBtn = $('#remove-partner-profile-photo');
+    if (removeBtn) removeBtn.hidden = false;
+  };
+  reader.readAsDataURL(file);
 });
 
 // Partner select change - auto-fill or reset default bonus
