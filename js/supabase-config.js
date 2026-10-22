@@ -28,6 +28,7 @@ export const TABLES = {
     PARTNERS    : 'partners',
     WISHES      : 'wishes',
     ERROR_LOGS  : 'error_logs',
+    SPONSOR     : 'platform_sponsor',
 };
 
 // ─── CDN-Independent Supabase Client (lazy loaded — Admin/Partner only) ───────
@@ -682,6 +683,80 @@ export async function clearResolvedErrorLogs() {
     }
     return true;
 }
+
+// ─── Platform Sponsor & Agency Services Foundation (Phase 11) ─────────────────
+
+/**
+ * Fetches platform sponsor profile using CDN-independent native fetch().
+ * Safe for guest landing page footer rendering.
+ * @param {number} timeoutMs
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchPlatformSponsor(timeoutMs = 5000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        const url = `${SUPABASE_URL}/rest/v1/${TABLES.SPONSOR}?id=eq.default&limit=1`;
+        const res = await fetch(url, {
+            method : 'GET',
+            headers: {
+                'apikey'       : SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Accept'       : 'application/json',
+            },
+            signal: controller.signal,
+        });
+
+        if (!res.ok) {
+            return null;
+        }
+
+        const rows = await res.json();
+        return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+    } catch (err) {
+        console.warn('[supabase-config] fetchPlatformSponsor failed or timed out:', err?.message);
+        return null;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+/**
+ * Saves/updates platform sponsor profile in Supabase (Admin authenticated).
+ * @param {Object} sponsorData
+ * @returns {Promise<Object>}
+ */
+export async function savePlatformSponsor(sponsorData) {
+    const sb = await getSupabaseClient();
+    const payload = {
+        id           : 'default',
+        brand_name   : String(sponsorData.brand_name || 'မင်္ဂလာ ဒစ်ဂျစ်တယ် ဖိတ်ကြားလွှာ').trim(),
+        tagline      : String(sponsorData.tagline || '').trim(),
+        services_text: String(sponsorData.services_text || '').trim(),
+        phone        : String(sponsorData.phone || '').trim(),
+        facebook_url : String(sponsorData.facebook_url || '').trim(),
+        messenger_url: String(sponsorData.messenger_url || '').trim(),
+        tiktok_url   : String(sponsorData.tiktok_url || '').trim(),
+        viber_url    : String(sponsorData.viber_url || '').trim(),
+        telegram_url : String(sponsorData.telegram_url || '').trim(),
+        is_visible   : sponsorData.is_visible !== false,
+        updated_at   : new Date().toISOString()
+    };
+
+    const { data, error } = await sb
+        .from(TABLES.SPONSOR)
+        .upsert(payload, { onConflict: 'id' })
+        .select()
+        .single();
+
+    if (error) {
+        console.error('[supabase-config] savePlatformSponsor error:', error.message);
+        throw error;
+    }
+    return data;
+}
+
 
 
 

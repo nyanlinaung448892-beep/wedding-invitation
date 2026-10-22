@@ -10,7 +10,9 @@ import {
   resolveInvitationUrl,
   fetchSystemErrorLogs,
   resolveSystemErrorLog,
-  clearResolvedErrorLogs
+  clearResolvedErrorLogs,
+  fetchPlatformSponsor,
+  savePlatformSponsor
 } from './supabase-config.js';
 import {
   renderQrToCanvas,
@@ -368,9 +370,9 @@ function openQrModal(invitation) {
     renderQrToCanvas(canvas, guestUrl, {
       size: 400,
       margin: 4,
-      darkColor: '#1A0A2E',
+      darkColor: '#000000',
       lightColor: '#FFFFFF',
-      ecc: 'M'
+      ecc: 'Q'
     });
   }
 
@@ -686,6 +688,7 @@ function activateTab(tabName) {
   const invitations = tabName === 'invitations'; 
   const partners = tabName === 'partners';
   const errors = tabName === 'errors';
+  const sponsor = tabName === 'sponsor';
 
   $('#invitations-tab').classList.toggle('is-active', invitations); 
   $('#invitations-tab').setAttribute('aria-selected', String(invitations)); 
@@ -699,8 +702,37 @@ function activateTab(tabName) {
   $('#errors-tab')?.setAttribute('aria-selected', String(errors));
   $('#errors-panel').hidden = !errors;
 
+  $('#sponsor-tab')?.classList.toggle('is-active', sponsor);
+  $('#sponsor-tab')?.setAttribute('aria-selected', String(sponsor));
+  $('#sponsor-panel').hidden = !sponsor;
+
   if (errors) {
     loadErrorLogs();
+  } else if (sponsor) {
+    loadSponsorForm();
+  }
+} 
+
+async function loadSponsorForm() {
+  setStatus('#sponsor-status', 'Sponsor အချက်အလက်များ ရယူနေပါသည်…');
+  try {
+    const sponsor = await fetchPlatformSponsor();
+    if (sponsor) {
+      $('#sponsor-brand-name').value = sponsor.brand_name || '';
+      $('#sponsor-tagline').value = sponsor.tagline || '';
+      $('#sponsor-services-text').value = sponsor.services_text || '';
+      $('#sponsor-phone').value = sponsor.phone || '';
+      $('#sponsor-messenger-url').value = sponsor.messenger_url || '';
+      $('#sponsor-facebook-url').value = sponsor.facebook_url || '';
+      $('#sponsor-tiktok-url').value = sponsor.tiktok_url || '';
+      $('#sponsor-viber-url').value = sponsor.viber_url || '';
+      $('#sponsor-telegram-url').value = sponsor.telegram_url || '';
+      $('#sponsor-is-visible').checked = sponsor.is_visible !== false;
+    }
+    setStatus('#sponsor-status', '');
+  } catch (err) {
+    setStatus('#sponsor-status', '');
+    showAlert('#sponsor-alert', `Sponsor data ရယူရာတွင် ချို့ယွင်းချက်ဖြစ်ပေါ်သည် — ${err.message}`);
   }
 } 
 
@@ -911,6 +943,7 @@ $('#logout-button').addEventListener('click', async () => {
 $('#invitations-tab').addEventListener('click', () => activateTab('invitations')); 
 $('#partners-tab').addEventListener('click', () => activateTab('partners'));
 $('#errors-tab')?.addEventListener('click', () => activateTab('errors'));
+$('#sponsor-tab')?.addEventListener('click', () => activateTab('sponsor'));
 $('#new-invitation-button').addEventListener('click', () => openInvitationModal()); 
 $('#close-modal-button').addEventListener('click', closeInvitationModal); 
 $('#cancel-modal-button').addEventListener('click', closeInvitationModal); 
@@ -936,8 +969,9 @@ $('#qr-download-png-btn')?.addEventListener('click', () => {
     filename,
     size: selectedSize,
     format: 'png',
-    darkColor: '#1A0A2E',
-    lightColor: '#FFFFFF'
+    darkColor: '#000000',
+    lightColor: '#FFFFFF',
+    ecc: 'Q'
   });
 });
 
@@ -951,8 +985,9 @@ $('#qr-download-svg-btn')?.addEventListener('click', () => {
     text: guestUrl,
     filename,
     format: 'svg',
-    darkColor: '#1A0A2E',
-    lightColor: '#FFFFFF'
+    darkColor: '#000000',
+    lightColor: '#FFFFFF',
+    ecc: 'Q'
   });
 });
 
@@ -992,6 +1027,49 @@ document.addEventListener('keydown', event => {
 
 $('#invitation-form').addEventListener('submit', saveInvitation); 
 $('#partner-form').addEventListener('submit', savePartner);
+
+// Sponsor Form Submission Handler
+$('#sponsor-form')?.addEventListener('submit', async event => {
+  event.preventDefault();
+  const alertEl = $('#sponsor-alert');
+  if (alertEl) alertEl.hidden = true;
+
+  const form = event.currentTarget;
+  if (!form.checkValidity()) {
+    showAlert('#sponsor-alert', 'Brand အမည်ကို မဖြစ်မနေ ဖြည့်သွင်းပေးပါ။');
+    form.reportValidity();
+    return;
+  }
+
+  const submitBtn = $('#save-sponsor-button');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'သိမ်းဆည်းနေပါသည်…';
+  setStatus('#sponsor-status', 'Sponsor အချက်အလက်များကို သိမ်းဆည်းနေပါသည်…');
+
+  try {
+    const payload = {
+      brand_name: $('#sponsor-brand-name').value.trim(),
+      tagline: $('#sponsor-tagline').value.trim(),
+      services_text: $('#sponsor-services-text').value.trim(),
+      phone: $('#sponsor-phone').value.trim(),
+      messenger_url: $('#sponsor-messenger-url').value.trim(),
+      facebook_url: $('#sponsor-facebook-url').value.trim(),
+      tiktok_url: $('#sponsor-tiktok-url').value.trim(),
+      viber_url: $('#sponsor-viber-url').value.trim(),
+      telegram_url: $('#sponsor-telegram-url').value.trim(),
+      is_visible: $('#sponsor-is-visible').checked
+    };
+
+    await savePlatformSponsor(payload);
+    setStatus('#sponsor-status', '✓ Platform Sponsor အချက်အလက်များ အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။ Landing page များတွင် ချက်ချင်း အကျိုးသက်ရောက်ပါမည်။');
+    setTimeout(() => setStatus('#sponsor-status', ''), 4000);
+  } catch (err) {
+    showAlert('#sponsor-alert', `သိမ်းဆည်း၍ မရပါ — ${err.message}`);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Sponsor အချက်အလက် သိမ်းမည်';
+  }
+});
 
 // Partner code input sanitization (uppercase, max 8 alphanumeric)
 $('#partner-code-input')?.addEventListener('input', event => {

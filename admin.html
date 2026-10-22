@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/global.css?v=14">
-  <link rel="stylesheet" href="css/admin.css?v=14">
+  <link rel="stylesheet" href="css/global.css?v=15">
+  <link rel="stylesheet" href="css/admin.css?v=15">
 </head>
 <body class="admin-body">
   <main>
@@ -39,6 +39,7 @@
         <button class="admin-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="invitations-panel" id="invitations-tab">ဖိတ်ကြားလွှာများ</button>
         <button class="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="partners-panel" id="partners-tab">Partners</button>
         <button class="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="errors-panel" id="errors-tab">Error စီမံခန့်ခွဲမှု <span id="error-badge" class="error-badge" hidden>0</span></button>
+        <button class="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="sponsor-panel" id="sponsor-tab">🏢 Sponsor & ဝန်ဆောင်မှု</button>
       </nav>
 
       <section id="invitations-panel" class="admin-panel" role="tabpanel" aria-labelledby="invitations-tab">
@@ -106,6 +107,69 @@
             <tbody id="error-list"></tbody>
           </table>
         </div>
+      </section>
+
+      <!-- Platform Sponsor & Agency Profile Panel -->
+      <section id="sponsor-panel" class="admin-panel" role="tabpanel" aria-labelledby="sponsor-tab" hidden>
+        <div class="panel-heading">
+          <div>
+            <h2>Platform Sponsor & ဝန်ဆောင်မှု စီမံရန်</h2>
+            <p>Landing page များ၏ အောက်ဆုံးတွင် ပြသမည့် Brand အချက်အလက်၊ ဝန်ဆောင်မှုများနှင့် တိုက်ရိုက် Messenger / Social လင့်ခ်များကို စီမံပါ။</p>
+          </div>
+        </div>
+
+        <div id="sponsor-status" class="status-message" role="status" aria-live="polite"></div>
+        <div id="sponsor-alert" class="form-alert" role="alert" tabindex="-1" hidden></div>
+
+        <form id="sponsor-form" novalidate style="max-width: 840px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1.5rem; border-radius: var(--radius-md);">
+          <div class="form-grid">
+            <div class="form-span-full">
+              <label for="sponsor-brand-name">Brand / Sponsor အမည် *</label>
+              <input id="sponsor-brand-name" name="brand_name" placeholder="ဥပမာ မင်္ဂလာ ဒစ်ဂျစ်တယ် မီဒီယာ စတူဒီယို" required>
+            </div>
+            <div class="form-span-full">
+              <label for="sponsor-tagline">ဆောင်ပုဒ် / မိတ်ဆက် (Tagline)</label>
+              <input id="sponsor-tagline" name="tagline" placeholder="ဥပမာ ဒစ်ဂျစ်တယ် မင်္ဂလာဖိတ်စာနှင့် မီဒီယာ ဝန်ဆောင်မှု">
+            </div>
+            <div class="form-span-full">
+              <label for="sponsor-services-text">ပေးအပ်သော ဝန်ဆောင်မှုများ (Services Offered)</label>
+              <textarea id="sponsor-services-text" name="services_text" rows="3" placeholder="ဥပမာ ဒစ်ဂျစ်တယ်ဖိတ်စာ ပြုလုပ်ခြင်း • စာပုံနှိပ်လုပ်ငန်း • Pre-wedding ဓာတ်ပုံရိုက်ကူးခြင်း • Event Planning"></textarea>
+              <small class="field-hint-text">အစက် (•) သို့မဟုတ် စာကြောင်းခြား၍ မိမိပေးသော ဝန်ဆောင်မှုများကို ထည့်သွင်းနိုင်ပါသည်</small>
+            </div>
+            <div>
+              <label for="sponsor-phone">ဆက်သွယ်ရန် ဖုန်း</label>
+              <input id="sponsor-phone" name="phone" type="tel" placeholder="09xxxxxxxxx">
+            </div>
+            <div>
+              <label for="sponsor-messenger-url">💬 Facebook Page Messenger Link *</label>
+              <input id="sponsor-messenger-url" name="messenger_url" placeholder="https://m.me/yourpage သို့မဟုတ် page username">
+              <small class="field-hint-text">Customer များ နှိပ်လိုက်သည်နှင့် Messenger တန်းရောက်မည့် link</small>
+            </div>
+            <div>
+              <label for="sponsor-facebook-url">📘 Facebook Page URL</label>
+              <input id="sponsor-facebook-url" name="facebook_url" type="url" placeholder="https://facebook.com/yourpage">
+            </div>
+            <div>
+              <label for="sponsor-tiktok-url">🎵 TikTok Profile URL</label>
+              <input id="sponsor-tiktok-url" name="tiktok_url" type="url" placeholder="https://tiktok.com/@yourprofile">
+            </div>
+            <div>
+              <label for="sponsor-viber-url">🟣 Viber Phone / Link</label>
+              <input id="sponsor-viber-url" name="viber_url" placeholder="09xxxxxxxxx သို့မဟုတ် viber://chat?...">
+            </div>
+            <div>
+              <label for="sponsor-telegram-url">✈️ Telegram Link / Username</label>
+              <input id="sponsor-telegram-url" name="telegram_url" placeholder="https://t.me/yourchannel သို့မဟုတ် @username">
+            </div>
+            <div class="form-span-full checkbox-field">
+              <input id="sponsor-is-visible" name="is_visible" type="checkbox" checked>
+              <label for="sponsor-is-visible">Landing page များ၏ အောက်ဆုံးတွင် ဤ Sponsor & ဝန်ဆောင်မှု အပိုင်းကို ပြသမည်</label>
+            </div>
+          </div>
+          <div class="modal-actions" style="margin-top: 1.5rem;">
+            <button id="save-sponsor-button" class="button button-primary" type="submit">Sponsor အချက်အလက် သိမ်းမည်</button>
+          </div>
+        </form>
       </section>
     </section>
   </main>
@@ -339,6 +403,6 @@
     </section>
   </div>
 
-  <script type="module" src="js/admin.js?v=14"></script>
+  <script type="module" src="js/admin.js?v=15"></script>
 </body>
 </html>

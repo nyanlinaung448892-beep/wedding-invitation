@@ -1,0 +1,16 @@
+{
+  "name": "digital-wedding-invitation",
+  "version": "1.0.0",
+  "description": "Digital Wedding & Multi-Category Invitation Platform",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/system-test.mjs"
+  },
+  "keywords": [
+    "wedding-invitation",
+    "supabase",
+    "vanilla-js"
+  ],
+  "author": "",
+  "license": "ISC"
+}

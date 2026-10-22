@@ -20,6 +20,18 @@
       "message": ""
     }
   },
+  "sponsor": {
+    "brand_name": "မင်္ဂလာ ဒစ်ဂျစ်တယ် မီဒီယာ စတူဒီယို",
+    "tagline": "ဒစ်ဂျစ်တယ် မင်္ဂလာဖိတ်စာနှင့် မီဒီယာ ဝန်ဆောင်မှု",
+    "services_text": "ဒစ်ဂျစ်တယ်ဖိတ်စာ ပြုလုပ်ခြင်း • စာပုံနှိပ်လုပ်ငန်း • Pre-wedding ဓာတ်ပုံရိုက်ကူးခြင်း • Event Planning",
+    "phone": "09950351292",
+    "facebook_url": "https://facebook.com",
+    "messenger_url": "https://m.me",
+    "tiktok_url": "https://tiktok.com",
+    "viber_url": "09950351292",
+    "telegram_url": "https://t.me",
+    "is_visible": true
+  },
   "invitations": {
     "heinthu-aung-pan-ei-phyu-2026": {
       "slug": "heinthu-aung-pan-ei-phyu-2026",

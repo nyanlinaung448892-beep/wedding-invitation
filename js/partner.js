@@ -32,9 +32,9 @@ function openPartnerQrModal({ slug, title }) {
     renderQrToCanvas(canvas, guestUrl, {
       size: 400,
       margin: 4,
-      darkColor: '#1A0A2E',
+      darkColor: '#000000',
       lightColor: '#FFFFFF',
-      ecc: 'M'
+      ecc: 'Q'
     });
   }
 
@@ -294,8 +294,9 @@ $('#qr-download-png-btn')?.addEventListener('click', () => {
     filename,
     size: selectedSize,
     format: 'png',
-    darkColor: '#1A0A2E',
-    lightColor: '#FFFFFF'
+    darkColor: '#000000',
+    lightColor: '#FFFFFF',
+    ecc: 'Q'
   });
 });
 
@@ -309,8 +310,9 @@ $('#qr-download-svg-btn')?.addEventListener('click', () => {
     text: guestUrl,
     filename,
     format: 'svg',
-    darkColor: '#1A0A2E',
-    lightColor: '#FFFFFF'
+    darkColor: '#000000',
+    lightColor: '#FFFFFF',
+    ecc: 'Q'
   });
 });
 

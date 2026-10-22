@@ -7,7 +7,7 @@
 // Digital Wedding & Event Invitation Platform
 // =============================================================================
 
-import { fetchInvitationBySlug, fetchLatestActiveInvitation, fetchWishesBySlug, submitGuestWish, reportSystemError } from './supabase-config.js';
+import { fetchInvitationBySlug, fetchLatestActiveInvitation, fetchWishesBySlug, submitGuestWish, reportSystemError, fetchPlatformSponsor } from './supabase-config.js';
 import { saveToCalendar, getGoogleCalendarUrl, scheduleWeddingReminder } from './calendar.js';
 
 // ─── Default Invitation (In-Memory Fallback) ──────────────────────────────────
@@ -40,7 +40,7 @@ let _fallbackJSON = null;
 async function loadFallbackJSON() {
   if (_fallbackJSON) return _fallbackJSON;
   try {
-    const res = await fetch('data/fallback-invitations.json?v=10', { cache: 'no-store' });
+    const res = await fetch('data/fallback-invitations.json?v=15', { cache: 'no-store' });
     if (res.ok) {
       _fallbackJSON = await res.json();
     }
@@ -366,7 +366,7 @@ function loadTemplateCSS(templateId) {
     const link = document.createElement('link');
     link.id   = 'template-style';
     link.rel  = 'stylesheet';
-    link.href = `templates/${templateId}/style.css?v=10`;
+    link.href = `templates/${templateId}/style.css?v=15`;
 
     link.onload  = () => resolve();
     link.onerror = () => {
@@ -499,6 +499,113 @@ const sharedHelpers = {
   loadAndCachePhoto
 };
 
+// ─── Platform Sponsor & Agency Services Binder ─────────────────────────────────
+
+async function bindPlatformSponsor(container) {
+  const cardSponsor = container.querySelector('#card-sponsor');
+  if (!cardSponsor) return;
+
+  try {
+    let sponsor = await fetchPlatformSponsor(3500);
+    if (!sponsor) {
+      const fb = await loadFallbackJSON();
+      sponsor = fb?.sponsor || null;
+    }
+
+    if (!sponsor || sponsor.is_visible === false) {
+      cardSponsor.hidden = true;
+      cardSponsor.style.display = 'none';
+      return;
+    }
+
+    // Brand name & tagline
+    const brandEl = cardSponsor.querySelector('#sponsor-display-brand');
+    const taglineEl = cardSponsor.querySelector('#sponsor-display-tagline');
+    if (brandEl) brandEl.textContent = sponsor.brand_name || 'မင်္ဂလာ ဒစ်ဂျစ်တယ် မီဒီယာ စတူဒီယို';
+    if (taglineEl) {
+      taglineEl.textContent = sponsor.tagline || '';
+      taglineEl.style.display = sponsor.tagline ? '' : 'none';
+    }
+
+    // Services Offered
+    const servicesContainer = cardSponsor.querySelector('#sponsor-services-container');
+    if (servicesContainer) {
+      if (sponsor.services_text && sponsor.services_text.trim()) {
+        const services = sponsor.services_text
+          .split(/[•\n\r,]+/)
+          .map(s => s.trim())
+          .filter(Boolean);
+
+        servicesContainer.innerHTML = services.map(s => `<span class="sponsor-service-pill">✓ ${s}</span>`).join('');
+        servicesContainer.style.display = '';
+      } else {
+        servicesContainer.innerHTML = '';
+        servicesContainer.style.display = 'none';
+      }
+    }
+
+    // Facebook Messenger Primary CTA (Instant Tap-to-Messenger)
+    const messengerWrap = cardSponsor.querySelector('#sponsor-messenger-wrapper');
+    const messengerBtn = cardSponsor.querySelector('#sponsor-btn-messenger');
+    if (messengerWrap && messengerBtn) {
+      let mUrl = (sponsor.messenger_url || '').trim();
+      if (mUrl) {
+        if (!mUrl.startsWith('http')) {
+          mUrl = `https://m.me/${mUrl.replace(/^@/, '')}`;
+        }
+        messengerBtn.href = mUrl;
+        messengerWrap.hidden = false;
+        messengerWrap.style.display = '';
+      } else {
+        messengerWrap.hidden = true;
+        messengerWrap.style.display = 'none';
+      }
+    }
+
+    // Social Channels Dynamic Binding (Only show channels filled by Admin)
+    const bindLink = (selector, url, prefix = '') => {
+      const el = cardSponsor.querySelector(selector);
+      if (!el) return;
+      const clean = (url || '').trim();
+      if (clean) {
+        el.href = prefix ? `${prefix}${clean}` : (clean.startsWith('http') ? clean : `https://${clean}`);
+        el.hidden = false;
+        el.style.display = 'inline-flex';
+      } else {
+        el.hidden = true;
+        el.style.display = 'none';
+      }
+    };
+
+    // Phone (Tap-to-call)
+    const phoneEl = cardSponsor.querySelector('#sponsor-link-phone');
+    const phoneLabel = cardSponsor.querySelector('#sponsor-label-phone');
+    if (phoneEl) {
+      if (sponsor.phone && sponsor.phone.trim()) {
+        const rawPhone = sponsor.phone.trim();
+        phoneEl.href = `tel:${rawPhone.replace(/[^0-9+]/g, '')}`;
+        if (phoneLabel) phoneLabel.textContent = rawPhone;
+        phoneEl.hidden = false;
+        phoneEl.style.display = 'inline-flex';
+      } else {
+        phoneEl.hidden = true;
+        phoneEl.style.display = 'none';
+      }
+    }
+
+    bindLink('#sponsor-link-facebook', sponsor.facebook_url);
+    bindLink('#sponsor-link-tiktok', sponsor.tiktok_url);
+    bindLink('#sponsor-link-viber', sponsor.viber_url, (sponsor.viber_url || '').startsWith('http') || (sponsor.viber_url || '').startsWith('viber:') ? '' : 'viber://chat?number=');
+    bindLink('#sponsor-link-telegram', sponsor.telegram_url, (sponsor.telegram_url || '').startsWith('http') || (sponsor.telegram_url || '').startsWith('tg:') ? '' : 'https://t.me/');
+
+    cardSponsor.hidden = false;
+    cardSponsor.style.display = '';
+  } catch (err) {
+    console.warn('[engine.js] Failed to bind platform sponsor:', err);
+    cardSponsor.hidden = true;
+  }
+}
+
 // ─── Active Template Module State ─────────────────────────────────────────────
 let activeTemplateModule = null;
 
@@ -528,7 +635,7 @@ async function initEngine() {
 
     // Step 4 & 5: Parallel fetch layout HTML fragment & load template CSS
     const [layoutHTML] = await Promise.all([
-      fetch(`templates/${templateId}/layout.html?v=10`).then(res => {
+      fetch(`templates/${templateId}/layout.html?v=15`).then(res => {
         if (!res.ok) throw new Error(`Failed to fetch templates/${templateId}/layout.html`);
         return res.text();
       }),
@@ -541,6 +648,9 @@ async function initEngine() {
 
     // Step 7: Declarative data binding
     bindData(container, data);
+
+    // Step 7.1: Bind platform sponsor & agency showcase
+    await bindPlatformSponsor(container);
 
     // Step 8: Update page metadata & Open Graph
     updatePageMeta(data);
@@ -558,7 +668,7 @@ async function initEngine() {
 
     // Step 11: Decoupled Plugin Execution — Dynamically mount template's script.js if present
     try {
-      const templateScriptUrl = `../templates/${templateId}/script.js?v=10`;
+      const templateScriptUrl = `../templates/${templateId}/script.js?v=15`;
       const templateModule = await import(templateScriptUrl);
 
       if (templateModule && typeof templateModule.init === 'function') {
@@ -587,7 +697,7 @@ async function initEngine() {
       details: { stack: err.stack, slug: rawSlug, url: window.location.href }
     });
     try {
-      const emergencyLayout = await fetch('templates/floral-pink/layout.html?v=10');
+      const emergencyLayout = await fetch('templates/floral-pink/layout.html?v=15');
       if (emergencyLayout.ok) {
         const container = document.getElementById('template-container');
         container.innerHTML = await emergencyLayout.text();

@@ -18,6 +18,7 @@ skills-lock.json
 AGENTS.md
 plan.md
 agent_100_percent_reliability_guide.md
+project structure.md
 
 # Database Schema & Migrations (Backend only, not deployed to static web)
 # ----------------------------------------------------------------------

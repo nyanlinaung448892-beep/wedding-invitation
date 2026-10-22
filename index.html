@@ -29,7 +29,7 @@
   >
 
   <!-- Global Design System CSS -->
-  <link rel="stylesheet" href="css/global.css?v=14">
+  <link rel="stylesheet" href="css/global.css?v=15">
 </head>
 <body>
 
@@ -63,13 +63,13 @@
   <div id="template-container" aria-live="polite"></div>
 
   <!-- Template Engine (ES Module) -->
-  <script type="module" src="js/engine.js?v=14"></script>
+  <script type="module" src="js/engine.js?v=15"></script>
 
   <!-- Service Worker Registration (100% Offline Support) -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=14').catch(err => {
+        navigator.serviceWorker.register('./sw.js?v=15').catch(err => {
           console.warn('[SW] ServiceWorker registration notice:', err);
         });
       });

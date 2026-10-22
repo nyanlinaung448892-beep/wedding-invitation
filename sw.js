@@ -3,22 +3,28 @@
 // Provides 100% Offline Caching for Shell, Data, and Couple Photos
 // =============================================================================
 
-const SHELL_CACHE_NAME = 'wedding-shell-v14';
+const SHELL_CACHE_NAME = 'wedding-shell-v15';
 const PHOTO_CACHE_NAME = 'wedding-invitation-photos-v2';
 
 const SHELL_ASSETS = [
   './',
   './index.html',
   './404.html',
-  './css/global.css?v=14',
-  './js/engine.js?v=14',
+  './css/global.css?v=15',
+  './js/engine.js?v=15',
   './js/supabase-config.js',
   './js/calendar.js',
-  './templates/registry.json?v=10',
-  './templates/floral-pink/layout.html?v=10',
-  './templates/floral-pink/style.css?v=10',
-  './templates/floral-pink/script.js?v=10',
-  './data/fallback-invitations.json?v=10',
+  './templates/registry.json?v=15',
+  './templates/floral-pink/layout.html?v=15',
+  './templates/floral-pink/style.css?v=15',
+  './templates/floral-pink/script.js?v=15',
+  './templates/neon-birthday/layout.html?v=15',
+  './templates/neon-birthday/style.css?v=15',
+  './templates/neon-birthday/script.js?v=15',
+  './templates/biz-card-minimal/layout.html?v=15',
+  './templates/biz-card-minimal/style.css?v=15',
+  './templates/biz-card-minimal/script.js?v=15',
+  './data/fallback-invitations.json?v=15',
   './assets/images/couple-portrait-default.jpg',
   './assets/images/wedding-memory-default.jpg'
 ];

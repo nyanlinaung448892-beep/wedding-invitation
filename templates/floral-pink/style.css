@@ -1297,3 +1297,150 @@
     padding: 1.1rem 2rem;
   }
 }
+
+/* ── CARD 7: PLATFORM SPONSOR & CREATOR SHOWCASE ────────────────────────── */
+.template-root.floral-pink-theme .sponsor-card {
+  padding: 2.2rem 1.6rem 2rem;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFF8FA 100%);
+  border: 1.5px solid #F4E4C1;
+  box-shadow: 0 12px 36px rgba(139, 34, 82, 0.08);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.template-root.floral-pink-theme .sponsor-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1rem;
+  background: #FFF0F4;
+  border: 1px solid #FFCCD8;
+  border-radius: var(--pink-radius-pill);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--pink-primary-dark);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.template-root.floral-pink-theme .sponsor-card-badge .badge-sparkle {
+  color: var(--color-primary);
+  font-size: 0.85rem;
+}
+
+.template-root.floral-pink-theme .sponsor-brand-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+}
+
+.template-root.floral-pink-theme .sponsor-brand-tagline {
+  font-size: 0.95rem;
+  color: var(--pink-text-body);
+  line-height: 1.5;
+  margin-bottom: 1.2rem;
+}
+
+.template-root.floral-pink-theme .sponsor-services-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.template-root.floral-pink-theme .sponsor-service-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.85rem;
+  background: #FFF5F7;
+  border: 1px solid #FFE0E7;
+  border-radius: var(--pink-radius-pill);
+  font-size: 0.84rem;
+  color: var(--pink-primary-dark);
+  font-weight: 500;
+}
+
+/* Facebook Messenger Primary High-Conversion Button */
+.template-root.floral-pink-theme .sponsor-messenger-wrapper {
+  margin-bottom: 1.25rem;
+}
+
+.template-root.floral-pink-theme .btn-sponsor-messenger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  max-width: 380px;
+  padding: 0.95rem 1.4rem;
+  background: linear-gradient(135deg, #0084FF 0%, #0066CC 100%);
+  color: #FFFFFF !important;
+  font-size: 0.98rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: var(--pink-radius-pill);
+  box-shadow: 0 6px 20px rgba(0, 132, 255, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.template-root.floral-pink-theme .btn-sponsor-messenger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 26px rgba(0, 132, 255, 0.45);
+}
+
+.template-root.floral-pink-theme .btn-sponsor-messenger .messenger-svg-icon {
+  flex-shrink: 0;
+}
+
+/* Social & Contact Channels Grid */
+.template-root.floral-pink-theme .sponsor-channels-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.template-root.floral-pink-theme .sponsor-channel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  background: #FFFFFF;
+  border: 1px solid #E8D6BF;
+  border-radius: var(--pink-radius-pill);
+  font-size: 0.86rem;
+  color: var(--color-dark);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.template-root.floral-pink-theme .sponsor-channel-btn:hover {
+  border-color: var(--color-primary);
+  background: #FFF9F2;
+  transform: translateY(-1px);
+}
+
+.template-root.floral-pink-theme .sponsor-channel-btn.phone-btn {
+  color: #1b5e20;
+  border-color: #c8e6c9;
+  background: #f1f8e9;
+  font-weight: 600;
+}
+
+.template-root.floral-pink-theme .sponsor-channel-btn.facebook-btn {
+  color: #1877f2;
+}
+
+.template-root.floral-pink-theme .sponsor-channel-btn.viber-btn {
+  color: #7360f2;
+}
+
+.template-root.floral-pink-theme .sponsor-channel-btn.telegram-btn {
+  color: #229ed9;
+}
+

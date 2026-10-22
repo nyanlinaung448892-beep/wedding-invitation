@@ -270,6 +270,14 @@ const QRUtil = {
     return ((data << 10) | d) ^ QRUtil.G15_MASK;
   },
 
+  getBCHTypeNumber(data) {
+    let d = data << 12;
+    while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0) {
+      d ^= QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18));
+    }
+    return (data << 12) | d;
+  },
+
   getBCHDigit(data) {
     let digit = 0;
     while (data !== 0) {
@@ -553,8 +561,8 @@ class QRCodeModel {
   }
 
   setupTypeNumber(test) {
-    // Versions >= 7 have type number info
-    const bits = QRUtil.getBCHDigit(this.typeNumber);
+    // Versions >= 7 have type number info (18-bit BCH code)
+    const bits = QRUtil.getBCHTypeNumber(this.typeNumber);
     for (let i = 0; i < 18; i++) {
       const mod = !test && ((bits >> i) & 1) === 1;
       this.modules[Math.floor(i / 3)][(i % 3) + this.moduleCount - 8 - 3] = mod;
@@ -690,8 +698,8 @@ class QRCodeModel {
  * @returns {QRCodeModel}
  */
 export function createQrCode(text, options = {}) {
-  const eccKey = (options.ecc || 'M').toUpperCase();
-  const ecc = QRErrorCorrectLevel[eccKey] !== undefined ? QRErrorCorrectLevel[eccKey] : QRErrorCorrectLevel.M;
+  const eccKey = (options.ecc || 'Q').toUpperCase();
+  const ecc = QRErrorCorrectLevel[eccKey] !== undefined ? QRErrorCorrectLevel[eccKey] : QRErrorCorrectLevel.Q;
   const qr = new QRCodeModel(0, ecc);
   qr.addData(text);
   qr.make();
@@ -709,7 +717,7 @@ export function renderQrToCanvas(canvas, text, options = {}) {
   const moduleCount = qr.getModuleCount();
   const size = options.size || 512;
   const margin = options.margin !== undefined ? options.margin : 4;
-  const darkColor = options.darkColor || '#1A0A2E'; // Midnight luxury purple / black
+  const darkColor = options.darkColor || '#000000'; // High-contrast pure black for effortless scanning
   const lightColor = options.lightColor || '#FFFFFF';
 
   canvas.width = size;
@@ -765,7 +773,7 @@ export function generateQrSvg(text, options = {}) {
   const margin = options.margin !== undefined ? options.margin : 4;
   const totalModules = moduleCount + margin * 2;
   const size = options.size || 512;
-  const darkColor = options.darkColor || '#1A0A2E';
+  const darkColor = options.darkColor || '#000000';
   const lightColor = options.lightColor || '#FFFFFF';
 
   let pathData = '';
@@ -798,13 +806,14 @@ export function downloadQrFile({
   filename = 'invitation-qr.png',
   size = 1024,
   format = 'png',
-  darkColor = '#1A0A2E',
-  lightColor = '#FFFFFF'
+  darkColor = '#000000',
+  lightColor = '#FFFFFF',
+  ecc = 'Q'
 }) {
   if (!text) throw new Error('QR code text is required');
 
   if (format === 'svg') {
-    const svgString = generateQrSvg(text, { size, darkColor, lightColor });
+    const svgString = generateQrSvg(text, { size, darkColor, lightColor, ecc });
     const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
     triggerBlobDownload(blob, filename.endsWith('.svg') ? filename : `${filename}.svg`);
     return;
@@ -812,7 +821,7 @@ export function downloadQrFile({
 
   // PNG High-Resolution Export
   const canvas = document.createElement('canvas');
-  renderQrToCanvas(canvas, text, { size, darkColor, lightColor });
+  renderQrToCanvas(canvas, text, { size, darkColor, lightColor, ecc });
 
   if (canvas.toBlob) {
     canvas.toBlob((blob) => {
