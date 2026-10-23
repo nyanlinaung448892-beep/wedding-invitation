@@ -1,0 +1,680 @@
+/* ==========================================================================
+   Apex Business Card (Gold Luxury Hub) — Scoped Stylesheet
+   Category: business | Template ID: biz-card-gold
+   ========================================================================== */
+
+.template-root.biz-card-gold {
+  min-height: 100vh;
+  background-color: #0b0f19;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.18) 0%, transparent 55%),
+    radial-gradient(circle at 80% 20%, rgba(217, 119, 6, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 10% 80%, rgba(30, 41, 59, 0.5) 0%, transparent 50%);
+  color: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Pyidaungsu", "Myanmar Text", sans-serif;
+  line-height: 1.6;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.template-root.biz-card-gold * {
+  box-sizing: border-box;
+}
+
+/* ─── App Container (Responsive Mobile Frame on Desktop) ─────────────────── */
+.biz-card-gold .biz-container {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  background: #0d1322;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ─── Top Bar ────────────────────────────────────────────────────────────── */
+.biz-card-gold .biz-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+}
+
+.biz-card-gold .biz-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f8fafc;
+  backdrop-filter: blur(8px);
+}
+
+.biz-card-gold .status-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  animation: bizPulse 2s infinite ease-in-out;
+}
+
+@keyframes bizPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.biz-card-gold .biz-top-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.biz-card-gold .biz-round-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f8fafc;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 0.95rem;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.biz-card-gold .biz-round-btn:hover {
+  background: rgba(245, 158, 11, 0.3);
+  border-color: #f59e0b;
+  transform: translateY(-2px);
+}
+
+/* ─── Hero Card with Amber/Gold Curved Header ────────────────────────────── */
+.biz-card-gold .biz-hero-card {
+  position: relative;
+  padding: 5rem 1.5rem 1.75rem;
+  text-align: center;
+  background: 
+    radial-gradient(ellipse at 50% 0%, #f59e0b 0%, #d97706 45%, #b45309 70%, transparent 100%),
+    linear-gradient(to bottom, transparent 40%, #0d1322 100%);
+  border-bottom-left-radius: 2rem;
+  border-bottom-right-radius: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.biz-card-gold .biz-avatar-wrap {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, #fef08a, #f59e0b, #78350f);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+.biz-card-gold .biz-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  background: #1e293b;
+}
+
+.biz-card-gold .biz-verified-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.biz-card-gold .biz-main-title {
+  margin: 0.25rem 0 0.15rem;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.biz-card-gold .biz-main-tagline {
+  margin: 0 0 0.85rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #fbbf24;
+  letter-spacing: 0.02em;
+}
+
+.biz-card-gold .biz-main-bio {
+  margin: 0 auto 1.5rem;
+  font-size: 0.88rem;
+  color: #cbd5e1;
+  line-height: 1.65;
+  max-width: 92%;
+}
+
+/* ─── Stat Counter Row ───────────────────────────────────────────────────── */
+.biz-card-gold .biz-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.4rem;
+}
+
+.biz-card-gold .biz-stat-item {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: 0.75rem 0.4rem;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.biz-card-gold .biz-stat-item:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  transform: translateY(-2px);
+}
+
+.biz-card-gold .stat-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.biz-card-gold .stat-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.2rem;
+  font-weight: 500;
+}
+
+/* ─── CTA Group ──────────────────────────────────────────────────────────── */
+.biz-card-gold .biz-cta-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.biz-card-gold .biz-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.biz-card-gold .biz-cta-btn.primary {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+}
+
+.biz-card-gold .biz-cta-btn.primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.55);
+}
+
+.biz-card-gold .biz-cta-btn.secondary {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.biz-card-gold .biz-cta-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.biz-card-gold .biz-copyright {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* ─── Segmented 3-Tab Controller ─────────────────────────────────────────── */
+.biz-card-gold .biz-tab-nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  padding: 0.4rem;
+  margin: 1.25rem 1.25rem 0.5rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.biz-card-gold .biz-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.65rem 0.3rem;
+  border-radius: 999px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.25s ease;
+}
+
+.biz-card-gold .biz-tab-btn:hover {
+  color: #f1f5f9;
+}
+
+.biz-card-gold .biz-tab-btn.is-active {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
+}
+
+/* When channels tab is active, neon gradient pulse */
+.biz-card-gold .biz-tab-btn#biz-tab-channels.is-active {
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  box-shadow: 0 2px 12px rgba(168, 85, 247, 0.45);
+}
+
+/* ─── Tab Content & Panels ───────────────────────────────────────────────── */
+.biz-card-gold .biz-tab-content {
+  flex: 1;
+  padding: 1rem 1.25rem 2rem;
+}
+
+.biz-card-gold .biz-panel {
+  display: none;
+  animation: bizFadeIn 0.3s ease forwards;
+}
+
+.biz-card-gold .biz-panel.is-active {
+  display: block;
+}
+
+@keyframes bizFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.biz-card-gold .biz-panel-header {
+  margin-bottom: 1.25rem;
+}
+
+.biz-card-gold .biz-panel-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.biz-card-gold .biz-panel-desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+/* ─── Services Grid ──────────────────────────────────────────────────────── */
+.biz-card-gold .biz-services-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.biz-card-gold .biz-service-card {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  transition: all 0.2s ease;
+}
+
+.biz-card-gold .biz-service-card:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+  transform: translateY(-2px);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.biz-card-gold .service-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.biz-card-gold .service-info h3 {
+  margin: 0 0 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.biz-card-gold .service-info p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+/* ─── Official Channels List (Image 2 Match) ─────────────────────────────── */
+.biz-card-gold .biz-channels-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.biz-card-gold .biz-channel-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.15rem;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 1.1rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.22s ease;
+}
+
+.biz-card-gold .biz-channel-item:hover {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(245, 158, 11, 0.5);
+  transform: translateY(-2px);
+}
+
+.biz-card-gold .channel-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.biz-card-gold .channel-logo.facebook { background: #1877f2; color: #ffffff; }
+.biz-card-gold .channel-logo.messenger { background: linear-gradient(135deg, #00b2fe 0%, #006aff 50%, #9013fe 100%); color: #ffffff; }
+.biz-card-gold .channel-logo.telegram { background: #229ed9; color: #ffffff; }
+.biz-card-gold .channel-logo.tiktok { background: #000000; border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff; }
+.biz-card-gold .channel-logo.community { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #ffffff; }
+
+.biz-card-gold .channel-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.biz-card-gold .channel-name {
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.biz-card-gold .channel-subtext {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.biz-card-gold .channel-arrow {
+  color: #64748b;
+  font-size: 1.1rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ─── How We Work Section ────────────────────────────────────────────────── */
+.biz-card-gold .biz-sub-section {
+  margin-bottom: 2rem;
+}
+
+.biz-card-gold .biz-section-badge-title {
+  margin-bottom: 0.85rem;
+}
+
+.biz-card-gold .biz-section-badge-title h2 {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #cbd5e1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.biz-card-gold .biz-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.biz-card-gold .biz-step-card {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: 1rem 0.6rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.biz-card-gold .step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.biz-card-gold .biz-step-card h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.biz-card-gold .biz-step-card p {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+/* ─── Client Reviews List ────────────────────────────────────────────────── */
+.biz-card-gold .biz-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.biz-card-gold .biz-review-card {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.biz-card-gold .review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.biz-card-gold .reviewer-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.biz-card-gold .reviewer-role {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-weight: normal;
+}
+
+.biz-card-gold .review-stars {
+  color: #f59e0b;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+}
+
+.biz-card-gold .review-body {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #cbd5e1;
+  line-height: 1.55;
+}
+
+/* ─── FAQ Accordion ──────────────────────────────────────────────────────── */
+.biz-card-gold .biz-faq-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.biz-card-gold .biz-faq-item {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.85rem;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.biz-card-gold .biz-faq-item.is-open {
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.biz-card-gold .faq-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.biz-card-gold .faq-icon {
+  font-size: 1.1rem;
+  color: #f59e0b;
+  transition: transform 0.2s ease;
+}
+
+.biz-card-gold .biz-faq-item.is-open .faq-icon {
+  transform: rotate(45deg);
+}
+
+.biz-card-gold .faq-answer {
+  display: none;
+  padding: 0 1rem 0.85rem;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.biz-card-gold .biz-faq-item.is-open .faq-answer {
+  display: block;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────────── */
+.biz-card-gold .biz-footer-note {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  font-size: 0.75rem;
+  color: #475569;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ─── Toast ──────────────────────────────────────────────────────────────── */
+.biz-card-gold .biz-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid #f59e0b;
+  color: #fef08a;
+  padding: 0.65rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  animation: bizToastUp 0.25s ease;
+}
+
+@keyframes bizToastUp {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}

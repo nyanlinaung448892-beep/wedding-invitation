@@ -97,81 +97,106 @@ export const supabase = new Proxy({}, {
  * Falls back gracefully if Supabase is unreachable or times out.
  *
  * @param {string} slug       - e.g. 'ko-aung-ma-thandar-2025'
- * @param {number} timeoutMs  - Abort timeout in ms (default 5000)
+/**
+ * Fetches a single active invitation by its URL slug using native fetch().
+ * Falls back gracefully if Supabase is unreachable or times out.
+ * Includes resilient 12s timeout and automatic 1-step retry for slow mobile networks.
+ *
+ * @param {string} slug       - e.g. 'ko-aung-ma-thandar-2025'
+ * @param {number} timeoutMs  - Abort timeout in ms (default 12000)
+ * @param {number} retries    - Number of auto-retries on network timeout (default 1)
  * @returns {Promise<Object|null>}
  */
-export async function fetchInvitationBySlug(slug, timeoutMs = 5000) {
+export async function fetchInvitationBySlug(slug, timeoutMs = 12000, retries = 1) {
     if (!slug) return null;
     const cleanSlug = String(slug).trim().toLowerCase();
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-    try {
-        const url = `${SUPABASE_URL}/rest/v1/${TABLES.INVITATIONS}` +
-                    `?select=*&slug=ilike.${encodeURIComponent(cleanSlug)}&is_active=eq.true&limit=1`;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-        const res = await fetch(url, {
-            method : 'GET',
-            headers: {
-                'apikey'       : SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                'Accept'       : 'application/json',
-            },
-            signal: controller.signal,
-        });
+        try {
+            const url = `${SUPABASE_URL}/rest/v1/${TABLES.INVITATIONS}` +
+                        `?select=*&slug=ilike.${encodeURIComponent(cleanSlug)}&is_active=eq.true&limit=1`;
 
-        if (!res.ok) {
-            throw new Error(`Supabase HTTP ${res.status}`);
+            const res = await fetch(url, {
+                method : 'GET',
+                headers: {
+                    'apikey'       : SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Accept'       : 'application/json',
+                },
+                signal: controller.signal,
+            });
+
+            if (!res.ok) {
+                throw new Error(`Supabase HTTP ${res.status}`);
+            }
+
+            const rows = await res.json();
+            return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+
+        } catch (err) {
+            console.warn(`[supabase-config] Direct REST fetch failed (attempt ${attempt + 1}/${retries + 1}):`, err.message);
+            if (attempt < retries) {
+                // Short 600ms grace period before auto-retry
+                await new Promise(resolve => setTimeout(resolve, 600));
+            } else {
+                return null;
+            }
+        } finally {
+            clearTimeout(timer);
         }
-
-        const rows = await res.json();
-        return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
-
-    } catch (err) {
-        console.warn('[supabase-config] Direct REST fetch failed or timed out:', err.message);
-        return null;
-    } finally {
-        clearTimeout(timer);
     }
+    return null;
 }
 
 /**
  * Fetches the most recently created active invitation using native fetch().
  * Used when user enters root landing page without slug parameter.
+ * Includes resilient 12s timeout and automatic 1-step retry for slow mobile networks.
  * @param {number} timeoutMs
+ * @param {number} retries
  * @returns {Promise<Object|null>}
  */
-export async function fetchLatestActiveInvitation(timeoutMs = 5000) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+export async function fetchLatestActiveInvitation(timeoutMs = 12000, retries = 1) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-    try {
-        const url = `${SUPABASE_URL}/rest/v1/${TABLES.INVITATIONS}` +
-                    `?select=*&is_active=eq.true&order=created_at.desc&limit=1`;
+        try {
+            const url = `${SUPABASE_URL}/rest/v1/${TABLES.INVITATIONS}` +
+                        `?select=*&is_active=eq.true&order=created_at.desc&limit=1`;
 
-        const res = await fetch(url, {
-            method : 'GET',
-            headers: {
-                'apikey'       : SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                'Accept'       : 'application/json',
-            },
-            signal: controller.signal,
-        });
+            const res = await fetch(url, {
+                method : 'GET',
+                headers: {
+                    'apikey'       : SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Accept'       : 'application/json',
+                },
+                signal: controller.signal,
+            });
 
-        if (!res.ok) {
-            throw new Error(`Supabase HTTP ${res.status}`);
+            if (!res.ok) {
+                throw new Error(`Supabase HTTP ${res.status}`);
+            }
+
+            const rows = await res.json();
+            return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+
+        } catch (err) {
+            console.warn(`[supabase-config] fetchLatestActiveInvitation failed (attempt ${attempt + 1}/${retries + 1}):`, err.message);
+            if (attempt < retries) {
+                await new Promise(resolve => setTimeout(resolve, 600));
+            } else {
+                return null;
+            }
+        } finally {
+            clearTimeout(timer);
         }
-
-        const rows = await res.json();
-        return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
-
-    } catch (err) {
-        console.warn('[supabase-config] fetchLatestActiveInvitation failed or timed out:', err.message);
-        return null;
-    } finally {
-        clearTimeout(timer);
     }
+    return null;
 }
 
 // ─── Guest Wishes Helpers (Native fetch — Zero-Downtime CDN Safe) ─────────────

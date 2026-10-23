@@ -137,24 +137,62 @@
         "message": "ချစ်ခင်ရပါသော သူငယ်ချင်း မိတ်ဆွေများအားလုံး ပျော်ရွှင်စွာ ဆင်နွှဲနိုင်ရန် လှိုက်လှဲစွာ ဖိတ်ကြားအပ်ပါသည်"
       }
     },
-    "apex-creative-studio": {
-      "slug": "apex-creative-studio",
-      "template_id": "biz-card-minimal",
+    "apex-business-hub": {
+      "slug": "apex-business-hub",
+      "template_id": "biz-card-gold",
       "category": "business",
-      "title": "Apex Creative Studio (Digital Branding)",
+      "title": "Apex Business Hub (Invoice Tools & Digital Solutions)",
       "is_active": true,
       "customer_data": {
-        "company_name": "Apex Creative Studio",
-        "industry_tagline": "Digital Branding & Web Solutions",
-        "rsvp_phone": "09-987-654-321",
+        "company_name": "Apex Business Hub",
+        "tagline": "Invoice Tools & Digital Business Solutions",
+        "rsvp_phone": "09987654321",
         "rsvp_phone_href": "tel:09987654321",
-        "wedding_time": "တနင်္လာ မှ သောကြာ (နံနက် ၉:၀၀ - ညနေ ၅:၃၀)",
-        "venue_name": "ရန်ကုန်မြို့",
-        "venue_address": "အမှတ် (၁၂)၊ ကမ္ဘာအေးဘုရားလမ်း၊ ရန်ကင်းမြို့နယ်၊ ရန်ကုန်မြို့။",
-        "map_url": "https://maps.google.com",
+        "status_text": "🟢 Open Now",
+        "stat_users": "500+",
+        "stat_users_label": "Active Users",
+        "stat_rating": "4.9 ★",
+        "stat_rating_label": "Client Rating",
+        "stat_support": "24/7",
+        "stat_support_label": "Support",
         "cover_photo_url": "assets/images/wedding-memory-default.jpg",
-        "message": "ကျွန်ုပ်တို့သည် ခေတ်မီဆန်းသစ်သော Digital Branding၊ Web Application များနှင့် Creative ဒီဇိုင်းဝန်ဆောင်မှုများကို စိတ်ချယုံကြည်စွာ ပေးစွမ်းနေသော အဖွဲ့အစည်းဖြစ်ပါသည်။"
+        "message": "လုပ်ငန်းရှင်များအတွက် ဘောင်ချာနှင့် စာရင်းဇယား Tools များ၊ QR Digital Card များနှင့် Business Automation ဝန်ဆောင်မှုများကို တစ်နေရာတည်းတွင် စိတ်ချစွာ ရယူနိုင်ပါသည်။",
+        "facebook_url": "https://facebook.com",
+        "messenger_url": "https://m.me",
+        "tiktok_url": "https://tiktok.com",
+        "telegram_url": "https://t.me",
+        "telegram_group_url": "https://t.me",
+        "facebook_group_url": "https://facebook.com/groups",
+        "how_we_work": [
+          { "step": 1, "title": "ဆွေးနွေးခြင်း", "desc": "လုပ်ငန်းလိုအပ်ချက်ကို အသေးစိတ်မေးမြန်းခြင်း" },
+          { "step": 2, "title": "တည်ဆောက်ခြင်း", "desc": "စိတ်ကြိုက် ဒီဇိုင်းနှင့် စနစ်များ ရေးဆွဲပေးခြင်း" },
+          { "step": 3, "title": "လွှဲပြောင်းခြင်း", "desc": "စမ်းသပ်စစ်ဆေးပြီး အသင့်သုံးနိုင်အောင် ပေးအပ်ခြင်း" }
+        ],
+        "services": [
+          { "icon": "🌐", "title": "Web & App Development", "desc": "Modern responsive websites and powerful web applications" },
+          { "icon": "🎨", "title": "Brand Identity & Design", "desc": "Unique logos, digital business cards, and marketing materials" },
+          { "icon": "📈", "title": "Digital Marketing & Growth", "desc": "Targeted outreach and online business optimization" }
+        ],
+        "reviews": [
+          {
+            "name": "ကိုအောင်မင်း",
+            "role": "Online Shop Owner",
+            "rating": 5,
+            "text": "လုပ်ငန်းရှင်တွေအတွက် ဘောင်ချာနဲ့ စာရင်းဇယား စနစ်တွေ တကယ်ပဲ အဆင်ပြေပြေ သုံးလို့ရပါတယ်။ အထူး ကျေးဇူးတင်ပါတယ်။"
+          }
+        ],
+        "faq": [
+          {
+            "question": "ဝန်ဆောင်မှုများကို မည်သို့ ဆက်သွယ်ရယူနိုင်ပါသလဲ?",
+            "answer": "အထက်ပါ Official Channels များမှတစ်ဆင့် Messenger သို့မဟုတ် Telegram သို့ တိုက်ရိုက် စာပို့မေးမြန်း၍ ရယူနိုင်ပါသည်။"
+          },
+          {
+            "question": "ငွေပေးချေမှုပုံစံ မည်သို့ရှိပါသလဲ?",
+            "answer": "KBZPay, WavePay, AYA Pay စသည့် Mobile Banking စနစ်များဖြင့် လွယ်ကူလျင်မြန်စွာ ပေးချေနိုင်ပါသည်။"
+          }
+        ]
       }
     }
   }
 }
+

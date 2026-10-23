@@ -40,7 +40,7 @@ let _fallbackJSON = null;
 async function loadFallbackJSON() {
   if (_fallbackJSON) return _fallbackJSON;
   try {
-    const res = await fetch('data/fallback-invitations.json?v=15', { cache: 'no-store' });
+    const res = await fetch('data/fallback-invitations.json?v=16', { cache: 'no-store' });
     if (res.ok) {
       _fallbackJSON = await res.json();
     }
@@ -70,7 +70,7 @@ async function resolveInvitationData(slug, onLiveUpdate = null) {
   if (!slug) {
     console.info('[engine.js] No slug in URL — fetching latest active invitation from Supabase.');
     try {
-      const latest = await fetchLatestActiveInvitation(4000);
+      const latest = await fetchLatestActiveInvitation(12000, 1);
       if (latest && latest.customer_data) {
         return latest;
       }
@@ -95,7 +95,7 @@ async function resolveInvitationData(slug, onLiveUpdate = null) {
 
     // Asynchronously revalidate in background if online
     if (navigator.onLine && typeof onLiveUpdate === 'function') {
-      fetchInvitationBySlug(cleanSlug, 4000)
+      fetchInvitationBySlug(cleanSlug, 12000, 1)
         .then(remoteData => {
           if (remoteData) {
             try { localStorage.setItem(cacheKey, JSON.stringify(remoteData)); } catch (_) {}
@@ -112,9 +112,9 @@ async function resolveInvitationData(slug, onLiveUpdate = null) {
     return { ...cachedData, _isCached: true };
   }
 
-  // Tier 1: Supabase live fetch
+  // Tier 1: Supabase live fetch with 12s timeout and automatic 1-step retry
   try {
-    const remoteData = await fetchInvitationBySlug(cleanSlug);
+    const remoteData = await fetchInvitationBySlug(cleanSlug, 12000, 1);
     if (remoteData) {
       try { localStorage.setItem(cacheKey, JSON.stringify(remoteData)); } catch (_) {}
       return remoteData;
@@ -123,17 +123,19 @@ async function resolveInvitationData(slug, onLiveUpdate = null) {
     // Network failure — continue to fallback tiers
   }
 
-  // Tier 3: Static fallback-invitations.json
+  // Tier 3: Static fallback-invitations.json (ONLY if matches cleanSlug)
   const fb = await loadFallbackJSON();
   if (fb?.invitations?.[cleanSlug]) {
     console.warn('[engine.js] Supabase unavailable — using fallback JSON for slug:', cleanSlug);
     return fb.invitations[cleanSlug];
   }
 
-  // Tier 4: Ultimate default fallback
-  console.warn('[engine.js] Slug not found anywhere — showing default invitation.');
-  if (fb?.default) return { ...fb.default, _isFallbackDefault: true };
-  return DEFAULT_INVITATION;
+  // Slug was specifically requested by guest/QR, but not found or network timed out.
+  // NEVER silently swap to a stranger's wedding card (DEFAULT_INVITATION)!
+  console.warn('[engine.js] Slug not found in Supabase or fallback:', cleanSlug);
+  const notFoundErr = new Error(`Invitation not found or network timeout: ${cleanSlug}`);
+  notFoundErr.code = 'NETWORK_OR_NOT_FOUND';
+  throw notFoundErr;
 }
 
 // ─── Myanmar Localization & Formatting Utilities ──────────────────────────────
@@ -338,7 +340,7 @@ function bindData(root, data) {
 // ─── Dynamic Meta & Open Graph Updater ────────────────────────────────────────
 
 function updatePageMeta(data) {
-  const displayTitle = data.display_title || data.couple_names || [data.groom_name, data.bride_name].filter(Boolean).join(' & ') || 'ထိမ်းမြားမင်္ဂလာ ဖိတ်ကြားလွှာ';
+  const displayTitle = data.display_title || data.company_name || data.celebrant_name || data.couple_names || [data.groom_name, data.bride_name].filter(Boolean).join(' & ') || 'ဒစ်ဂျစ်တယ် ဖိတ်ကြားလွှာ & Profile';
   const date = data.wedding_date_formatted || '';
 
   const pageTitle = date ? `${displayTitle} — ${date}` : displayTitle;
@@ -349,8 +351,10 @@ function updatePageMeta(data) {
     if (el) el.setAttribute('content', content);
   };
 
+  const metaDesc = data.tagline || data.industry_tagline || (data.venue_name ? `${displayTitle} — ${data.venue_name}` : displayTitle);
+
   setMeta('meta[property="og:title"]', pageTitle);
-  setMeta('meta[property="og:description"]', data.venue_name ? `${displayTitle} — ${data.venue_name}` : displayTitle);
+  setMeta('meta[property="og:description"]', metaDesc);
   if (data.cover_photo_url) {
     setMeta('meta[property="og:image"]', data.cover_photo_url);
   }
@@ -366,7 +370,7 @@ function loadTemplateCSS(templateId) {
     const link = document.createElement('link');
     link.id   = 'template-style';
     link.rel  = 'stylesheet';
-    link.href = `templates/${templateId}/style.css?v=15`;
+    link.href = `templates/${templateId}/style.css?v=16`;
 
     link.onload  = () => resolve();
     link.onerror = () => {
@@ -386,6 +390,11 @@ const ERROR_MESSAGES = {
     message: 'ဖိတ်ကြားလွှာ URL မှားယွင်းနေပါသည် သို့မဟုတ် ဖိတ်ကြားလွှာ ပိတ်ထားခြင်း ဖြစ်နိုင်ပါသည်။',
     canRetry: false,
   },
+  'network-error': {
+    title:   'အင်တာနက်လိုင်း ခေတ္တနှေးနေပါသည်',
+    message: 'ဖိတ်ကြားလွှာကို ဖွင့်ရန် ကြိုးစားနေဆဲဖြစ်ပါသည်။ အင်တာနက်လိုင်း စစ်ဆေးပြီး ပြန်လည်ကြိုးစားပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည်။',
+    canRetry: true,
+  },
   'template-error': {
     title:   'မင်္ဂလာဖိတ်ကြားလွှာ',
     message: 'ဆာဗာချိတ်ဆက်မှု ခေတ္တအဆင်မပြေဖြစ်နေပါသည်။ ခေတ္တစောင့်ဆိုင်းပြီး ပြန်လည်ကြိုးစားပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည်။',
@@ -398,7 +407,7 @@ function showError(type) {
   const errTitle  = document.getElementById('error-title');
   const errMsg    = document.getElementById('error-message');
 
-  const config = ERROR_MESSAGES[type] ?? ERROR_MESSAGES['not-found'];
+  const config = ERROR_MESSAGES[type] ?? ERROR_MESSAGES['network-error'];
 
   if (errTitle)  errTitle.textContent  = config.title;
   if (errMsg)    errMsg.textContent    = config.message;
@@ -409,18 +418,27 @@ function showError(type) {
       retryBtn = document.createElement('button');
       retryBtn.id = 'error-retry-button';
       retryBtn.className = 'error-retry-btn';
-      retryBtn.textContent = 'ပြန်လည်ကြိုးစားမည်';
+      retryBtn.type = 'button';
+      retryBtn.textContent = '🔄 ပြန်လည်ကြိုးစားမည်';
       retryBtn.addEventListener('click', () => {
         errScreen.classList.remove('visible');
         const loadScreen = document.getElementById('loading-screen');
-        if (loadScreen) loadScreen.classList.remove('hidden');
+        if (loadScreen) {
+          loadScreen.classList.remove('hidden');
+          const sub = loadScreen.querySelector('.loading-sub');
+          if (sub) sub.textContent = 'စာမျက်နှာ ဖွင့်နေပါသည်...';
+        }
         initEngine();
       });
       errScreen.appendChild(retryBtn);
+    } else {
+      retryBtn.textContent = '🔄 ပြန်လည်ကြိုးစားမည်';
     }
     retryBtn.hidden = false;
+    retryBtn.style.display = '';
   } else if (retryBtn) {
     retryBtn.hidden = true;
+    retryBtn.style.display = 'none';
   }
 
   if (errScreen) errScreen.classList.add('visible');
@@ -615,6 +633,20 @@ async function initEngine() {
   const params  = new URLSearchParams(window.location.search);
   const rawSlug = (params.get('id') || params.get('slug') || window.location.hash.replace(/^#/, '') || '').trim().toLowerCase() || null;
 
+  // Progressive loading notifications for slow mobile networks
+  const loadingSub = document.querySelector('.loading-sub');
+  const timer1 = setTimeout(() => {
+    if (loadingSub) loadingSub.textContent = 'အင်တာနက်လိုင်း စစ်ဆေးနေပါသည်...';
+  }, 3500);
+  const timer2 = setTimeout(() => {
+    if (loadingSub) loadingSub.textContent = 'ဒေတာများ ဆွဲယူနေဆဲဖြစ်ပါသည်၊ ခေတ္တစောင့်ဆိုင်းပေးပါ...';
+  }, 7500);
+
+  const clearLoadingTimers = () => {
+    clearTimeout(timer1);
+    clearTimeout(timer2);
+  };
+
   try {
     const onLiveUpdate = (remoteData) => {
       const container = document.getElementById('template-container');
@@ -635,7 +667,7 @@ async function initEngine() {
 
     // Step 4 & 5: Parallel fetch layout HTML fragment & load template CSS
     const [layoutHTML] = await Promise.all([
-      fetch(`templates/${templateId}/layout.html?v=15`).then(res => {
+      fetch(`templates/${templateId}/layout.html?v=16`).then(res => {
         if (!res.ok) throw new Error(`Failed to fetch templates/${templateId}/layout.html`);
         return res.text();
       }),
@@ -656,6 +688,7 @@ async function initEngine() {
     updatePageMeta(data);
 
     // Step 9: Reveal template and dismiss loading screen
+    clearLoadingTimers();
     hideLoadingScreen();
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -668,7 +701,7 @@ async function initEngine() {
 
     // Step 11: Decoupled Plugin Execution — Dynamically mount template's script.js if present
     try {
-      const templateScriptUrl = `../templates/${templateId}/script.js?v=15`;
+      const templateScriptUrl = `../templates/${templateId}/script.js?v=16`;
       const templateModule = await import(templateScriptUrl);
 
       if (templateModule && typeof templateModule.init === 'function') {
@@ -689,43 +722,43 @@ async function initEngine() {
     }
 
   } catch (err) {
-    console.error('[engine.js] Unexpected error — attempting emergency fallback render:', err);
+    clearLoadingTimers();
+    console.error('[engine.js] Invitation loading exception:', err);
+
+    if (err.code === 'NETWORK_OR_NOT_FOUND') {
+      showError('network-error');
+      return;
+    }
+
     reportSystemError({
       severity: 'error',
       source: 'engine',
       message: `Engine render failure (${rawSlug || 'default'}): ${err.message || 'Unknown error'}`,
       details: { stack: err.stack, slug: rawSlug, url: window.location.href }
     });
-    try {
-      const emergencyLayout = await fetch('templates/floral-pink/layout.html?v=15');
-      if (emergencyLayout.ok) {
-        const container = document.getElementById('template-container');
-        container.innerHTML = await emergencyLayout.text();
-        await loadTemplateCSS('floral-pink');
-        const data = enrichCustomerData(DEFAULT_INVITATION.customer_data);
-        bindData(container, data);
-        updatePageMeta(data);
-        hideLoadingScreen();
-        requestAnimationFrame(() => requestAnimationFrame(() => container.classList.add('visible')));
-        initScrollAnimations();
 
-        try {
-          const emergencyModule = await import('../templates/floral-pink/script.js?v=10');
-          if (emergencyModule && typeof emergencyModule.init === 'function') {
-            emergencyModule.init({
-              container,
-              data,
-              helpers: sharedHelpers,
-              slug: 'default'
-            });
-          }
-        } catch (_) {}
-        return;
+    // Only attempt emergency demo render if NO specific slug was requested (direct landing visit)
+    if (!rawSlug) {
+      try {
+        const emergencyLayout = await fetch('templates/floral-pink/layout.html?v=16');
+        if (emergencyLayout.ok) {
+          const container = document.getElementById('template-container');
+          container.innerHTML = await emergencyLayout.text();
+          await loadTemplateCSS('floral-pink');
+          const data = enrichCustomerData(DEFAULT_INVITATION.customer_data);
+          bindData(container, data);
+          updatePageMeta(data);
+          hideLoadingScreen();
+          requestAnimationFrame(() => requestAnimationFrame(() => container.classList.add('visible')));
+          initScrollAnimations();
+          return;
+        }
+      } catch (emergencyErr) {
+        console.error('[engine.js] Emergency render failed:', emergencyErr);
       }
-    } catch (emergencyErr) {
-      console.error('[engine.js] Emergency render failed:', emergencyErr);
     }
-    showError('template-error');
+
+    showError('network-error');
   }
 }
 

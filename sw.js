@@ -3,28 +3,28 @@
 // Provides 100% Offline Caching for Shell, Data, and Couple Photos
 // =============================================================================
 
-const SHELL_CACHE_NAME = 'wedding-shell-v15';
+const SHELL_CACHE_NAME = 'wedding-shell-v16';
 const PHOTO_CACHE_NAME = 'wedding-invitation-photos-v2';
 
 const SHELL_ASSETS = [
   './',
   './index.html',
   './404.html',
-  './css/global.css?v=15',
-  './js/engine.js?v=15',
+  './css/global.css?v=16',
+  './js/engine.js?v=16',
   './js/supabase-config.js',
   './js/calendar.js',
-  './templates/registry.json?v=15',
-  './templates/floral-pink/layout.html?v=15',
-  './templates/floral-pink/style.css?v=15',
-  './templates/floral-pink/script.js?v=15',
-  './templates/neon-birthday/layout.html?v=15',
-  './templates/neon-birthday/style.css?v=15',
-  './templates/neon-birthday/script.js?v=15',
-  './templates/biz-card-minimal/layout.html?v=15',
-  './templates/biz-card-minimal/style.css?v=15',
-  './templates/biz-card-minimal/script.js?v=15',
-  './data/fallback-invitations.json?v=15',
+  './templates/registry.json?v=16',
+  './templates/floral-pink/layout.html?v=16',
+  './templates/floral-pink/style.css?v=16',
+  './templates/floral-pink/script.js?v=16',
+  './templates/neon-birthday/layout.html?v=16',
+  './templates/neon-birthday/style.css?v=16',
+  './templates/neon-birthday/script.js?v=16',
+  './templates/biz-card-gold/layout.html?v=16',
+  './templates/biz-card-gold/style.css?v=16',
+  './templates/biz-card-gold/script.js?v=16',
+  './data/fallback-invitations.json?v=16',
   './assets/images/couple-portrait-default.jpg',
   './assets/images/wedding-memory-default.jpg'
 ];
@@ -61,6 +61,11 @@ self.addEventListener('fetch', (event) => {
 
   // Ignore non-GET requests
   if (request.method !== 'GET') return;
+
+  // Let Supabase REST API data requests pass directly to network without SW interference
+  if (url.origin.includes('supabase.co') && !url.pathname.includes('/storage/v1/object/public/')) {
+    return;
+  }
 
   // 1. Photo requests (Supabase storage or image assets)
   const isImage = request.destination === 'image' || url.pathname.match(/\.(jpg|jpeg|png|webp|gif|svg)$/i);

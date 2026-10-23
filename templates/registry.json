@@ -49,24 +49,34 @@
     "available": true
   },
   {
-    "id": "biz-card-minimal",
-    "name": "Apex Business Profile (စီးပွားရေးလုပ်ငန်း Profile)",
+    "id": "biz-card-gold",
+    "name": "Apex Business Card (Gold Luxury Hub)",
     "category": "business",
-    "description": "ခေတ်မီစီးပွားရေးလုပ်ငန်းသုံး Digital Profile — လုပ်ငန်းမိတ်ဆက်၊ ဝန်ဆောင်မှုများ၊ တိုက်ရိုက်ဖုန်းခေါ်ဆိုမှု၊ Google Map လမ်းညွှန်နှင့် vCard (.vcf) ဖုန်းထဲသိမ်းဆည်းမှု စနစ်များ ပါဝင်ပါသည်",
-    "thumbnail": "templates/biz-card-minimal/thumbnail.jpg",
-    "tags": ["business", "portfolio", "vcard", "contact", "corporate", "professional"],
+    "description": "ရွှေရောင်ဆန်းသစ်သော Premium Digital Business Card — လုပ်ငန်းမိတ်ဆက်၊ ဝန်ဆောင်မှုများ၊ တိုက်ရိုက်ဖုန်းခေါ်ဆိုမှု၊ Social Channels (Facebook, Messenger, TikTok, Telegram)၊ HOW WE WORK၊ သုံးစွဲသူများမှတ်ချက် (Reviews) နှင့် အမေး/အဖြေ (Q&A Accordion) စနစ်များ ပါဝင်ပါသည်",
+    "thumbnail": "templates/biz-card-gold/thumbnail.jpg",
+    "tags": ["business", "card", "gold", "luxury", "vcard", "contact", "reviews", "services", "faq"],
     "required_fields": [
       "company_name",
-      "industry_tagline",
+      "tagline",
       "rsvp_phone"
     ],
     "optional_fields": [
       "message",
-      "venue_name",
-      "venue_address",
-      "wedding_time",
-      "map_url",
-      "cover_photo"
+      "cover_photo",
+      "status_text",
+      "stat_users",
+      "stat_rating",
+      "stat_support",
+      "facebook_url",
+      "messenger_url",
+      "tiktok_url",
+      "telegram_url",
+      "telegram_group_url",
+      "facebook_group_url",
+      "services",
+      "how_we_work",
+      "reviews",
+      "faq"
     ],
     "available": true
   }

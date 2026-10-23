@@ -201,10 +201,10 @@ async function testAuthAndSession() {
 }
 
 // =============================================================================
-// TEST 2: Customer Data Isolation Test
+// TEST 2: Multi-Category Customer Data Isolation Test
 // =============================================================================
 async function testCustomerDataIsolation(adminToken) {
-  logHeader('TEST 2: Customer Data Isolation Test (No Cross-Talk & Clean Sync)');
+  logHeader('TEST 2: Multi-Category Customer Data Isolation Test (Wedding, Birthday & Business)');
 
   if (!adminToken) {
     logWarn(
@@ -215,9 +215,10 @@ async function testCustomerDataIsolation(adminToken) {
   }
 
   const timestamp = Date.now();
-  const slugA = `test-iso-a-${timestamp}`;
-  const slugB = `test-iso-b-${timestamp}`;
+  const slugA = `test-iso-wedding-${timestamp}`;
+  const slugB = `test-iso-biz-${timestamp}`;
 
+  // Multi-Category: Record A is Wedding, Record B is Business
   const itemA = {
     slug: slugA,
     template_id: 'floral-pink',
@@ -226,13 +227,13 @@ async function testCustomerDataIsolation(adminToken) {
   };
   const itemB = {
     slug: slugB,
-    template_id: 'floral-pink',
-    customer_data: { groom_name: 'Kyaw Kyaw', bride_name: 'Hnin Hnin', wedding_date: '2026-12-15' },
+    template_id: 'biz-card-gold',
+    customer_data: { company_name: 'Apex Business Hub', tagline: 'Digital Solutions', rsvp_phone: '09123456789' },
     is_active: true
   };
 
   try {
-    // 2.1 Insert Customer A and B
+    // 2.1 Insert Multi-Category Records A (Wedding) and B (Business)
     const createRes = await supabaseFetch('/rest/v1/invitations', {
       method: 'POST',
       headers: { 'Prefer': 'return=representation' },
@@ -241,12 +242,12 @@ async function testCustomerDataIsolation(adminToken) {
 
     if (!createRes.ok) {
       const err = await createRes.json();
-      logFail('Data Isolation Setup (Insert 2 records)', err.message || createRes.statusText, 'Check invitations table RLS for authenticated role');
+      logFail('Multi-Category Isolation Setup (Insert 2 records)', err.message || createRes.statusText, 'Check invitations table RLS for authenticated role');
       return;
     }
-    logPass('Data Isolation Setup', `Created 2 isolated records (${slugA}, ${slugB})`);
+    logPass('Multi-Category Isolation Setup', `Created isolated cross-category records (Wedding: ${slugA}, Business: ${slugB})`);
 
-    // 2.2 Update ONLY Customer A
+    // 2.2 Update ONLY Customer A (Wedding)
     const updateRes = await supabaseFetch(`/rest/v1/invitations?slug=eq.${slugA}`, {
       method: 'PATCH',
       headers: { 'Prefer': 'return=representation' },
@@ -256,25 +257,25 @@ async function testCustomerDataIsolation(adminToken) {
     }, adminToken);
 
     if (!updateRes.ok) {
-      logFail('Targeted Update on Customer A', `HTTP ${updateRes.status}`);
+      logFail('Targeted Update on Wedding Record', `HTTP ${updateRes.status}`);
     } else {
-      logPass('Targeted Update on Customer A', 'Successfully updated customer A details');
+      logPass('Targeted Update on Wedding Record', 'Successfully updated wedding record details');
     }
 
-    // 2.3 Verify Customer B is 100% UNTOUCHED
+    // 2.3 Verify Customer B (Business) is 100% UNTOUCHED
     const queryBRes = await supabaseFetch(`/rest/v1/invitations?slug=eq.${slugB}&select=*`, {
       method: 'GET'
     }, adminToken);
     const dataB = await queryBRes.json();
 
     if (Array.isArray(dataB) && dataB.length === 1) {
-      if (dataB[0].customer_data.groom_name === 'Kyaw Kyaw') {
-        logPass('Customer B Untouched Verification', `Customer B data remained intact ("${dataB[0].customer_data.groom_name}")`);
+      if (dataB[0].customer_data.company_name === 'Apex Business Hub' && dataB[0].template_id === 'biz-card-gold') {
+        logPass('Cross-Category Untouched Verification', `Business payload remained intact ("${dataB[0].customer_data.company_name}", ${dataB[0].customer_data.rsvp_phone})`);
       } else {
-        logFail('Customer B Untouched Verification', 'Customer B data was modified unexpectedly!', 'Review SQL update queries or filters in admin.js');
+        logFail('Cross-Category Untouched Verification', 'Business record was modified unexpectedly by wedding update!', 'Review SQL update queries or filters in admin.js');
       }
     } else {
-      logFail('Customer B Untouched Verification', 'Could not locate Customer B record');
+      logFail('Cross-Category Untouched Verification', 'Could not locate Business record B');
     }
 
     // 2.4 Auto-Cleanup: Delete test rows to keep DB clean
@@ -288,7 +289,7 @@ async function testCustomerDataIsolation(adminToken) {
       logWarn('Test Data Auto-Cleanup', `Failed to purge test rows: HTTP ${cleanupRes.status}`);
     }
   } catch (err) {
-    logFail('Customer Data Isolation Flow', err.message);
+    logFail('Multi-Category Data Isolation Flow', err.message);
   }
 }
 
@@ -298,13 +299,24 @@ async function testCustomerDataIsolation(adminToken) {
 async function testMainFeatures() {
   logHeader('TEST 3: Main Features Test (URL, QR Engine & Template Integrity)');
 
-  // 3.1 Registry Integrity Check
+  // 3.1 Multi-Category Registry Integrity Check
   const registryPath = path.join(ROOT_DIR, 'templates', 'registry.json');
   if (fs.existsSync(registryPath)) {
     try {
       const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
       if (Array.isArray(registry) && registry.length > 0) {
         logPass('Template Registry JSON', `Found ${registry.length} registered templates`);
+
+        // Check required categories
+        const foundCategories = new Set(registry.map(t => t.category));
+        const requiredCategories = ['wedding', 'birthday', 'business'];
+        const missingCategories = requiredCategories.filter(cat => !foundCategories.has(cat));
+
+        if (missingCategories.length === 0) {
+          logPass('Multi-Category Schema Coverage', `Registry covers all core categories (${Array.from(foundCategories).join(', ')})`);
+        } else {
+          logFail('Multi-Category Schema Coverage', `Missing categories in registry: ${missingCategories.join(', ')}`);
+        }
 
         // Check template files on disk
         let allTemplatesValid = true;
@@ -378,7 +390,7 @@ async function testMainFeatures() {
         { name: 'Customer (Nyan Lin Aung - 104 chars, Version 9)', url: 'https://nyanlinaung448892-beep.github.io/wedding-invitation/index.html?id=mg-nyan-lin-aung-thone-nadi-soe-moe' },
         { name: 'Wedding Template (Floral Pink)', url: 'https://nyanlinaung448892-beep.github.io/wedding-invitation/index.html?id=heinthu-aung-pan-ei-phyu-2026' },
         { name: 'Birthday Template (Neon Birthday)', url: 'https://nyanlinaung448892-beep.github.io/wedding-invitation/index.html?id=baby-thiri-1st-birthday-2026' },
-        { name: 'Business Template (Apex Minimal)', url: 'https://nyanlinaung448892-beep.github.io/wedding-invitation/index.html?id=apex-luxury-digital-studio-consulting-profile' },
+        { name: 'Business Template (Apex Gold)', url: 'https://nyanlinaung448892-beep.github.io/wedding-invitation/index.html?id=apex-business-hub' },
         { name: 'Stress Test (180 chars, Version 12)', url: 'https://nyanlinaung448892-beep.github.io/wedding-invitation/index.html?id=' + 'x'.repeat(120) }
       ];
 
@@ -440,7 +452,7 @@ async function testMainFeatures() {
     logFail('QR Engine Script Integrity', 'js/qr-generator.js was not found!');
   }
 
-  // 3.4 Fallback Offline Data Check
+  // 3.4 Fallback Offline Multi-Category Data Check
   const fallbackPath = path.join(ROOT_DIR, 'data', 'fallback-invitations.json');
   if (fs.existsSync(fallbackPath)) {
     try {
@@ -451,6 +463,15 @@ async function testMainFeatures() {
 
       if (count > 0) {
         logPass('Fallback Offline Invitations', `Valid fallback dataset with ${count} records available`);
+
+        // Check if multiple categories/templates exist in fallback
+        const invs = Object.values(fallbackData.invitations || {});
+        const tplIds = new Set(invs.map(i => i.template_id).filter(Boolean));
+        if (tplIds.has('floral-pink') && (tplIds.has('neon-birthday') || tplIds.has('biz-card-gold'))) {
+          logPass('Fallback Multi-Template Coverage', `Fallback data covers templates: ${Array.from(tplIds).join(', ')}`);
+        } else {
+          logWarn('Fallback Multi-Template Coverage', `Fallback currently only covers: ${Array.from(tplIds).join(', ')}`);
+        }
       } else {
         logWarn('Fallback Offline Invitations', 'Fallback dataset exists but has 0 records');
       }
@@ -599,7 +620,7 @@ async function testSecurityAndRLS() {
 async function runAllTests() {
   const startTime = Date.now();
   console.log(`\n${C.bold}=======================================================================`);
-  console.log(` 🚀 Digital Wedding Invitation — System Integrity & Security Test Suite`);
+  console.log(` 🚀 Digital Invitation & Multi-Category Platform — System Integrity Test Suite`);
   console.log(`=======================================================================${C.reset}`);
   console.log(`Supabase URL: ${C.dim}${SUPABASE_URL}${C.reset}`);
   console.log(`Testing Mode: ${C.dim}Automated CLI Runner${C.reset}\n`);

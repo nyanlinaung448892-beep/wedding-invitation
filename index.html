@@ -29,7 +29,7 @@
   >
 
   <!-- Global Design System CSS -->
-  <link rel="stylesheet" href="css/global.css?v=15">
+  <link rel="stylesheet" href="css/global.css?v=16">
 </head>
 <body>
 
@@ -43,11 +43,11 @@
       <div class="loading-ring"></div>
     </div>
     <p class="loading-text">Digital Invitation & Profile</p>
-    <p class="loading-sub">စာမျက်နှာ ဖွင့်နေပါသည်...</p>
+    <p class="loading-sub" id="loading-sub-text">စာမျက်နှာ ဖွင့်နေပါသည်...</p>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════
-       Error Screen — shown when slug not found / template error
+       Error Screen — shown when slug not found / network error
        ═══════════════════════════════════════════════════════════ -->
   <div id="error-screen" role="alert" aria-live="assertive">
     <div class="error-icon" aria-hidden="true">💌</div>
@@ -55,6 +55,9 @@
     <p  class="error-message" id="error-message">
       ဤ URL သည် မမှန်ကန်ပါ သို့မဟုတ် ဖိတ်ကြားလွှာ ပိတ်ထားသည်။
     </p>
+    <button id="error-retry-button" class="error-retry-btn" type="button" style="display: none;">
+      🔄 ပြန်လည်ကြိုးစားမည်
+    </button>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════
@@ -63,13 +66,13 @@
   <div id="template-container" aria-live="polite"></div>
 
   <!-- Template Engine (ES Module) -->
-  <script type="module" src="js/engine.js?v=15"></script>
+  <script type="module" src="js/engine.js?v=16"></script>
 
   <!-- Service Worker Registration (100% Offline Support) -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=15').catch(err => {
+        navigator.serviceWorker.register('./sw.js?v=16').catch(err => {
           console.warn('[SW] ServiceWorker registration notice:', err);
         });
       });

@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/global.css?v=15">
-  <link rel="stylesheet" href="css/admin.css?v=15">
+  <link rel="stylesheet" href="css/global.css?v=16">
+  <link rel="stylesheet" href="css/admin.css?v=16">
 </head>
 <body class="admin-body">
   <main>
@@ -200,21 +200,123 @@
             <div><label for="turning-age">ပြည့်မြောက်မည့်အသက် (Age)</label><input id="turning-age" name="turning_age" type="number" placeholder="ဥပမာ 18"></div>
           </div>
 
-          <!-- Business Specific Fields -->
+          <!-- Business Specific Fields (Minimal) -->
           <div id="business-fields" class="form-span-full form-grid" style="padding: 0; margin: 0;" hidden>
             <div><label for="company-name">လုပ်ငန်း / ဆိုင်အမည်</label><input id="company-name" name="company_name" placeholder="ဥပမာ Shwe Digital Studio"></div>
             <div><label for="tagline">Tagline / ဆောင်ပုဒ်</label><input id="tagline" name="tagline" placeholder="ဥပမာ အရည်အသွေးမြင့် စာပုံနှိပ်လုပ်ငန်း"></div>
             <div class="form-span-full"><label for="website-url">Website / Facebook Page Link</label><input id="website-url" name="website_url" type="url" placeholder="https://facebook.com/..."></div>
           </div>
 
-          <!-- Common Event Fields -->
-          <div><label for="wedding-date">ကျင်းပမည့်ရက်စွဲ (Date)</label><input id="wedding-date" name="wedding_date" type="date"></div>
-          <div><label for="wedding-time">အချိန် (Time)</label><input id="wedding-time" name="wedding_time" placeholder="ဥပမာ ၁၀:၀၀ နံနက်"></div>
-          <div><label for="venue-name">နေရာ / ခန်းမ (Venue)</label><input id="venue-name" name="venue_name"></div>
-          <div><label for="rsvp-phone">ဆက်သွယ်ရန်ဖုန်း (Phone)</label><input id="rsvp-phone" name="rsvp_phone" type="tel"></div>
-          <div class="form-span-full"><label for="venue-address">လိပ်စာ (Address)</label><textarea id="venue-address" name="venue_address" rows="2"></textarea></div>
-          <div class="form-span-full"><label for="map-url">Map URL</label><input id="map-url" name="map_url" type="url" placeholder="https://maps.google.com/..."></div>
-          <div class="form-span-full"><label for="invitation-message">မေတ္တာပို့ / မိတ်ဆက် စာသား</label><textarea id="invitation-message" name="message" rows="3"></textarea></div>
+          <!-- Business Card Gold (Apex Business Hub) Dedicated Form Fields -->
+          <div id="biz-card-gold-fields" class="form-span-full form-grid" style="padding: 0; margin: 0;" hidden>
+            <div class="form-span-full" style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: var(--radius-sm); padding: 0.85rem; margin-top: 0.5rem;">
+              <h3 style="color: #fbbf24; font-size: 1rem; margin: 0 0 0.25rem 0;">✨ Apex Business Card (Gold Edition) အချက်အလက်များ</h3>
+              <p style="color: #fef08a; font-size: 0.82rem; margin: 0;">ဤ Template အတွက် လိုအပ်သော လုပ်ငန်း Profile၊ Social Links၊ ဝန်ဆောင်မှုများနှင့် Reviews များကို စိတ်ကြိုက်ထည့်သွင်းပါ။</p>
+            </div>
+
+            <div><label for="biz-gold-company-name">လုပ်ငန်း / ဆိုင်အမည် (Business Name) *</label><input id="biz-gold-company-name" name="biz_company_name" placeholder="ဥပမာ Apex Business Hub"></div>
+            <div><label for="biz-gold-tagline">Tagline / ဆောင်ပုဒ် (Subtitle) *</label><input id="biz-gold-tagline" name="biz_tagline" placeholder="ဥပမာ Invoice Tools & Digital Solutions"></div>
+            <div><label for="biz-gold-phone">တိုက်ရိုက်ဆက်သွယ်ရန်ဖုန်း (Hotline) *</label><input id="biz-gold-phone" name="biz_phone" type="tel" placeholder="ဥပမာ 09987654321"></div>
+            <div><label for="biz-gold-status-text">Operating Status Badge</label><input id="biz-gold-status-text" name="biz_status_text" value="🟢 Open Now" placeholder="🟢 Open Now"></div>
+
+            <div class="form-span-full"><label for="biz-gold-message">လုပ်ငန်းမိတ်ဆက် / Bio (About Message)</label><textarea id="biz-gold-message" name="biz_message" rows="3" placeholder="လုပ်ငန်းရှင်များအတွက် ဘောင်ချာနှင့် စာရင်းဇယား Tools များ..."></textarea></div>
+
+            <!-- Stats Counters -->
+            <div class="form-span-full" style="margin-top: 0.5rem;">
+              <label style="color: #fbbf24; font-weight: 700; margin-bottom: 0.4rem;">📊 Header Stat Counters (ဂဏန်းနှင့် စာတန်း ၃ ခု)</label>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem;">
+                <div>
+                  <input id="biz-gold-stat1-val" name="biz_stat1_val" value="500+" placeholder="500+" style="font-weight:700;">
+                  <input id="biz-gold-stat1-lbl" name="biz_stat1_lbl" value="Active Users" placeholder="Active Users" style="font-size:0.8rem; margin-top:0.25rem;">
+                </div>
+                <div>
+                  <input id="biz-gold-stat2-val" name="biz_stat2_val" value="4.9 ★" placeholder="4.9 ★" style="font-weight:700;">
+                  <input id="biz-gold-stat2-lbl" name="biz_stat2_lbl" value="Client Rating" placeholder="Client Rating" style="font-size:0.8rem; margin-top:0.25rem;">
+                </div>
+                <div>
+                  <input id="biz-gold-stat3-val" name="biz_stat3_val" value="24/7" placeholder="24/7" style="font-weight:700;">
+                  <input id="biz-gold-stat3-lbl" name="biz_stat3_lbl" value="Support" placeholder="Support" style="font-size:0.8rem; margin-top:0.25rem;">
+                </div>
+              </div>
+            </div>
+
+            <!-- Official Social Media Channels -->
+            <div class="form-span-full" style="margin-top: 0.8rem;">
+              <label style="color: #fbbf24; font-weight: 700;">🌐 Official Social Media Channels (ဖြည့်ထားသည်များသာ ပြသမည်)</label>
+              <small style="color: var(--color-primary-light); margin-bottom: 0.6rem;">Customer ဘက်တွင် ခလုတ်နှိပ်သည်နှင့် တိုက်ရိုက်ရောက်ပါမည်။ မဖြည့်ထားသော URL များကို အလိုအလျောက် ဖျောက်ထားပါမည်။</small>
+              <div class="form-grid" style="padding: 0; margin-top: 0.4rem;">
+                <div><label for="biz-gold-fb-url" style="font-size:0.85rem; margin-top:0.2rem;">📘 Official Facebook Page URL</label><input id="biz-gold-fb-url" name="biz_facebook_url" type="url" placeholder="https://facebook.com/yourpage"></div>
+                <div><label for="biz-gold-messenger-url" style="font-size:0.85rem; margin-top:0.2rem;">💬 Chat on Messenger URL</label><input id="biz-gold-messenger-url" name="biz_messenger_url" type="url" placeholder="https://m.me/yourpage"></div>
+                <div><label for="biz-gold-tiktok-url" style="font-size:0.85rem; margin-top:0.2rem;">🎵 Official TikTok URL</label><input id="biz-gold-tiktok-url" name="biz_tiktok_url" type="url" placeholder="https://tiktok.com/@yourprofile"></div>
+                <div><label for="biz-gold-telegram-channel-url" style="font-size:0.85rem; margin-top:0.2rem;">✈️ Telegram Channel URL</label><input id="biz-gold-telegram-channel-url" name="biz_telegram_channel_url" type="url" placeholder="https://t.me/yourchannel"></div>
+                <div><label for="biz-gold-telegram-group-url" style="font-size:0.85rem; margin-top:0.2rem;">👥 Telegram Discussion Group URL</label><input id="biz-gold-telegram-group-url" name="biz_telegram_group_url" type="url" placeholder="https://t.me/yourgroup"></div>
+                <div><label for="biz-gold-fb-group-url" style="font-size:0.85rem; margin-top:0.2rem;">🤝 Facebook Community Group URL</label><input id="biz-gold-fb-group-url" name="biz_facebook_group_url" type="url" placeholder="https://facebook.com/groups/yourgroup"></div>
+              </div>
+            </div>
+
+            <!-- Dynamic Services Section -->
+            <div class="form-span-full" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 0.8rem;">
+              <div class="field-header-row">
+                <label style="color: #fbbf24; font-weight: 700; margin: 0;">💼 ရရှိနိုင်သော ဝန်ဆောင်မှုများ (Services)</label>
+                <button type="button" id="biz-gold-add-service-btn" class="button button-quiet" style="min-height: 32px; padding: 0.2rem 0.6rem; font-size: 0.8rem;">+ ဝန်ဆောင်မှု အသစ်ထည့်မည်</button>
+              </div>
+              <small style="margin-bottom: 0.5rem;">ဝန်ဆောင်မှုတစ်ခုချင်းစီ၏ Icon၊ ခေါင်းစဉ်နှင့် အသေးစိတ်ကို ထည့်သွင်းနိုင်ပါသည်</small>
+              <div id="biz-gold-services-list" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem;"></div>
+            </div>
+
+            <!-- HOW WE WORK (3 Steps) Section -->
+            <div class="form-span-full" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 0.8rem;">
+              <label style="color: #fbbf24; font-weight: 700; margin: 0 0 0.3rem 0;">🛠️ HOW WE WORK (လုပ်ငန်းဆောင်ရွက်ပုံ ၃ ဆင့်)</label>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-top: 0.4rem;">
+                <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid rgba(245,158,11,0.2);">
+                  <strong style="color: #fbbf24; font-size: 0.82rem;">အဆင့် ၁</strong>
+                  <input id="biz-gold-hww1-title" name="biz_hww1_title" value="ဆွေးနွေးခြင်း" placeholder="ခေါင်းစဉ်" style="margin-top: 0.3rem; font-size: 0.85rem;">
+                  <textarea id="biz-gold-hww1-desc" name="biz_hww1_desc" rows="2" style="margin-top: 0.3rem; font-size: 0.8rem;" placeholder="အသေးစိတ်">လုပ်ငန်းလိုအပ်ချက်ကို အသေးစိတ်မေးမြန်းခြင်း</textarea>
+                </div>
+                <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid rgba(245,158,11,0.2);">
+                  <strong style="color: #fbbf24; font-size: 0.82rem;">အဆင့် ၂</strong>
+                  <input id="biz-gold-hww2-title" name="biz_hww2_title" value="တည်ဆောက်ခြင်း" placeholder="ခေါင်းစဉ်" style="margin-top: 0.3rem; font-size: 0.85rem;">
+                  <textarea id="biz-gold-hww2-desc" name="biz_hww2_desc" rows="2" style="margin-top: 0.3rem; font-size: 0.8rem;" placeholder="အသေးစိတ်">စိတ်ကြိုက် ဒီဇိုင်းနှင့် စနစ်များ ရေးဆွဲပေးခြင်း</textarea>
+                </div>
+                <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid rgba(245,158,11,0.2);">
+                  <strong style="color: #fbbf24; font-size: 0.82rem;">အဆင့် ၃</strong>
+                  <input id="biz-gold-hww3-title" name="biz_hww3_title" value="လွှဲပြောင်းခြင်း" placeholder="ခေါင်းစဉ်" style="margin-top: 0.3rem; font-size: 0.85rem;">
+                  <textarea id="biz-gold-hww3-desc" name="biz_hww3_desc" rows="2" style="margin-top: 0.3rem; font-size: 0.8rem;" placeholder="အသေးစိတ်">စမ်းသပ်စစ်ဆေးပြီး အသင့်သုံးနိုင်အောင် ပေးအပ်ခြင်း</textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Client Reviews Section -->
+            <div class="form-span-full" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 0.8rem;">
+              <div class="field-header-row">
+                <label style="color: #fbbf24; font-weight: 700; margin: 0;">⭐ CLIENT REVIEWS (သုံးစွဲသူများ၏ မှတ်ချက်များ)</label>
+                <button type="button" id="biz-gold-add-review-btn" class="button button-quiet" style="min-height: 32px; padding: 0.2rem 0.6rem; font-size: 0.8rem;">+ Review အသစ်ထည့်မည်</button>
+              </div>
+              <small style="margin-bottom: 0.5rem;">သုံးစွဲသူအမည်၊ ရာထူး/ဆိုင်၊ ကြယ် Rating နှင့် Review စာသားများကို စီမံပါ</small>
+              <div id="biz-gold-reviews-list" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem;"></div>
+            </div>
+
+            <!-- Dynamic Question & Answer (FAQ) Section -->
+            <div class="form-span-full" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 0.8rem;">
+              <div class="field-header-row">
+                <label style="color: #fbbf24; font-weight: 700; margin: 0;">❓ QUESTION & ANSWER (အမေးနှင့် အဖြေများ)</label>
+                <button type="button" id="biz-gold-add-faq-btn" class="button button-quiet" style="min-height: 32px; padding: 0.2rem 0.6rem; font-size: 0.8rem;">+ မေးခွန်း အသစ်ထည့်မည်</button>
+              </div>
+              <small style="margin-bottom: 0.5rem;">Customer များ မကြာခဏ မေးလေ့ရှိသော မေးခွန်းနှင့် ဖြေရှင်းချက်များကို ထည့်သွင်းပါ</small>
+              <div id="biz-gold-faq-list" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem;"></div>
+            </div>
+          </div>
+
+          <!-- Common Event Fields (Wedding, Birthday, General Events) -->
+          <div id="common-event-fields" class="form-span-full form-grid" style="padding: 0; margin: 0;">
+            <div><label for="wedding-date">ကျင်းပမည့်ရက်စွဲ (Date)</label><input id="wedding-date" name="wedding_date" type="date"></div>
+            <div><label for="wedding-time">အချိန် (Time)</label><input id="wedding-time" name="wedding_time" placeholder="ဥပမာ ၁၀:၀၀ နံနက်"></div>
+            <div><label for="venue-name">နေရာ / ခန်းမ (Venue)</label><input id="venue-name" name="venue_name"></div>
+            <div><label for="rsvp-phone">ဆက်သွယ်ရန်ဖုန်း (Phone)</label><input id="rsvp-phone" name="rsvp_phone" type="tel"></div>
+            <div class="form-span-full"><label for="venue-address">လိပ်စာ (Address)</label><textarea id="venue-address" name="venue_address" rows="2"></textarea></div>
+            <div class="form-span-full"><label for="map-url">Map URL</label><input id="map-url" name="map_url" type="url" placeholder="https://maps.google.com/..."></div>
+            <div class="form-span-full"><label for="invitation-message">မေတ္တာပို့ / မိတ်ဆက် စာသား</label><textarea id="invitation-message" name="message" rows="3"></textarea></div>
+          </div>
 
           <div class="form-span-full photo-fields">
             <p class="field-label">ဓာတ်ပုံများ (Photos & Graphics)</p>
@@ -403,6 +505,6 @@
     </section>
   </div>
 
-  <script type="module" src="js/admin.js?v=15"></script>
+  <script type="module" src="js/admin.js?v=16"></script>
 </body>
 </html>

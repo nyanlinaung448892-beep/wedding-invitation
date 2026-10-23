@@ -1,0 +1,166 @@
+<div class="template-root biz-card-gold">
+  <!-- Ambient Gold Backlight / Glow Wrapper -->
+  <div class="biz-container">
+    
+    <!-- Top Action Bar -->
+    <header class="biz-top-bar">
+      <div class="biz-status-pill">
+        <span class="status-pulse-dot"></span>
+        <span class="status-text" data-bind="status_text">🟢 Open Now</span>
+      </div>
+      <div class="biz-top-actions">
+        <button type="button" class="biz-round-btn" id="btn-theme-palette" aria-label="Theme Accent" title="Theme Accent">🎨</button>
+        <button type="button" class="biz-round-btn" id="btn-catalog-grid" aria-label="All Channels" title="All Channels">🎛️</button>
+        <button type="button" class="biz-round-btn" id="btn-share-profile" aria-label="Share Profile" title="Share Profile">🔗</button>
+      </div>
+    </header>
+
+    <!-- Luxury Amber/Gold Gradient Header Block -->
+    <section class="biz-hero-card">
+      <div class="biz-avatar-wrap">
+        <img data-bind-src="cover_photo_url" class="biz-avatar-img" alt="Business Profile" loading="eager">
+        <span class="biz-verified-badge" title="Official Verified Business">✔</span>
+      </div>
+
+      <h1 class="biz-main-title" data-bind="company_name">Apex Business Hub</h1>
+      <p class="biz-main-tagline" data-bind="tagline">Invoice Tools & Digital Business Solutions</p>
+      
+      <p class="biz-main-bio" data-bind="message">
+        လုပ်ငန်းရှင်များအတွက် ဘောင်ချာနှင့် စာရင်းဇယား Tools များ၊ QR Digital Card များနှင့် Business Automation ဝန်ဆောင်မှုများကို တစ်နေရာတည်းတွင် စိတ်ချစွာ ရယူနိုင်ပါသည်။
+      </p>
+
+      <!-- Stat Counter Row (3 Glass Cards) -->
+      <div class="biz-stats-row">
+        <div class="biz-stat-item">
+          <strong class="stat-value" data-bind="stat_users">500+</strong>
+          <span class="stat-label" data-bind="stat_users_label">Active Users</span>
+        </div>
+        <div class="biz-stat-item">
+          <strong class="stat-value" data-bind="stat_rating">4.9 ★</strong>
+          <span class="stat-label" data-bind="stat_rating_label">Client Rating</span>
+        </div>
+        <div class="biz-stat-item">
+          <strong class="stat-value" data-bind="stat_support">24/7</strong>
+          <span class="stat-label" data-bind="stat_support_label">Support</span>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="biz-cta-group">
+        <button type="button" class="biz-cta-btn primary" id="btn-save-vcard">
+          <span class="cta-icon">👤+</span>
+          <span>Save Contact</span>
+        </button>
+        <a class="biz-cta-btn secondary" data-bind-href="rsvp_phone_href" id="btn-call-hotline">
+          <span class="cta-icon">📞</span>
+          <span>ဖုန်းခေါ်ရန်</span>
+        </a>
+      </div>
+
+      <p class="biz-copyright">
+        © 2026 <span data-bind="company_name">Apex Business Hub</span>. All Rights Reserved.
+      </p>
+    </section>
+
+    <!-- Segmented 3-Tab Controller Navigation -->
+    <nav class="biz-tab-nav" role="tablist" aria-label="Business Navigation">
+      <button class="biz-tab-btn" role="tab" aria-selected="false" data-target="services" id="biz-tab-services">
+        <span class="tab-icon">💼</span>
+        <span>ဝန်ဆောင်မှုများ</span>
+      </button>
+      <button class="biz-tab-btn" role="tab" aria-selected="false" data-target="channels" id="biz-tab-channels">
+        <span class="tab-icon">✈</span>
+        <span>ဆက်သွယ်ရန်</span>
+      </button>
+      <button class="biz-tab-btn is-active" role="tab" aria-selected="true" data-target="about" id="biz-tab-about">
+        <span class="tab-icon">⭐</span>
+        <span>လုပ်ငန်းအကြောင်း</span>
+      </button>
+    </nav>
+
+    <!-- Tab Panels Container -->
+    <main class="biz-tab-content">
+      
+      <!-- Panel 1: ဝန်ဆောင်မှုများ (Services) -->
+      <section id="biz-panel-services" class="biz-panel" role="tabpanel" aria-labelledby="biz-tab-services" hidden>
+        <div class="biz-panel-header">
+          <h2 class="biz-panel-title">💼 ကျွန်ုပ်တို့၏ ဝန်ဆောင်မှုများ</h2>
+          <p class="biz-panel-desc">အရည်အသွေးမြင့် စီးပွားရေးလုပ်ငန်းသုံး ဒစ်ဂျစ်တယ် ဝန်ဆောင်မှုများ</p>
+        </div>
+        <div id="biz-services-grid" class="biz-services-grid">
+          <!-- Dynamic Services will be injected by script.js -->
+        </div>
+      </section>
+
+      <!-- Panel 2: ဆက်သွယ်ရန် (Official Channels) -->
+      <section id="biz-panel-channels" class="biz-panel" role="tabpanel" aria-labelledby="biz-tab-channels" hidden>
+        <div class="biz-panel-header">
+          <h2 class="biz-panel-title">OFFICIAL CHANNELS</h2>
+          <p class="biz-panel-desc">(နှိပ်လိုက်သည်နှင့် တိုက်ရိုက်ရောက်ပါမည်)</p>
+        </div>
+        <div id="biz-channels-list" class="biz-channels-list">
+          <!-- Official Social Channels injected conditionally by script.js -->
+        </div>
+      </section>
+
+      <!-- Panel 3: လုပ်ငန်းအကြောင်း (About, How We Work, Reviews, FAQ) -->
+      <section id="biz-panel-about" class="biz-panel is-active" role="tabpanel" aria-labelledby="biz-tab-about">
+        
+        <!-- HOW WE WORK (လုပ်ငန်းဆောင်ရွက်ပုံ အဆင့်ဆင့်) -->
+        <div class="biz-sub-section">
+          <div class="biz-section-badge-title">
+            <h2>HOW WE WORK (လုပ်ငန်းဆောင်ရွက်ပုံ အဆင့်ဆင့်)</h2>
+          </div>
+          <div class="biz-steps-grid">
+            <div class="biz-step-card">
+              <span class="step-num">1</span>
+              <h3 id="biz-step1-title">ဆွေးနွေးခြင်း</h3>
+              <p id="biz-step1-desc">လုပ်ငန်းလိုအပ်ချက်ကို အသေးစိတ်မေးမြန်းခြင်း</p>
+            </div>
+            <div class="biz-step-card">
+              <span class="step-num">2</span>
+              <h3 id="biz-step2-title">တည်ဆောက်ခြင်း</h3>
+              <p id="biz-step2-desc">စိတ်ကြိုက် ဒီဇိုင်းနှင့် စနစ်များ ရေးဆွဲပေးခြင်း</p>
+            </div>
+            <div class="biz-step-card">
+              <span class="step-num">3</span>
+              <h3 id="biz-step3-title">လွှဲပြောင်းခြင်း</h3>
+              <p id="biz-step3-desc">စမ်းသပ်စစ်ဆေးပြီး အသင့်သုံးနိုင်အောင် ပေးအပ်ခြင်း</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CLIENT REVIEWS (သုံးစွဲသူများ၏ မှတ်ချက်များ) -->
+        <div class="biz-sub-section">
+          <div class="biz-section-badge-title">
+            <h2>CLIENT REVIEWS (သုံးစွဲသူများ၏ မှတ်ချက်များ)</h2>
+          </div>
+          <div id="biz-reviews-list" class="biz-reviews-list">
+            <!-- Dynamic Reviews injected by script.js -->
+          </div>
+        </div>
+
+        <!-- QUESTION & ANSWER (အမေးနှင့် အဖြေများ) -->
+        <div class="biz-sub-section">
+          <div class="biz-section-badge-title">
+            <h2>QUESTION & ANSWER (အမေးနှင့် အဖြေများ)</h2>
+          </div>
+          <div id="biz-faq-list" class="biz-faq-accordion">
+            <!-- Dynamic FAQs injected by script.js -->
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Subtle Footer -->
+    <footer class="biz-footer-note">
+      <p>Powered by Apex Digital Hub • Enterprise Edition</p>
+    </footer>
+
+    <!-- Interactive Toast -->
+    <div id="biz-toast" class="biz-toast" role="status" aria-live="polite" hidden></div>
+
+  </div>
+</div>

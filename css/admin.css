@@ -83,3 +83,10 @@ small { display: block; color: var(--color-primary-light); margin-top: .35rem; }
 .partner-shop-cell { display: flex; align-items: center; gap: .75rem; }
 .partner-table-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1.5px solid var(--color-primary); box-shadow: 0 2px 6px rgba(0,0,0,.25); }
 .partner-table-avatar-placeholder { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: rgba(201,169,110,.18); border: 1.5px solid rgba(201,169,110,.4); font-size: 1.1rem; flex-shrink: 0; }
+
+/* ─── Business Card Gold Dynamic Items Styles ────────────────────────────────── */
+.dynamic-item-card { background: rgba(0,0,0,0.3); border: 1px solid rgba(245,158,11,0.25); border-radius: var(--radius-sm); padding: 0.65rem 0.8rem; position: relative; display: flex; flex-direction: column; gap: 0.4rem; }
+.dynamic-item-header { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.dynamic-remove-btn { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; border-radius: var(--radius-sm); padding: 0.15rem 0.45rem; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; }
+.dynamic-remove-btn:hover { background: #dc2626; color: #ffffff; }
+.dynamic-grid-2 { display: grid; grid-template-columns: 80px 1fr; gap: 0.5rem; }
