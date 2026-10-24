@@ -9,9 +9,19 @@
         <span class="status-text" data-bind="status_text">🟢 Open Now</span>
       </div>
       <div class="biz-top-actions">
-        <button type="button" class="biz-round-btn" id="btn-theme-palette" aria-label="Theme Accent" title="Theme Accent">🎨</button>
-        <button type="button" class="biz-round-btn" id="btn-catalog-grid" aria-label="All Channels" title="All Channels">🎛️</button>
-        <button type="button" class="biz-round-btn" id="btn-share-profile" aria-label="Share Profile" title="Share Profile">🔗</button>
+        <button type="button" class="biz-round-btn" id="btn-catalog-grid" aria-label="All Channels" title="All Channels">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>
+        </button>
+        <button type="button" class="biz-round-btn" id="btn-share-profile" aria-label="Share Profile" title="Share Profile">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M14 5v4C6.5 10 3 14.5 1.5 20.5 4 17 8 15 14 15v4l8-7-8-7z"/>
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -31,8 +41,8 @@
 
       <!-- Stat Counter Row (3 Glass Cards) -->
       <div class="biz-stats-row">
-        <div class="biz-stat-item">
-          <strong class="stat-value" data-bind="stat_users">500+</strong>
+        <div class="biz-stat-item" id="biz-stat-users-card">
+          <strong class="stat-value" id="biz-stat-users-val" data-bind="stat_users">500+</strong>
           <span class="stat-label" data-bind="stat_users_label">Active Users</span>
         </div>
         <div class="biz-stat-item">
@@ -62,18 +72,18 @@
       </p>
     </section>
 
-    <!-- Segmented 3-Tab Controller Navigation -->
+    <!-- Segmented 4-Tab Controller Navigation (Icon-free for clean mobile layout) -->
     <nav class="biz-tab-nav" role="tablist" aria-label="Business Navigation">
       <button class="biz-tab-btn" role="tab" aria-selected="false" data-target="services" id="biz-tab-services">
-        <span class="tab-icon">💼</span>
         <span>ဝန်ဆောင်မှုများ</span>
       </button>
       <button class="biz-tab-btn" role="tab" aria-selected="false" data-target="channels" id="biz-tab-channels">
-        <span class="tab-icon">✈</span>
         <span>ဆက်သွယ်ရန်</span>
       </button>
+      <button class="biz-tab-btn" role="tab" aria-selected="false" data-target="payment" id="biz-tab-payment">
+        <span>ငွေပေးချေမှု</span>
+      </button>
       <button class="biz-tab-btn is-active" role="tab" aria-selected="true" data-target="about" id="biz-tab-about">
-        <span class="tab-icon">⭐</span>
         <span>လုပ်ငန်းအကြောင်း</span>
       </button>
     </nav>
@@ -103,40 +113,74 @@
         </div>
       </section>
 
-      <!-- Panel 3: လုပ်ငန်းအကြောင်း (About, How We Work, Reviews, FAQ) -->
+      <!-- Panel 3: ငွေပေးချေမှု (Payment Methods) -->
+      <section id="biz-panel-payment" class="biz-panel" role="tabpanel" aria-labelledby="biz-tab-payment" hidden>
+        <div class="biz-panel-header">
+          <h2 class="biz-panel-title">PAYMENT METHODS</h2>
+          <p class="biz-panel-desc">ငွေပေးချေနိုင်သော ဘဏ်နှင့် Mobile Wallet အကောင့်များ</p>
+        </div>
+        <div id="biz-payments-list" class="biz-payments-grid">
+          <!-- Dynamic Payments will be injected by script.js -->
+        </div>
+      </section>
+
+      <!-- Panel 3: လုပ်ငန်းအကြောင်း (About, Reviews, FAQ) -->
       <section id="biz-panel-about" class="biz-panel is-active" role="tabpanel" aria-labelledby="biz-tab-about">
         
-        <!-- HOW WE WORK (လုပ်ငန်းဆောင်ရွက်ပုံ အဆင့်ဆင့်) -->
-        <div class="biz-sub-section">
-          <div class="biz-section-badge-title">
-            <h2>HOW WE WORK (လုပ်ငန်းဆောင်ရွက်ပုံ အဆင့်ဆင့်)</h2>
-          </div>
-          <div class="biz-steps-grid">
-            <div class="biz-step-card">
-              <span class="step-num">1</span>
-              <h3 id="biz-step1-title">ဆွေးနွေးခြင်း</h3>
-              <p id="biz-step1-desc">လုပ်ငန်းလိုအပ်ချက်ကို အသေးစိတ်မေးမြန်းခြင်း</p>
-            </div>
-            <div class="biz-step-card">
-              <span class="step-num">2</span>
-              <h3 id="biz-step2-title">တည်ဆောက်ခြင်း</h3>
-              <p id="biz-step2-desc">စိတ်ကြိုက် ဒီဇိုင်းနှင့် စနစ်များ ရေးဆွဲပေးခြင်း</p>
-            </div>
-            <div class="biz-step-card">
-              <span class="step-num">3</span>
-              <h3 id="biz-step3-title">လွှဲပြောင်းခြင်း</h3>
-              <p id="biz-step3-desc">စမ်းသပ်စစ်ဆေးပြီး အသင့်သုံးနိုင်အောင် ပေးအပ်ခြင်း</p>
-            </div>
-          </div>
-        </div>
-
         <!-- CLIENT REVIEWS (သုံးစွဲသူများ၏ မှတ်ချက်များ) -->
         <div class="biz-sub-section">
-          <div class="biz-section-badge-title">
+          <div class="biz-section-badge-title biz-reviews-title-row">
             <h2>CLIENT REVIEWS (သုံးစွဲသူများ၏ မှတ်ချက်များ)</h2>
+            <button type="button" id="btn-toggle-review-form" class="biz-write-review-btn">
+              <span>✍️ Review ရေးမည်</span>
+            </button>
           </div>
-          <div id="biz-reviews-list" class="biz-reviews-list">
-            <!-- Dynamic Reviews injected by script.js -->
+
+          <!-- Review Submission Form (Collapsible Card) -->
+          <div id="biz-review-form-container" class="biz-review-form-container" hidden>
+            <form id="biz-review-form" class="biz-review-form-card" novalidate>
+              <div class="review-form-header">
+                <h3>⭐ သင့်သုံးသပ်ချက် ရေးသားပေးပို့ပါ</h3>
+                <button type="button" id="btn-close-review-form" class="review-form-close-btn" aria-label="ပိတ်မည်">✕</button>
+              </div>
+
+              <!-- Rating Selection -->
+              <div class="review-rating-picker">
+                <span class="picker-label">ကြယ်အဆင့်:</span>
+                <div id="biz-rating-stars-row" class="rating-stars-row" role="radiogroup" aria-label="Rating">
+                  <button type="button" class="star-btn is-active" data-val="1" aria-label="1 star">★</button>
+                  <button type="button" class="star-btn is-active" data-val="2" aria-label="2 stars">★</button>
+                  <button type="button" class="star-btn is-active" data-val="3" aria-label="3 stars">★</button>
+                  <button type="button" class="star-btn is-active" data-val="4" aria-label="4 stars">★</button>
+                  <button type="button" class="star-btn is-active" data-val="5" aria-label="5 stars">★</button>
+                </div>
+                <span id="biz-rating-text-feedback" class="rating-text-feedback">၅ ကြယ် (အထူးကောင်းမွန်)</span>
+              </div>
+
+              <!-- Inputs -->
+              <div class="review-inputs-grid">
+                <input type="text" id="biz-reviewer-name" class="biz-review-input" placeholder="သင့်အမည် / ဆိုင်အမည် *" required maxlength="80">
+                <input type="text" id="biz-reviewer-role" class="biz-review-input" placeholder="လုပ်ငန်း/ရာထူး (ဥပမာ - Online Shop)" maxlength="60">
+              </div>
+
+              <textarea id="biz-reviewer-msg" class="biz-review-textarea" rows="3" placeholder="ဝန်ဆောင်မှု သို့မဟုတ် ထုတ်ကုန်နှင့်ပတ်သက်သော သုံးသပ်ချက် ရေးသားပါ... *" required maxlength="600"></textarea>
+
+              <div id="biz-review-form-error" class="biz-review-error" hidden></div>
+
+              <div class="review-form-actions">
+                <button type="submit" id="btn-submit-review" class="biz-review-submit-btn">
+                  <span>⭐ Review အတည်ပြုပေးပို့မည်</span>
+                </button>
+                <button type="button" id="btn-cancel-review" class="biz-review-cancel-btn">မလုပ်တော့ပါ</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Reviews Stream Container (Scrollable/Swipeable Card Stream) -->
+          <div class="biz-reviews-stream-wrapper">
+            <div id="biz-reviews-list" class="biz-reviews-list">
+              <!-- Dynamic Reviews injected by script.js -->
+            </div>
           </div>
         </div>
 
@@ -153,6 +197,59 @@
       </section>
 
     </main>
+
+    <!-- ── Platform Sponsor & Official Solutions Partner Showcase ── -->
+    <section class="biz-sponsor-card" id="card-sponsor" hidden>
+      <div class="biz-sponsor-badge">
+        <span class="badge-sparkle">✦</span>
+        <span>OFFICIAL PLATFORM PARTNER</span>
+        <span class="badge-sparkle">✦</span>
+      </div>
+
+      <div class="biz-sponsor-header">
+        <h3 id="sponsor-display-brand" class="biz-sponsor-brand">မင်္ဂလာ ဒစ်ဂျစ်တယ် မီဒီယာ စတူဒီယို</h3>
+        <p id="sponsor-display-tagline" class="biz-sponsor-tagline">ဒစ်ဂျစ်တယ် ဖိတ်စာနှင့် မီဒီယာ ဝန်ဆောင်မှု</p>
+      </div>
+
+      <!-- Services Offered Tag Pills -->
+      <div id="sponsor-services-container" class="biz-sponsor-services">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Direct Action Primary Button: Facebook Page Messenger -->
+      <div id="sponsor-messenger-wrapper" class="biz-sponsor-messenger-wrap" hidden>
+        <a id="sponsor-btn-messenger" class="btn-biz-sponsor-messenger" href="#" target="_blank" rel="noopener noreferrer">
+          <svg class="messenger-svg-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.145 2 11.258c0 2.91 1.455 5.512 3.736 7.185V22l3.418-1.875c.91.252 1.88.388 2.846.388 5.523 0 10-4.145 10-9.255C22 6.145 17.523 2 12 2zm1.066 12.443l-2.583-2.756-5.043 2.756 5.545-5.887 2.645 2.756 4.981-2.756-5.545 5.887z"/>
+          </svg>
+          <span>Facebook Messenger ဖြင့် မေးမြန်းမည်</span>
+        </a>
+      </div>
+
+      <!-- Social & Contact Channels Grid -->
+      <div class="biz-sponsor-channels">
+        <a id="sponsor-link-phone" class="biz-sponsor-channel-btn phone-btn" href="#" hidden>
+          <span class="channel-icon">📞</span>
+          <span class="channel-label" id="sponsor-label-phone">ဖုန်းခေါ်မည်</span>
+        </a>
+        <a id="sponsor-link-facebook" class="biz-sponsor-channel-btn facebook-btn" href="#" target="_blank" rel="noopener noreferrer" hidden>
+          <span class="channel-icon">📘</span>
+          <span class="channel-label">Facebook</span>
+        </a>
+        <a id="sponsor-link-tiktok" class="biz-sponsor-channel-btn tiktok-btn" href="#" target="_blank" rel="noopener noreferrer" hidden>
+          <span class="channel-icon">🎵</span>
+          <span class="channel-label">TikTok</span>
+        </a>
+        <a id="sponsor-link-viber" class="biz-sponsor-channel-btn viber-btn" href="#" target="_blank" rel="noopener noreferrer" hidden>
+          <span class="channel-icon">🟣</span>
+          <span class="channel-label">Viber</span>
+        </a>
+        <a id="sponsor-link-telegram" class="biz-sponsor-channel-btn telegram-btn" href="#" target="_blank" rel="noopener noreferrer" hidden>
+          <span class="channel-icon">✈️</span>
+          <span class="channel-label">Telegram</span>
+        </a>
+      </div>
+    </section>
 
     <!-- Subtle Footer -->
     <footer class="biz-footer-note">

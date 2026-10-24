@@ -6,11 +6,11 @@
   <meta name="description" content="Digital Wedding Invitation စီမံခန့်ခွဲမှု">
   <meta name="theme-color" content="#1A0A2E">
   <title>Admin Dashboard — Digital Wedding Invitation</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/global.css?v=16">
-  <link rel="stylesheet" href="css/admin.css?v=16">
+  <!-- High-Performance Zero-Network Font System: Fast local system fonts + Supabase preconnect -->
+  <link rel="dns-prefetch" href="https://kweylhqnzqnxnopqwrhj.supabase.co">
+  <link rel="preconnect" href="https://kweylhqnzqnxnopqwrhj.supabase.co" crossorigin>
+  <link rel="stylesheet" href="css/global.css?v=21">
+  <link rel="stylesheet" href="css/admin.css?v=21">
 </head>
 <body class="admin-body">
   <main>
@@ -184,7 +184,7 @@
           <div class="form-span-full"><label for="invitation-title">ခေါင်းစဉ် / အမည် (Title) *</label><input id="invitation-title" name="title" placeholder="ဥပမာ ကိုအောင် & မသန်းဒါး မင်္ဂလာဖိတ်ကြားလွှာ" required></div>
           <div><label for="template-id">Template *</label><select id="template-id" name="template_id" required></select></div>
           <div><label for="invitation-category">Category</label><select id="invitation-category" name="category"><option value="wedding">Wedding (မင်္ဂလာဆောင်)</option><option value="birthday">Birthday (မွေးနေ့)</option><option value="ahlu">Ah-lhu (အလှူမင်္ဂလာ)</option><option value="business">Business (စီးပွားရေး/လုပ်ငန်း)</option></select></div>
-          <div class="form-span-full"><label for="invitation-slug">Slug *</label><input id="invitation-slug" name="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" aria-describedby="slug-hint" required><small id="slug-hint">URL အတွက်ဖြစ်သည် (lowercase English, number နှင့် hyphen သာ သုံးပါ — ဥပမာ ko-aung-ma-thandar-2025)</small></div>
+          <div class="form-span-full"><label for="invitation-slug">Slug (စနစ်မှ အလိုအလျောက် သတ်မှတ်ပါသည်) *</label><input id="invitation-slug" name="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" aria-describedby="slug-hint" readonly required><small id="slug-hint">URL အတွက် စနစ်မှ အလိုအလျောက် ထုတ်ပေးထားပါသည် (ဖိတ်စာအမည်/ဆိုင်အမည် အလိုက် auto ပြောင်းလဲပေးပါသည်)</small></div>
 
           <!-- Wedding Specific Fields -->
           <div id="wedding-fields" class="form-span-full form-grid" style="padding: 0; margin: 0;">
@@ -264,28 +264,6 @@
               <div id="biz-gold-services-list" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem;"></div>
             </div>
 
-            <!-- HOW WE WORK (3 Steps) Section -->
-            <div class="form-span-full" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 0.8rem;">
-              <label style="color: #fbbf24; font-weight: 700; margin: 0 0 0.3rem 0;">🛠️ HOW WE WORK (လုပ်ငန်းဆောင်ရွက်ပုံ ၃ ဆင့်)</label>
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-top: 0.4rem;">
-                <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid rgba(245,158,11,0.2);">
-                  <strong style="color: #fbbf24; font-size: 0.82rem;">အဆင့် ၁</strong>
-                  <input id="biz-gold-hww1-title" name="biz_hww1_title" value="ဆွေးနွေးခြင်း" placeholder="ခေါင်းစဉ်" style="margin-top: 0.3rem; font-size: 0.85rem;">
-                  <textarea id="biz-gold-hww1-desc" name="biz_hww1_desc" rows="2" style="margin-top: 0.3rem; font-size: 0.8rem;" placeholder="အသေးစိတ်">လုပ်ငန်းလိုအပ်ချက်ကို အသေးစိတ်မေးမြန်းခြင်း</textarea>
-                </div>
-                <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid rgba(245,158,11,0.2);">
-                  <strong style="color: #fbbf24; font-size: 0.82rem;">အဆင့် ၂</strong>
-                  <input id="biz-gold-hww2-title" name="biz_hww2_title" value="တည်ဆောက်ခြင်း" placeholder="ခေါင်းစဉ်" style="margin-top: 0.3rem; font-size: 0.85rem;">
-                  <textarea id="biz-gold-hww2-desc" name="biz_hww2_desc" rows="2" style="margin-top: 0.3rem; font-size: 0.8rem;" placeholder="အသေးစိတ်">စိတ်ကြိုက် ဒီဇိုင်းနှင့် စနစ်များ ရေးဆွဲပေးခြင်း</textarea>
-                </div>
-                <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid rgba(245,158,11,0.2);">
-                  <strong style="color: #fbbf24; font-size: 0.82rem;">အဆင့် ၃</strong>
-                  <input id="biz-gold-hww3-title" name="biz_hww3_title" value="လွှဲပြောင်းခြင်း" placeholder="ခေါင်းစဉ်" style="margin-top: 0.3rem; font-size: 0.85rem;">
-                  <textarea id="biz-gold-hww3-desc" name="biz_hww3_desc" rows="2" style="margin-top: 0.3rem; font-size: 0.8rem;" placeholder="အသေးစိတ်">စမ်းသပ်စစ်ဆေးပြီး အသင့်သုံးနိုင်အောင် ပေးအပ်ခြင်း</textarea>
-                </div>
-              </div>
-            </div>
-
             <!-- Dynamic Client Reviews Section -->
             <div class="form-span-full" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 0.8rem;">
               <div class="field-header-row">
@@ -305,6 +283,16 @@
               <small style="margin-bottom: 0.5rem;">Customer များ မကြာခဏ မေးလေ့ရှိသော မေးခွန်းနှင့် ဖြေရှင်းချက်များကို ထည့်သွင်းပါ</small>
               <div id="biz-gold-faq-list" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem;"></div>
             </div>
+
+            <!-- Dynamic Payment Accounts Section -->
+            <div class="form-span-full" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 0.8rem;">
+              <div class="field-header-row">
+                <label style="color: #fbbf24; font-weight: 700; margin: 0;">💳 PAYMENT METHODS (ငွေပေးချေမှု အကောင့်များ)</label>
+                <button type="button" id="biz-gold-add-payment-btn" class="button button-quiet" style="min-height: 32px; padding: 0.2rem 0.6rem; font-size: 0.8rem;">+ Payment အသစ်ထည့်မည်</button>
+              </div>
+              <small style="margin-bottom: 0.5rem;">ဘဏ်/Wallet အမည် (KBZPay, WavePay, AYA, CB, KBZ စသည်)၊ အကောင့်နံပါတ် နှင့် အကောင့်အမည်များကို စီမံပါ</small>
+              <div id="biz-gold-payments-list" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem;"></div>
+            </div>
           </div>
 
           <!-- Common Event Fields (Wedding, Birthday, General Events) -->
@@ -319,17 +307,17 @@
           </div>
 
           <div class="form-span-full photo-fields">
-            <p class="field-label">ဓာတ်ပုံများ (Photos & Graphics)</p>
-            <p class="photo-hint">JPG, PNG, WebP ကိုသာရွေးပါ။ Upload မပြုမီ အရွယ်အစားကို အလိုအလျောက် လျှော့ချပေးပါမည်။</p>
-            <div class="photo-grid">
-              <div>
-                <label for="cover-photo">Cover / Banner / Logo</label>
+            <p class="field-label" id="photos-section-label">ဓာတ်ပုံများ (Photos & Graphics)</p>
+            <p class="photo-hint" id="photos-section-hint">JPG, PNG, WebP ကိုသာရွေးပါ။ Upload မပြုမီ အရွယ်အစားကို အလိုအလျောက် လျှော့ချပေးပါမည်။</p>
+            <div class="photo-grid" id="photo-grid-container">
+              <div id="cover-photo-wrapper">
+                <label for="cover-photo" id="cover-photo-label">Cover / Banner / Logo</label>
                 <input id="cover-photo" name="cover_photo" type="file" accept="image/jpeg,image/png,image/webp">
                 <img id="cover-preview" class="photo-preview" alt="Cover photo preview" hidden>
                 <button type="button" id="remove-cover-photo" class="table-button" style="color: #ffd4db; margin-top: 0.35rem;" hidden>ပုံဖယ်ရှားမည်</button>
               </div>
-              <div>
-                <label for="couple-photo">Couple / Portrait / Secondary photo</label>
+              <div id="couple-photo-wrapper">
+                <label for="couple-photo" id="couple-photo-label">Couple / Portrait / Secondary photo</label>
                 <input id="couple-photo" name="couple_photo" type="file" accept="image/jpeg,image/png,image/webp">
                 <img id="couple-preview" class="photo-preview" alt="Couple photo preview" hidden>
                 <button type="button" id="remove-couple-photo" class="table-button" style="color: #ffd4db; margin-top: 0.35rem;" hidden>ပုံဖယ်ရှားမည်</button>
@@ -505,6 +493,6 @@
     </section>
   </div>
 
-  <script type="module" src="js/admin.js?v=16"></script>
+  <script type="module" src="js/admin.js?v=21"></script>
 </body>
 </html>

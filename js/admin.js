@@ -47,14 +47,23 @@ const defaultBizGoldFaqs = [
   { question: 'ငွေပေးချေမှုပုံစံ မည်သို့ရှိပါသလဲ?', answer: 'KBZPay, WavePay, AYA Pay စသည့် Mobile Banking စနစ်များဖြင့် လွယ်ကူလျင်မြန်စွာ ပေးချေနိုင်ပါသည်။' }
 ];
 
+const defaultBizGoldPayments = [
+  { bank_name: 'KBZPay', account_number: '09987654321', account_name: 'Apex Business Hub' },
+  { bank_name: 'KBZ Bank', account_number: '2038472910382910', account_name: 'Apex Business Hub' },
+  { bank_name: 'WavePay', account_number: '09987654321', account_name: 'Apex Business Hub' }
+];
+
 function updateCategoryFieldVisibility(category = 'wedding', templateId = '') {
   const weddingFields = $('#wedding-fields');
   const birthdayFields = $('#birthday-fields');
   const businessFields = $('#business-fields');
   const bizGoldFields = $('#biz-card-gold-fields');
   const commonFields = $('#common-event-fields');
+  const couplePhotoWrapper = $('#couple-photo-wrapper');
+  const coverPhotoLabel = $('#cover-photo-label');
+  const photoGrid = $('#photo-grid-container');
 
-  const isBizGold = templateId === 'biz-card-gold';
+  const isBizGold = templateId === 'biz-card-gold' || category === 'business';
 
   if (bizGoldFields) bizGoldFields.hidden = !isBizGold;
   if (commonFields) commonFields.hidden = isBizGold;
@@ -63,10 +72,26 @@ function updateCategoryFieldVisibility(category = 'wedding', templateId = '') {
     if (weddingFields) weddingFields.hidden = true;
     if (birthdayFields) birthdayFields.hidden = true;
     if (businessFields) businessFields.hidden = true;
+
+    // Business Card: Hide 2nd photo (couple photo), customize 1st photo label for business profile
+    if (couplePhotoWrapper) couplePhotoWrapper.hidden = true;
+    if (coverPhotoLabel) coverPhotoLabel.textContent = 'Business Profile / Logo ဓာတ်ပုံ';
+    if (photoGrid) photoGrid.style.gridTemplateColumns = '1fr';
   } else {
     if (weddingFields) weddingFields.hidden = category !== 'wedding';
     if (birthdayFields) birthdayFields.hidden = category !== 'birthday';
     if (businessFields) businessFields.hidden = category !== 'business';
+
+    if (category === 'birthday') {
+      if (couplePhotoWrapper) couplePhotoWrapper.hidden = true;
+      if (coverPhotoLabel) coverPhotoLabel.textContent = 'မွေးနေ့ရှင်ဓာတ်ပုံ (Birthday Photo)';
+      if (photoGrid) photoGrid.style.gridTemplateColumns = '1fr';
+    } else {
+      // Wedding or general:
+      if (couplePhotoWrapper) couplePhotoWrapper.hidden = false;
+      if (coverPhotoLabel) coverPhotoLabel.textContent = 'Cover / Banner / Logo';
+      if (photoGrid) photoGrid.style.gridTemplateColumns = '';
+    }
   }
 }
 
@@ -144,6 +169,30 @@ function renderBizGoldFaqs(faqs = defaultBizGoldFaqs) {
   });
 }
 
+function renderBizGoldPayments(payments = defaultBizGoldPayments) {
+  const container = $('#biz-gold-payments-list');
+  if (!container) return;
+  container.innerHTML = '';
+  (Array.isArray(payments) ? payments : defaultBizGoldPayments).forEach((p, idx) => {
+    const card = document.createElement('div');
+    card.className = 'dynamic-item-card';
+    card.dataset.index = idx;
+    card.innerHTML = `
+      <div class="dynamic-item-header">
+        <strong style="color:#fbbf24; font-size:0.8rem;">Payment #${idx + 1}</strong>
+        <button type="button" class="dynamic-remove-btn" title="ဖယ်ရှားမည်">✕ ဖယ်ရှားမည်</button>
+      </div>
+      <div style="display:grid; grid-template-columns: 140px 1fr; gap:0.4rem;">
+        <input class="payment-bank" value="${escapeHTML(p.bank_name || '')}" placeholder="ဘဏ်/Wallet (KBZPay)" required>
+        <input class="payment-number" value="${escapeHTML(p.account_number || '')}" placeholder="အကောင့်/ဖုန်းနံပါတ်" required>
+      </div>
+      <input class="payment-name" value="${escapeHTML(p.account_name || '')}" placeholder="အကောင့်ပိုင်ရှင် အမည် (e.g. U Hla Win)" style="margin-top:0.35rem;">
+    `;
+    card.querySelector('.dynamic-remove-btn').addEventListener('click', () => card.remove());
+    container.appendChild(card);
+  });
+}
+
 function setView(isAuthenticated) { 
   $('#login-view').hidden = isAuthenticated; 
   $('#dashboard-view').hidden = !isAuthenticated; 
@@ -209,7 +258,7 @@ function renderPartnerOptions() {
 }
 
 async function loadMetadata() {
-  const [templateResponse, partners] = await Promise.all([fetch('templates/registry.json?v=16'), fetchAllPartners()]);
+  const [templateResponse, partners] = await Promise.all([fetch('templates/registry.json?v=20'), fetchAllPartners()]);
   if (!templateResponse.ok) throw new Error('Template registry ကို ဖတ်၍မရပါ။');
   state.templates = (await templateResponse.json()).filter(template => template.available);
   state.partners = partners;
@@ -227,7 +276,7 @@ async function loadInvitations() {
   $('#invitation-list').innerHTML = state.invitations.length ? state.invitations.map(invitation => {
     const title = resolveDisplayTitle(invitation);
     const category = invitation.category || 'wedding';
-    const guestUrl = resolveInvitationUrl(invitation.slug);
+    const guestUrl = resolveInvitationUrl(invitation.slug, null, invitation.template_id);
     return `<tr>
       <td><strong>${escapeHTML(title)}</strong></td>
       <td><span class="category-badge ${escapeHTML(category)}">${escapeHTML(category)}</span></td>
@@ -355,17 +404,10 @@ function openInvitationModal(invitation = null) {
       if ($('#biz-gold-telegram-group-url')) $('#biz-gold-telegram-group-url').value = customer.telegram_group_url || '';
       if ($('#biz-gold-fb-group-url')) $('#biz-gold-fb-group-url').value = customer.facebook_group_url || '';
 
-      const hww = customer.how_we_work || [];
-      if ($('#biz-gold-hww1-title')) $('#biz-gold-hww1-title').value = hww[0]?.title || 'ဆွေးနွေးခြင်း';
-      if ($('#biz-gold-hww1-desc')) $('#biz-gold-hww1-desc').value = hww[0]?.desc || 'လုပ်ငန်းလိုအပ်ချက်ကို အသေးစိတ်မေးမြန်းခြင်း';
-      if ($('#biz-gold-hww2-title')) $('#biz-gold-hww2-title').value = hww[1]?.title || 'တည်ဆောက်ခြင်း';
-      if ($('#biz-gold-hww2-desc')) $('#biz-gold-hww2-desc').value = hww[1]?.desc || 'စိတ်ကြိုက် ဒီဇိုင်းနှင့် စနစ်များ ရေးဆွဲပေးခြင်း';
-      if ($('#biz-gold-hww3-title')) $('#biz-gold-hww3-title').value = hww[2]?.title || 'လွှဲပြောင်းခြင်း';
-      if ($('#biz-gold-hww3-desc')) $('#biz-gold-hww3-desc').value = hww[2]?.desc || 'စမ်းသပ်စစ်ဆေးပြီး အသင့်သုံးနိုင်အောင် ပေးအပ်ခြင်း';
-
       renderBizGoldServices(customer.services || defaultBizGoldServices);
       renderBizGoldReviews(customer.reviews || defaultBizGoldReviews);
       renderBizGoldFaqs(customer.faq || defaultBizGoldFaqs);
+      renderBizGoldPayments(customer.biz_payments || defaultBizGoldPayments);
     }
 
     form.elements.slug.value = invitation.slug;
@@ -394,6 +436,7 @@ function openInvitationModal(invitation = null) {
     renderBizGoldServices(defaultBizGoldServices);
     renderBizGoldReviews(defaultBizGoldReviews);
     renderBizGoldFaqs(defaultBizGoldFaqs);
+    renderBizGoldPayments(defaultBizGoldPayments);
 
     setPhotoPreview('#cover-preview');
     setPhotoPreview('#couple-preview');
@@ -499,7 +542,7 @@ function openQrModal(invitation) {
   closePartnerModal();
 
   const title = resolveDisplayTitle(invitation);
-  const guestUrl = resolveInvitationUrl(invitation.slug);
+  const guestUrl = resolveInvitationUrl(invitation.slug, null, invitation.template_id);
 
   $('#qr-modal-title-text').textContent = title;
   $('#qr-modal-url-input').value = guestUrl;
@@ -640,7 +683,8 @@ async function saveInvitation(event) {
     customerData.display_title = title;
     customerData.category = category;
 
-    if (formData.get('template_id') === 'biz-card-gold') {
+    if (formData.get('template_id') === 'biz-card-gold' || category === 'business') {
+      customerData.couple_photo_url = '';
       customerData.company_name = String(formData.get('biz_company_name') || '').trim();
       customerData.tagline = String(formData.get('biz_tagline') || '').trim();
       customerData.rsvp_phone = String(formData.get('biz_phone') || '').trim();
@@ -662,12 +706,6 @@ async function saveInvitation(event) {
       customerData.telegram_group_url = String(formData.get('biz_telegram_group_url') || '').trim();
       customerData.facebook_group_url = String(formData.get('biz_facebook_group_url') || '').trim();
 
-      customerData.how_we_work = [
-        { step: 1, title: String(formData.get('biz_hww1_title') || 'ဆွေးနွေးခြင်း').trim(), desc: String(formData.get('biz_hww1_desc') || '').trim() },
-        { step: 2, title: String(formData.get('biz_hww2_title') || 'တည်ဆောက်ခြင်း').trim(), desc: String(formData.get('biz_hww2_desc') || '').trim() },
-        { step: 3, title: String(formData.get('biz_hww3_title') || 'လွှဲပြောင်းခြင်း').trim(), desc: String(formData.get('biz_hww3_desc') || '').trim() }
-      ];
-
       const serviceCards = document.querySelectorAll('#biz-gold-services-list .dynamic-item-card');
       customerData.services = Array.from(serviceCards).map(card => ({
         icon: card.querySelector('.service-icon')?.value.trim() || '💼',
@@ -688,6 +726,13 @@ async function saveInvitation(event) {
         question: card.querySelector('.faq-question')?.value.trim() || '',
         answer: card.querySelector('.faq-answer')?.value.trim() || ''
       })).filter(f => f.question);
+
+      const paymentCards = document.querySelectorAll('#biz-gold-payments-list .dynamic-item-card');
+      customerData.biz_payments = Array.from(paymentCards).map(card => ({
+        bank_name: card.querySelector('.payment-bank')?.value.trim() || '',
+        account_number: card.querySelector('.payment-number')?.value.trim() || '',
+        account_name: card.querySelector('.payment-name')?.value.trim() || ''
+      })).filter(p => p.bank_name || p.account_number);
     }
 
     const record = { 
@@ -1067,17 +1112,17 @@ function updateAutoSlug() {
     const groomMm = $('#groom-name')?.value.trim() || '';
     const brideMm = $('#bride-name')?.value.trim() || '';
     const celebrant = $('#celebrant-name')?.value.trim() || '';
-    const company = $('#company-name')?.value.trim() || '';
+    const company = $('#company-name')?.value.trim() || $('#biz-gold-company-name')?.value.trim() || '';
 
     let base = '';
     if (groomEn || brideEn) {
       base = slugify(`${groomEn}-${brideEn}`);
+    } else if (company) {
+      base = slugify(company);
     } else if (titleVal) {
       base = slugify(titleVal);
     } else if (celebrant) {
       base = slugify(celebrant);
-    } else if (company) {
-      base = slugify(company);
     } else if (groomMm || brideMm) {
       base = slugify(`${groomMm}-${brideMm}`);
     }
@@ -1150,7 +1195,7 @@ $('#qr-modal')?.addEventListener('click', event => { if (event.target === event.
 // QR Download PNG Handler (Direct Mobile Gallery & Desktop Download)
 $('#qr-download-png-btn')?.addEventListener('click', () => {
   if (!currentQrInvitation) return;
-  const guestUrl = resolveInvitationUrl(currentQrInvitation.slug);
+  const guestUrl = resolveInvitationUrl(currentQrInvitation.slug, null, currentQrInvitation.template_id);
   const selectedSize = Number(document.querySelector('input[name="qr-size-select"]:checked')?.value || 1024);
   const filename = `QR-${currentQrInvitation.slug}-${selectedSize}px.png`;
 
@@ -1168,7 +1213,7 @@ $('#qr-download-png-btn')?.addEventListener('click', () => {
 // QR Download Vector SVG Handler
 $('#qr-download-svg-btn')?.addEventListener('click', () => {
   if (!currentQrInvitation) return;
-  const guestUrl = resolveInvitationUrl(currentQrInvitation.slug);
+  const guestUrl = resolveInvitationUrl(currentQrInvitation.slug, null, currentQrInvitation.template_id);
   const filename = `QR-${currentQrInvitation.slug}.svg`;
 
   downloadQrFile({
@@ -1324,9 +1369,7 @@ $('#groom-name')?.addEventListener('input', updateAutoSlug);
 $('#bride-name')?.addEventListener('input', updateAutoSlug);
 $('#celebrant-name')?.addEventListener('input', updateAutoSlug);
 $('#company-name')?.addEventListener('input', updateAutoSlug);
-$('#invitation-slug')?.addEventListener('input', () => { 
-  $('#invitation-slug').dataset.auto = 'false'; 
-});
+$('#biz-gold-company-name')?.addEventListener('input', updateAutoSlug);
 
 // Category & Template sync listeners
 $('#template-id')?.addEventListener('change', event => {
@@ -1409,7 +1452,27 @@ $('#biz-gold-add-faq-btn')?.addEventListener('click', () => {
   container.appendChild(card);
 });
 
-$('#biz-gold-company-name')?.addEventListener('input', updateAutoSlug);
+$('#biz-gold-add-payment-btn')?.addEventListener('click', () => {
+  const container = $('#biz-gold-payments-list');
+  if (!container) return;
+  const count = container.querySelectorAll('.dynamic-item-card').length;
+  const card = document.createElement('div');
+  card.className = 'dynamic-item-card';
+  card.dataset.index = count;
+  card.innerHTML = `
+    <div class="dynamic-item-header">
+      <strong style="color:#fbbf24; font-size:0.8rem;">Payment #${count + 1}</strong>
+      <button type="button" class="dynamic-remove-btn" title="ဖယ်ရှားမည်">✕ ဖယ်ရှားမည်</button>
+    </div>
+    <div style="display:grid; grid-template-columns: 140px 1fr; gap:0.4rem;">
+      <input class="payment-bank" value="" placeholder="ဘဏ်/Wallet (KBZPay)" required>
+      <input class="payment-number" value="" placeholder="အကောင့်/ဖုန်းနံပါတ်" required>
+    </div>
+    <input class="payment-name" value="" placeholder="အကောင့်ပိုင်ရှင် အမည် (e.g. U Hla Win)" style="margin-top:0.35rem;">
+  `;
+  card.querySelector('.dynamic-remove-btn').addEventListener('click', () => card.remove());
+  container.appendChild(card);
+});
 
 // Photo remove buttons
 $('#remove-cover-photo').addEventListener('click', () => {

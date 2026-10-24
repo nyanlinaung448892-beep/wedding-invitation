@@ -100,20 +100,34 @@ export const supabase = new Proxy({}, {
 /**
  * Fetches a single active invitation by its URL slug using native fetch().
  * Falls back gracefully if Supabase is unreachable or times out.
- * Includes resilient 12s timeout and automatic 1-step retry for slow mobile networks.
+ * Implements Fast Adaptive Timeouts (4.5s ➔ 5.0s ➔ 5.5s) and 3 total attempts
+ * for maximum resilience on slow Myanmar cellular networks (2G/3G/EDGE).
  *
- * @param {string} slug       - e.g. 'ko-aung-ma-thandar-2025'
- * @param {number} timeoutMs  - Abort timeout in ms (default 12000)
- * @param {number} retries    - Number of auto-retries on network timeout (default 1)
+ * @param {string} slug                     - e.g. 'heinthu-aung-pan-ei-phyu-2026'
+ * @param {number|number[]} [timeoutMs]     - Array of attempt timeouts or single timeout (default [4500, 5000, 5500])
+ * @param {number} [retries]                - Extra retries if single number supplied (default 2)
+ * @param {Function|null} [onProgress]      - Optional progress callback: ({ attempt, maxAttempts, timeoutMs })
  * @returns {Promise<Object|null>}
  */
-export async function fetchInvitationBySlug(slug, timeoutMs = 12000, retries = 1) {
+export async function fetchInvitationBySlug(slug, timeoutMs = [4500, 5000, 5500], retries = 2, onProgress = null) {
     if (!slug) return null;
     const cleanSlug = String(slug).trim().toLowerCase();
 
-    for (let attempt = 0; attempt <= retries; attempt++) {
+    const timeouts = Array.isArray(timeoutMs)
+        ? timeoutMs
+        : (timeoutMs === 12000 ? [4500, 5000, 5500] : Array(retries + 1).fill(timeoutMs));
+    const maxAttempts = timeouts.length;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const currentTimeout = timeouts[attempt];
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        const timer = setTimeout(() => controller.abort(), currentTimeout);
+
+        if (typeof onProgress === 'function') {
+            try {
+                onProgress({ attempt: attempt + 1, maxAttempts, timeoutMs: currentTimeout });
+            } catch (_) {}
+        }
 
         try {
             const url = `${SUPABASE_URL}/rest/v1/${TABLES.INVITATIONS}` +
@@ -137,10 +151,10 @@ export async function fetchInvitationBySlug(slug, timeoutMs = 12000, retries = 1
             return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
 
         } catch (err) {
-            console.warn(`[supabase-config] Direct REST fetch failed (attempt ${attempt + 1}/${retries + 1}):`, err.message);
-            if (attempt < retries) {
-                // Short 600ms grace period before auto-retry
-                await new Promise(resolve => setTimeout(resolve, 600));
+            console.warn(`[supabase-config] Direct REST fetch attempt ${attempt + 1}/${maxAttempts} failed:`, err.message);
+            if (attempt < maxAttempts - 1) {
+                const pauseMs = attempt === 0 ? 300 : 500;
+                await new Promise(resolve => setTimeout(resolve, pauseMs));
             } else {
                 return null;
             }
@@ -154,15 +168,28 @@ export async function fetchInvitationBySlug(slug, timeoutMs = 12000, retries = 1
 /**
  * Fetches the most recently created active invitation using native fetch().
  * Used when user enters root landing page without slug parameter.
- * Includes resilient 12s timeout and automatic 1-step retry for slow mobile networks.
- * @param {number} timeoutMs
- * @param {number} retries
+ * Implements Fast Adaptive Timeouts (4.5s ➔ 5.0s ➔ 5.5s) for slow mobile networks.
+ * @param {number|number[]} [timeoutMs]
+ * @param {number} [retries]
+ * @param {Function|null} [onProgress]
  * @returns {Promise<Object|null>}
  */
-export async function fetchLatestActiveInvitation(timeoutMs = 12000, retries = 1) {
-    for (let attempt = 0; attempt <= retries; attempt++) {
+export async function fetchLatestActiveInvitation(timeoutMs = [4500, 5000, 5500], retries = 2, onProgress = null) {
+    const timeouts = Array.isArray(timeoutMs)
+        ? timeoutMs
+        : (timeoutMs === 12000 ? [4500, 5000, 5500] : Array(retries + 1).fill(timeoutMs));
+    const maxAttempts = timeouts.length;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const currentTimeout = timeouts[attempt];
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        const timer = setTimeout(() => controller.abort(), currentTimeout);
+
+        if (typeof onProgress === 'function') {
+            try {
+                onProgress({ attempt: attempt + 1, maxAttempts, timeoutMs: currentTimeout });
+            } catch (_) {}
+        }
 
         try {
             const url = `${SUPABASE_URL}/rest/v1/${TABLES.INVITATIONS}` +
@@ -186,9 +213,10 @@ export async function fetchLatestActiveInvitation(timeoutMs = 12000, retries = 1
             return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
 
         } catch (err) {
-            console.warn(`[supabase-config] fetchLatestActiveInvitation failed (attempt ${attempt + 1}/${retries + 1}):`, err.message);
-            if (attempt < retries) {
-                await new Promise(resolve => setTimeout(resolve, 600));
+            console.warn(`[supabase-config] fetchLatestActiveInvitation attempt ${attempt + 1}/${maxAttempts} failed:`, err.message);
+            if (attempt < maxAttempts - 1) {
+                const pauseMs = attempt === 0 ? 300 : 500;
+                await new Promise(resolve => setTimeout(resolve, pauseMs));
             } else {
                 return null;
             }
@@ -523,18 +551,17 @@ export async function isPartnerCodeAvailable(code) {
     if (!code || typeof code !== 'string') return false;
     const cleanCode = code.trim().toUpperCase();
     try {
-        const sb = await getSupabaseClient();
-        const { data, error } = await sb
-            .from(TABLES.PARTNERS)
-            .select('id')
-            .eq('partner_code', cleanCode)
-            .limit(1);
-
-        if (error) {
-            console.warn('[supabase-config] isPartnerCodeAvailable check error:', error.message);
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${TABLES.PARTNERS}?partner_code=eq.${encodeURIComponent(cleanCode)}&select=id&limit=1`, {
+            headers: {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+        });
+        if (!res.ok) {
             return true;
         }
-        return !data || data.length === 0;
+        const data = await res.json();
+        return !Array.isArray(data) || data.length === 0;
     } catch (err) {
         console.warn('[supabase-config] isPartnerCodeAvailable exception:', err);
         return true;
@@ -585,9 +612,10 @@ export function getBaseUrl(customDomainOverride = null) {
         return base;
     }
     if (typeof window !== 'undefined' && window.location) {
-        const pathname = window.location.pathname;
+        const pathname = window.location.pathname || '/';
+        const origin = window.location.origin || (window.location.protocol && window.location.host ? `${window.location.protocol}//${window.location.host}` : '');
         const dir = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/';
-        return `${window.location.origin}${dir}`;
+        return origin ? `${origin}${dir}` : dir;
     }
     return '/';
 }
@@ -596,12 +624,17 @@ export function getBaseUrl(customDomainOverride = null) {
  * Resolves the full URL for a digital invitation given its slug.
  * @param {string} slug - The invitation slug (e.g. "min-and-su")
  * @param {string} [customDomain] - Optional custom domain override
+ * @param {string} [templateId] - Optional template ID (e.g. "biz-card-gold") for 0ms instant matching loading screen
  * @returns {string} - Full digital invitation landing page URL
  */
-export function resolveInvitationUrl(slug, customDomain = null) {
+export function resolveInvitationUrl(slug, customDomain = null, templateId = null) {
     if (!slug || typeof slug !== 'string') return '';
     const base = getBaseUrl(customDomain);
-    return `${base}index.html?id=${encodeURIComponent(slug.trim())}`;
+    let url = `${base}index.html?id=${encodeURIComponent(slug.trim())}`;
+    if (templateId && typeof templateId === 'string' && templateId.trim()) {
+        url += `&t=${encodeURIComponent(templateId.trim())}`;
+    }
+    return url;
 }
 
 // ─── Centralized Error Management & Logging Engine (Phase 8) ──────────────────

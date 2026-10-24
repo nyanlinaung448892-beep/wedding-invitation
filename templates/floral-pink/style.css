@@ -23,10 +23,10 @@
   --pink-radius-card:      26px;
   --pink-radius-pill:      9999px;
 
-  /* Typography */
-  --font-script:           'Alex Brush', 'Playfair Display', cursive, serif;
-  --font-heading-en:       'Playfair Display', 'Cormorant Garamond', Georgia, serif;
-  --font-myanmar:          'Pyidaungsu', 'Myanmar Text', 'Noto Sans Myanmar', system-ui, sans-serif;
+  /* Typography — Zero-Network High-Performance Font Stacks */
+  --font-script:           'Snell Roundhand', 'Brush Script MT', 'Segoe Script', cursive, Georgia, serif;
+  --font-heading-en:       Georgia, 'Times New Roman', -apple-system, serif;
+  --font-myanmar:          'Pyidaungsu', 'Noto Sans Myanmar', 'Myanmar Text', 'Myanmar Sangam MN', system-ui, -apple-system, sans-serif;
 
   /* Page base styles */
   background: linear-gradient(180deg, #ffeef2 0%, #ffdbe4 45%, #fff0f4 100%);

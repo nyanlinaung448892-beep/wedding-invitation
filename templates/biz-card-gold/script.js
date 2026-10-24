@@ -25,12 +25,12 @@ function showToast(container, message) {
   }, 3200);
 }
 
-function generateVCard(data) {
+export function generateVCard(data) {
   const company = data.company_name || data.display_title || 'Apex Business Hub';
   const tagline = data.tagline || '';
   const phone = data.rsvp_phone || '';
   const bio = data.message || '';
-  const website = data.facebook_url || window.location.href;
+  const website = data.facebook_url || (typeof window !== 'undefined' ? window.location.href : '');
 
   return [
     'BEGIN:VCARD',
@@ -45,10 +45,11 @@ function generateVCard(data) {
   ].filter(Boolean).join('\r\n');
 }
 
-export function init({ container, data }) {
+export function init({ container, data, helpers, slug }) {
   if (!container) return;
 
   const bizData = data || {};
+  const currentSlug = String(slug || '').trim().toLowerCase() || 'default';
 
   // 1. Setup Tab Switching Logic
   const tabs = container.querySelectorAll('.biz-tab-btn');
@@ -101,42 +102,49 @@ export function init({ container, data }) {
         name: 'Official Facebook Page',
         subtext: 'နောက်ဆုံးရ ဝန်ဆောင်မှုနှင့် သတင်းများ ကြည့်ရှုရန်',
         iconClass: 'facebook',
-        iconSymbol: '📘'
+        iconSvg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 13.5h2.5l1-4H14v-2c0-1.03.54-1.5 1.75-1.5H17.5V2.31C16.88 2.23 15.68 2 14.34 2 11.38 2 9.5 3.77 9.5 7.15v2.35H6v4h3.5V22h4.5v-8.5z"/></svg>'
       },
       {
         key: 'messenger_url',
         name: 'Chat on Messenger',
         subtext: 'သိလိုသည်များကို တိုက်ရိုက်စာပို့ မေးမြန်းရန်',
         iconClass: 'messenger',
-        iconSymbol: '💬'
+        iconSvg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.145 2 11.258c0 2.91 1.455 5.517 3.735 7.188-.184.973-.666 2.502-1.895 3.324-.132.088-.13.284.004.364.55.33 2.158.825 4.305-.333 1.206.335 2.504.52 3.851.52 5.523 0 10-4.146 10-9.258S17.523 2 12 2zm1.096 12.443l-2.616-2.79-5.105 2.79 5.612-5.961 2.684 2.79 5.037-2.79-5.612 5.961z"/></svg>'
       },
       {
         key: 'telegram_url',
         name: 'Business Tools & Invoice Channel',
         subtext: 'Telegram Channel သို့ တိုက်ရိုက်ဝင်ရောက်ရန်',
         iconClass: 'telegram',
-        iconSymbol: '✈️'
+        iconSvg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.665 3.717l-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l-.313 4.693c.46 0 .663-.211.921-.46l2.211-2.15 4.599 3.397c.848.467 1.457.227 1.668-.785l3.019-14.228c.309-1.239-.473-1.8-1.281-1.434z"/></svg>'
       },
       {
         key: 'telegram_group_url',
         name: 'Telegram Discussion Group',
         subtext: 'အဖွဲ့ဝင်များနှင့် တိုက်ရိုက်ဆွေးနွေးမေးမြန်းရန်',
         iconClass: 'telegram',
-        iconSymbol: '👥'
+        iconSvg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.665 3.717l-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l-.313 4.693c.46 0 .663-.211.921-.46l2.211-2.15 4.599 3.397c.848.467 1.457.227 1.668-.785l3.019-14.228c.309-1.239-.473-1.8-1.281-1.434z"/></svg>'
       },
       {
         key: 'facebook_group_url',
         name: 'Facebook Community Group',
         subtext: 'လုပ်ငန်းရှင်များ အချင်းချင်း ချိတ်ဆက်ဆွေးနွေးရန်',
         iconClass: 'community',
-        iconSymbol: '🤝'
+        iconSvg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>'
       },
       {
         key: 'tiktok_url',
         name: 'Official TikTok',
         subtext: 'အသုံးဝင်သော Business Tips ဗီဒီယိုတိုများ',
         iconClass: 'tiktok',
-        iconSymbol: '🎵'
+        iconSvg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.89 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.32 0 .62.05.91.13V9.41a6.33 6.33 0 0 0-.91-.07A6.34 6.34 0 0 0 3 15.68 6.34 6.34 0 0 0 9.34 22a6.34 6.34 0 0 0 6.34-6.32V8.92a8.28 8.28 0 0 0 4.84 1.55v-3.5a4.85 4.85 0 0 1-.93-.28z"/></svg>'
+      },
+      {
+        key: 'viber_url',
+        name: 'Viber Direct Contact',
+        subtext: 'Viber မှတစ်ဆင့် တိုက်ရိုက် စာပို့ ဆက်သွယ်ရန်',
+        iconClass: 'viber',
+        iconSvg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.8 17.2c-.6 1.7-2.4 2.8-4.2 2.8-1.5 0-3-.5-4.4-1.4-2.6-1.7-4.8-3.9-6.5-6.5C3.8 10.7 3.3 9.2 3.3 7.7c0-1.8 1.1-3.6 2.8-4.2.4-.1.8 0 1.1.2l3 2.5c.3.2.4.6.4.9-.1.6-.5 1.1-.9 1.5-.4.4-.7.9-.7 1.4 0 1 .8 2.3 1.8 3.3 1 1 2.3 1.8 3.3 1.8.5 0 1-.3 1.4-.7.4-.4.9-.8 1.5-.9.3 0 .7.1.9.4l2.5 3c.3.3.4.7.3 1.1zm.2-8.2c-.3 0-.5-.2-.5-.5 0-2.8-2.2-5-5-5-.3 0-.5-.2-.5-.5s.2-.5.5-.5c3.3 0 6 2.7 6 6 0 .3-.2.5-.5.5zm-2.5 0c-.3 0-.5-.2-.5-.5 0-1.4-1.1-2.5-2.5-2.5-.3 0-.5-.2-.5-.5s.2-.5.5-.5c1.9 0 3.5 1.6 3.5 3.5 0 .3-.2.5-.5.5z"/></svg>'
       }
     ];
 
@@ -147,12 +155,15 @@ export function init({ container, data }) {
       let rawUrl = (bizData[cfg.key] || '').trim();
       if (!rawUrl) return;
 
-      // Handle raw usernames or phone numbers for messenger/telegram
+      // Handle raw usernames or phone numbers for messenger/telegram/viber
       let finalUrl = rawUrl;
       if (cfg.key === 'messenger_url' && !rawUrl.startsWith('http')) {
         finalUrl = `https://m.me/${rawUrl.replace(/^@/, '')}`;
       } else if ((cfg.key === 'telegram_url' || cfg.key === 'telegram_group_url') && !rawUrl.startsWith('http')) {
         finalUrl = `https://t.me/${rawUrl.replace(/^@/, '')}`;
+      } else if (cfg.key === 'viber_url' && !rawUrl.startsWith('viber:') && !rawUrl.startsWith('http')) {
+        const cleanDigits = rawUrl.replace(/[^0-9+]/g, '');
+        finalUrl = `viber://chat?number=${cleanDigits}`;
       }
 
       renderedCount++;
@@ -163,7 +174,7 @@ export function init({ container, data }) {
       item.rel = 'noopener noreferrer';
       item.innerHTML = `
         <div class="channel-logo ${cfg.iconClass}">
-          <span>${cfg.iconSymbol}</span>
+          ${cfg.iconSvg}
         </div>
         <div class="channel-details">
           <p class="channel-name">${escapeHTML(cfg.name)}</p>
@@ -206,55 +217,334 @@ export function init({ container, data }) {
     `).join('');
   }
 
-  // 5. Populate HOW WE WORK (3 Steps)
-  const hww = Array.isArray(bizData.how_we_work) && bizData.how_we_work.length
-    ? bizData.how_we_work
-    : [
-        { title: 'ဆွေးနွေးခြင်း', desc: 'လုပ်ငန်းလိုအပ်ချက်ကို အသေးစိတ်မေးမြန်းခြင်း' },
-        { title: 'တည်ဆောက်ခြင်း', desc: 'စိတ်ကြိုက် ဒီဇိုင်းနှင့် စနစ်များ ရေးဆွဲပေးခြင်း' },
-        { title: 'လွှဲပြောင်းခြင်း', desc: 'စမ်းသပ်စစ်ဆေးပြီး အသင့်သုံးနိုင်အောင် ပေးအပ်ခြင်း' }
-      ];
+  // 5. Active Users Counter & Live Public Reviews System
+  const statUsersEl = container.querySelector('#biz-stat-users-val');
+  const statUsersCard = container.querySelector('#biz-stat-users-card');
 
-  if (container.querySelector('#biz-step1-title')) {
-    container.querySelector('#biz-step1-title').textContent = hww[0]?.title || 'ဆွေးနွေးခြင်း';
-    container.querySelector('#biz-step1-desc').textContent = hww[0]?.desc || 'လုပ်ငန်းလိုအပ်ချက်ကို အသေးစိတ်မေးမြန်းခြင်း';
-    container.querySelector('#biz-step2-title').textContent = hww[1]?.title || 'တည်ဆောက်ခြင်း';
-    container.querySelector('#biz-step2-desc').textContent = hww[1]?.desc || 'စိတ်ကြိုက် ဒီဇိုင်းနှင့် စနစ်များ ရေးဆွဲပေးခြင်း';
-    container.querySelector('#biz-step3-title').textContent = hww[2]?.title || 'လွှဲပြောင်းခြင်း';
-    container.querySelector('#biz-step3-desc').textContent = hww[2]?.desc || 'စမ်းသပ်စစ်ဆေးပြီး အသင့်သုံးနိုင်အောင် ပေးအပ်ခြင်း';
+  // Parse initial base value from bizData.stat_users (e.g., "500+", "1,200+", "250")
+  const rawUsersStr = String(bizData.stat_users || (statUsersEl ? statUsersEl.textContent : '500+')).trim();
+  const rawDigitsMatch = rawUsersStr.replace(/,/g, '').match(/\d+/);
+  const baseUsersNum = rawDigitsMatch ? parseInt(rawDigitsMatch[0], 10) : 500;
+  const usersSuffix = rawUsersStr.includes('+') ? '+' : '';
+
+  let additionalUsersCount = 0;
+
+  function updateActiveUsersDisplay() {
+    if (!statUsersEl) return;
+    const totalUsers = baseUsersNum + additionalUsersCount;
+    statUsersEl.textContent = `${totalUsers.toLocaleString()}${usersSuffix}`;
   }
 
-  // 6. Render Dynamic Client Reviews
-  const reviewsContainer = container.querySelector('#biz-reviews-list');
-  if (reviewsContainer) {
-    const reviews = Array.isArray(bizData.reviews) && bizData.reviews.length
-      ? bizData.reviews
-      : [
-          {
-            name: 'ကိုအောင်မင်း',
-            role: 'Online Shop Owner',
-            rating: 5,
-            text: 'လုပ်ငန်းရှင်တွေအတွက် ဘောင်ချာနဲ့ စာရင်းဇယား စနစ်တွေ တကယ်ပဲ အဆင်ပြေပြေ သုံးလို့ရပါတယ်။ အထူး ကျေးဇူးတင်ပါတယ်။'
-          }
-        ];
+  function pulseActiveUsers() {
+    if (!statUsersCard) return;
+    statUsersCard.classList.remove('is-pulsing');
+    void statUsersCard.offsetWidth; // Trigger reflow for keyframe restart
+    statUsersCard.classList.add('is-pulsing');
+  }
 
-    reviewsContainer.innerHTML = reviews.map(r => {
+  // Reviews Elements
+  const reviewsContainer = container.querySelector('#biz-reviews-list');
+  const toggleFormBtn = container.querySelector('#btn-toggle-review-form');
+  const formContainer = container.querySelector('#biz-review-form-container');
+  const reviewForm = container.querySelector('#biz-review-form');
+  const closeFormBtn = container.querySelector('#btn-close-review-form');
+  const cancelReviewBtn = container.querySelector('#btn-cancel-review');
+  const nameInput = container.querySelector('#biz-reviewer-name');
+  const roleInput = container.querySelector('#biz-reviewer-role');
+  const msgInput = container.querySelector('#biz-reviewer-msg');
+  const errorEl = container.querySelector('#biz-review-form-error');
+  const submitBtn = container.querySelector('#btn-submit-review');
+  const starsRow = container.querySelector('#biz-rating-stars-row');
+  const ratingFeedback = container.querySelector('#biz-rating-text-feedback');
+
+  const reviewsCacheKey = `biz_public_reviews_${currentSlug}`;
+
+  // Default initial admin reviews
+  const defaultAdminReviews = Array.isArray(bizData.reviews) && bizData.reviews.length
+    ? bizData.reviews
+    : [
+        {
+          name: 'ကိုအောင်မင်း',
+          role: 'Online Shop Owner',
+          rating: 5,
+          text: 'လုပ်ငန်းရှင်တွေအတွက် ဘောင်ချာနဲ့ စာရင်းဇယား စနစ်တွေ တကယ်ပဲ အဆင်ပြေပြေ သုံးလို့ရပါတယ်။ အထူး ကျေးဇူးတင်ပါတယ်။'
+        }
+      ];
+
+  // Helper to normalize any review (whether admin, cached, or remote from Supabase wishes)
+  function normalizeReview(r) {
+    let name = String(r.name || 'Anonymous Client').trim();
+    let role = String(r.role || '').trim();
+    let rating = Number(r.rating) || 5;
+    let text = String(r.text || r.message || '').trim();
+    let time = String(r.time || r.date || '').trim();
+
+    // Parse JSON payload if stored in message column
+    if (text.startsWith('{') && text.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(text);
+        if (parsed.rating) rating = Math.min(5, Math.max(1, Number(parsed.rating) || 5));
+        if (parsed.role) role = String(parsed.role).trim();
+        if (parsed.text) text = String(parsed.text).trim();
+      } catch (_) {}
+    }
+
+    // Parse "(Role)" from name if role not explicit
+    if (!role && name.includes('(') && name.endsWith(')')) {
+      const match = name.match(/^(.*?)\s*\((.*?)\)$/);
+      if (match) {
+        name = match[1].trim();
+        role = match[2].trim();
+      }
+    }
+
+    if (!time && r.created_at) {
+      try {
+        const d = new Date(r.created_at);
+        if (!isNaN(d.getTime())) {
+          time = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+        }
+      } catch (_) {}
+    }
+
+    return {
+      id: r.id || `${name}_${Math.random()}`,
+      name: name || 'Anonymous Client',
+      role,
+      rating: Math.min(5, Math.max(1, rating)),
+      text,
+      time: time || 'အခုလေးတင်'
+    };
+  }
+
+  // Load cached public reviews
+  let publicReviews = [];
+  try {
+    const rawCache = localStorage.getItem(reviewsCacheKey);
+    publicReviews = rawCache ? JSON.parse(rawCache).map(normalizeReview) : [];
+  } catch (_) {
+    publicReviews = [];
+  }
+
+  // All combined reviews: public reviews first, followed by admin reviews
+  let allReviews = [...publicReviews, ...defaultAdminReviews.map(normalizeReview)];
+  additionalUsersCount = publicReviews.length;
+  updateActiveUsersDisplay();
+
+  function renderReviews() {
+    if (!reviewsContainer) return;
+
+    if (!allReviews || allReviews.length === 0) {
+      reviewsContainer.innerHTML = `
+        <div class="biz-review-empty">
+          <span class="empty-icon">⭐</span>
+          <p>သုံးသပ်ချက် မရှိသေးပါ။ ပထမဆုံး Review ရေးသားပေးပို့ပါ!</p>
+        </div>
+      `;
+      return;
+    }
+
+    reviewsContainer.innerHTML = allReviews.map(r => {
       const starCount = Math.min(5, Math.max(1, Number(r.rating) || 5));
-      const stars = '★'.repeat(starCount);
+      const stars = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
+      const initial = (r.name || 'C').trim().charAt(0).toUpperCase();
+
       return `
         <div class="biz-review-card">
           <div class="review-header">
-            <div>
-              <span class="reviewer-name">${escapeHTML(r.name || 'Anonymous Client')}</span>
-              ${r.role ? `<span class="reviewer-role"> (${escapeHTML(r.role)})</span>` : ''}
+            <div class="reviewer-meta">
+              <div class="reviewer-avatar">${escapeHTML(initial)}</div>
+              <div class="reviewer-name-role">
+                <span class="reviewer-name">${escapeHTML(r.name)}</span>
+                ${r.role ? `<span class="reviewer-role">${escapeHTML(r.role)}</span>` : ''}
+              </div>
             </div>
-            <span class="review-stars">${stars}</span>
+            <div class="review-rating-time">
+              <span class="review-stars">${stars}</span>
+              ${r.time ? `<span class="review-time">${escapeHTML(r.time)}</span>` : ''}
+            </div>
           </div>
-          <p class="review-body">${escapeHTML(r.text || '')}</p>
+          <p class="review-body">${escapeHTML(r.text)}</p>
         </div>
       `;
     }).join('');
   }
+
+  renderReviews();
+
+  // Fetch live public reviews from Supabase wishes table
+  if (helpers?.wishes?.fetchWishesBySlug) {
+    helpers.wishes.fetchWishesBySlug(currentSlug).then(remoteWishes => {
+      if (Array.isArray(remoteWishes) && remoteWishes.length > 0) {
+        const normalizedRemote = remoteWishes.map(normalizeReview);
+        publicReviews = normalizedRemote;
+        try {
+          localStorage.setItem(reviewsCacheKey, JSON.stringify(publicReviews.slice(0, 50)));
+        } catch (_) {}
+
+        allReviews = [...publicReviews, ...defaultAdminReviews.map(normalizeReview)];
+        additionalUsersCount = publicReviews.length;
+        updateActiveUsersDisplay();
+        renderReviews();
+      }
+    }).catch(err => {
+      console.warn('[biz-card-gold] Fetch reviews notice:', err);
+    });
+  }
+
+  // Star Rating Interaction
+  let currentRating = 5;
+  const ratingLabels = {
+    1: '၁ ကြယ် (တိုးတက်ရန်လို)',
+    2: '၂ ကြယ် (သင့်တင့်)',
+    3: '၃ ကြယ် (ကောင်းမွန်)',
+    4: '၄ ကြယ် (အလွန်ကောင်း)',
+    5: '၅ ကြယ် (အထူးကောင်းမွန်)'
+  };
+
+  if (starsRow) {
+    const starBtns = starsRow.querySelectorAll('.star-btn');
+    starBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = parseInt(btn.dataset.val, 10) || 5;
+        currentRating = val;
+        starBtns.forEach(b => {
+          const bVal = parseInt(b.dataset.val, 10);
+          b.classList.toggle('is-active', bVal <= val);
+        });
+        if (ratingFeedback) {
+          ratingFeedback.textContent = ratingLabels[val] || `${val} ကြယ်`;
+        }
+      });
+    });
+  }
+
+  // Toggle Form Visibility
+  function openReviewForm() {
+    if (!formContainer) return;
+    formContainer.hidden = false;
+    if (toggleFormBtn) toggleFormBtn.hidden = true;
+    if (errorEl) errorEl.hidden = true;
+    setTimeout(() => nameInput?.focus(), 80);
+  }
+
+  function closeReviewForm() {
+    if (!formContainer) return;
+    formContainer.hidden = true;
+    if (toggleFormBtn) toggleFormBtn.hidden = false;
+    if (errorEl) errorEl.hidden = true;
+    reviewForm?.reset();
+    currentRating = 5;
+    if (starsRow) {
+      starsRow.querySelectorAll('.star-btn').forEach(b => b.classList.add('is-active'));
+    }
+    if (ratingFeedback) {
+      ratingFeedback.textContent = ratingLabels[5];
+    }
+  }
+
+  toggleFormBtn?.addEventListener('click', openReviewForm);
+  closeFormBtn?.addEventListener('click', closeReviewForm);
+  cancelReviewBtn?.addEventListener('click', closeReviewForm);
+
+  // Keyboard accessibility: Escape closes form
+  container.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && formContainer && !formContainer.hidden) {
+      closeReviewForm();
+    }
+  });
+
+  // Submit Review Form
+  reviewForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (errorEl) errorEl.hidden = true;
+
+    const nameVal = String(nameInput?.value || '').trim();
+    const roleVal = String(roleInput?.value || '').trim();
+    const msgVal = String(msgInput?.value || '').trim();
+
+    if (!nameVal) {
+      if (errorEl) {
+        errorEl.textContent = 'ကျေးဇူးပြု၍ သင့်အမည် သို့မဟုတ် ဆိုင်အမည်ကို ဖြည့်စွက်ပေးပါ။';
+        errorEl.hidden = false;
+      }
+      nameInput?.focus();
+      return;
+    }
+
+    if (!msgVal) {
+      if (errorEl) {
+        errorEl.textContent = 'ကျေးဇူးပြု၍ သုံးသပ်ချက် မှတ်ချက်စာသားကို ရေးသားပေးပါ။';
+        errorEl.hidden = false;
+      }
+      msgInput?.focus();
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>ပေးပို့နေပါသည်… ⏳</span>';
+    }
+
+    const now = new Date();
+    const timeFormatted = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
+    const newReview = {
+      id: `local_${Date.now()}`,
+      name: nameVal,
+      role: roleVal,
+      rating: currentRating,
+      text: msgVal,
+      time: timeFormatted
+    };
+
+    // Prepare payload for Supabase wishes table
+    const remotePayloadMessage = JSON.stringify({
+      rating: currentRating,
+      role: roleVal,
+      text: msgVal
+    });
+    const remoteFullName = roleVal ? `${nameVal} (${roleVal})` : nameVal;
+
+    if (helpers?.wishes?.submitGuestWish) {
+      try {
+        const result = await helpers.wishes.submitGuestWish({
+          slug: currentSlug,
+          name: remoteFullName,
+          message: remotePayloadMessage
+        });
+        if (result?.data?.id) newReview.id = result.data.id;
+      } catch (err) {
+        console.warn('[biz-card-gold] Save review warning:', err);
+      }
+    }
+
+    // Prepend to reviews list immediately
+    publicReviews.unshift(newReview);
+    try {
+      localStorage.setItem(reviewsCacheKey, JSON.stringify(publicReviews.slice(0, 50)));
+    } catch (_) {}
+
+    allReviews = [...publicReviews, ...defaultAdminReviews.map(normalizeReview)];
+
+    // 1 ပေါင်းခြင်း: review တစ်ခါရေးရင် current active users ထဲမှာ 1 ပေါင်းပါ
+    additionalUsersCount++;
+    updateActiveUsersDisplay();
+    pulseActiveUsers();
+
+    // Re-render and scroll to top of stream
+    renderReviews();
+    if (reviewsContainer) reviewsContainer.scrollTop = 0;
+
+    // Reset and close form
+    closeReviewForm();
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>⭐ Review အတည်ပြုပေးပို့မည်</span>';
+    }
+
+    // Success feedback
+    showToast(container, 'ကျေးဇူးတင်ပါသည်! သင့် Review ကို အောင်မြင်စွာ ပေးပို့ပြီးပါပြီ။ ⭐');
+  });
 
   // 7. Render Dynamic Question & Answer Accordions
   const faqContainer = container.querySelector('#biz-faq-list');
@@ -295,6 +585,68 @@ export function init({ container, data }) {
     });
   }
 
+  // 7. Setup Dynamic Payment Methods
+  const paymentsContainer = container.querySelector('#biz-payments-list');
+  if (paymentsContainer) {
+    const rawPayments = Array.isArray(bizData.biz_payments) && bizData.biz_payments.length > 0
+      ? bizData.biz_payments
+      : [
+          { bank_name: 'KBZPay', account_number: '09987654321', account_name: bizData.company_name || 'Apex Business Hub' },
+          { bank_name: 'KBZ Bank', account_number: '2038472910382910', account_name: bizData.company_name || 'Apex Business Hub' },
+          { bank_name: 'WavePay', account_number: '09987654321', account_name: bizData.company_name || 'Apex Business Hub' }
+        ];
+
+    if (!Array.isArray(rawPayments) || rawPayments.length === 0) {
+      paymentsContainer.innerHTML = `
+        <div style="text-align: center; padding: 2rem 1rem; color: #94a3b8; background: rgba(0,0,0,0.25); border-radius: 12px; border: 1px dashed rgba(245, 158, 11, 0.2);">
+          <p style="margin: 0;">ငွေပေးချေမှု အချက်အလက်များကို မကြာမီ ထည့်သွင်းပေးပါမည်။</p>
+        </div>
+      `;
+    } else {
+      paymentsContainer.innerHTML = rawPayments.map(p => {
+        const bank = escapeHTML(p.bank_name || 'Payment');
+        const num = escapeHTML(p.account_number || '—');
+        const holder = escapeHTML(p.account_name || '—');
+
+        return `
+          <div class="biz-payment-card">
+            <div class="biz-payment-header">
+              <span class="biz-payment-bank">🏦 ${bank}</span>
+              <span class="biz-payment-badge">Verified Account</span>
+            </div>
+            <div class="biz-payment-number-row">
+              <span class="biz-payment-number">${num}</span>
+              <button type="button" class="biz-copy-btn" data-copy-val="${num}" title="အကောင့်နံပါတ် ကူးယူမည်">
+                📋 Copy
+              </button>
+            </div>
+            <div class="biz-payment-holder">
+              <span>အကောင့်ပိုင်ရှင်</span>
+              <strong>${holder}</strong>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 1-Click Clipboard Copy Handler with feedback toast
+      paymentsContainer.querySelectorAll('.biz-copy-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const val = btn.dataset.copyVal;
+          if (!val || val === '—') return;
+          try {
+            await navigator.clipboard.writeText(val);
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = '✔ Copied!';
+            showToast(container, `✅ ${val} ကို ကူးယူပြီးပါပြီ!`);
+            setTimeout(() => { btn.innerHTML = origHtml; }, 2000);
+          } catch (_) {
+            showToast(container, `အကောင့်နံပါတ်: ${val}`);
+          }
+        });
+      });
+    }
+  }
+
   // 8. Top Action Buttons
   const shareBtn = container.querySelector('#btn-share-profile');
   shareBtn?.addEventListener('click', async () => {
@@ -325,11 +677,6 @@ export function init({ container, data }) {
   catalogBtn?.addEventListener('click', () => {
     const channelsTab = container.querySelector('#biz-tab-channels');
     channelsTab?.click();
-  });
-
-  const themeBtn = container.querySelector('#btn-theme-palette');
-  themeBtn?.addEventListener('click', () => {
-    showToast(container, '✨ Luxury Amber/Gold Theme Activated');
   });
 }
 

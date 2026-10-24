@@ -90,3 +90,4 @@ small { display: block; color: var(--color-primary-light); margin-top: .35rem; }
 .dynamic-remove-btn { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; border-radius: var(--radius-sm); padding: 0.15rem 0.45rem; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; }
 .dynamic-remove-btn:hover { background: #dc2626; color: #ffffff; }
 .dynamic-grid-2 { display: grid; grid-template-columns: 80px 1fr; gap: 0.5rem; }
+#invitation-slug[readonly] { background: rgba(255, 255, 255, 0.05); color: var(--color-primary-light); cursor: not-allowed; border-color: rgba(244, 228, 193, 0.2); user-select: all; }

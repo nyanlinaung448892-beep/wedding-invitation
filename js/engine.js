@@ -40,7 +40,7 @@ let _fallbackJSON = null;
 async function loadFallbackJSON() {
   if (_fallbackJSON) return _fallbackJSON;
   try {
-    const res = await fetch('data/fallback-invitations.json?v=16', { cache: 'no-store' });
+    const res = await fetch('data/fallback-invitations.json?v=20');
     if (res.ok) {
       _fallbackJSON = await res.json();
     }
@@ -66,11 +66,11 @@ async function loadFallbackJSON() {
  * @param {Function|null} onLiveUpdate
  * @returns {Promise<Object>}
  */
-async function resolveInvitationData(slug, onLiveUpdate = null) {
+async function resolveInvitationData(slug, onLiveUpdate = null, onNetworkProgress = null) {
   if (!slug) {
     console.info('[engine.js] No slug in URL — fetching latest active invitation from Supabase.');
     try {
-      const latest = await fetchLatestActiveInvitation(12000, 1);
+      const latest = await fetchLatestActiveInvitation([4500, 5000, 5500], 2, onNetworkProgress);
       if (latest && latest.customer_data) {
         return latest;
       }
@@ -83,7 +83,7 @@ async function resolveInvitationData(slug, onLiveUpdate = null) {
   const cleanSlug = String(slug).trim().toLowerCase();
   const cacheKey  = `wedding_inv_cache_${cleanSlug}`;
 
-  // Check local cache first for INSTANT 0ms load
+  // Check local cache first for INSTANT 0ms load (Returning Visitors)
   let cachedData = null;
   try {
     const raw = localStorage.getItem(cacheKey);
@@ -91,11 +91,11 @@ async function resolveInvitationData(slug, onLiveUpdate = null) {
   } catch (_) {}
 
   if (cachedData) {
-    console.info('[engine.js] Instant Load: serving cached data for slug:', cleanSlug);
+    console.info('[engine.js] Instant 0ms Load: serving cached data for slug:', cleanSlug);
 
-    // Asynchronously revalidate in background if online
+    // Asynchronously revalidate in background if online (Silent Background Revalidation)
     if (navigator.onLine && typeof onLiveUpdate === 'function') {
-      fetchInvitationBySlug(cleanSlug, 12000, 1)
+      fetchInvitationBySlug(cleanSlug, [4500, 5000, 5500], 2)
         .then(remoteData => {
           if (remoteData) {
             try { localStorage.setItem(cacheKey, JSON.stringify(remoteData)); } catch (_) {}
@@ -112,9 +112,9 @@ async function resolveInvitationData(slug, onLiveUpdate = null) {
     return { ...cachedData, _isCached: true };
   }
 
-  // Tier 1: Supabase live fetch with 12s timeout and automatic 1-step retry
+  // Tier 1: Supabase live fetch with Fast Adaptive Timeouts (4.5s ➔ 5.0s ➔ 5.5s)
   try {
-    const remoteData = await fetchInvitationBySlug(cleanSlug, 12000, 1);
+    const remoteData = await fetchInvitationBySlug(cleanSlug, [4500, 5000, 5500], 2, onNetworkProgress);
     if (remoteData) {
       try { localStorage.setItem(cacheKey, JSON.stringify(remoteData)); } catch (_) {}
       return remoteData;
@@ -205,7 +205,7 @@ function initScrollAnimations() {
 
 // ─── Photo CacheStorage Management (100% Offline Photo Reliability) ───────────
 
-const PHOTO_CACHE_NAME = 'wedding-invitation-photos-v1';
+const PHOTO_CACHE_NAME = 'wedding-invitation-photos-v2';
 
 async function loadAndCachePhoto(imgEl, wrapperEl, rawUrl) {
   if (!rawUrl || typeof rawUrl !== 'string' || !rawUrl.trim()) {
@@ -370,7 +370,7 @@ function loadTemplateCSS(templateId) {
     const link = document.createElement('link');
     link.id   = 'template-style';
     link.rel  = 'stylesheet';
-    link.href = `templates/${templateId}/style.css?v=16`;
+    link.href = `templates/${templateId}/style.css?v=21`;
 
     link.onload  = () => resolve();
     link.onerror = () => {
@@ -380,6 +380,80 @@ function loadTemplateCSS(templateId) {
 
     document.head.appendChild(link);
   });
+}
+
+// ─── Multi-Template Loading Theme Engine ──────────────────────────────────────
+const LOADING_THEMES = {
+  'biz-card-gold': {
+    badge: '✦ APEX BUSINESS CARD ✦',
+    title: 'Business Card & Profile',
+    subText: 'လုပ်ငန်းအချက်အလက်များ ဖွင့်နေပါသည်...',
+    slowNet1: 'လုပ်ငန်းကွန်ရက် စစ်ဆေးနေပါသည်...',
+    slowNet2: 'လုပ်ငန်းအချက်အလက်များ ဆွဲယူနေဆဲဖြစ်ပါသည်၊ ခေတ္တစောင့်ဆိုင်းပေးပါ...',
+    icon: '💼',
+    themeClass: 'loading-theme-biz-card-gold'
+  },
+  'neon-birthday': {
+    badge: '🎉 BIRTHDAY CELEBRATION 🎉',
+    title: 'Neon Birthday Party',
+    subText: 'မွေးနေ့ဖိတ်ကြားလွှာ ဖွင့်နေပါသည်...',
+    slowNet1: 'မွေးနေ့အခမ်းအနား အင်တာနက် စစ်ဆေးနေပါသည်...',
+    slowNet2: 'ဒေတာများ ဆွဲယူနေဆဲဖြစ်ပါသည်၊ ခေတ္တစောင့်ဆိုင်းပေးပါ...',
+    icon: '🎂',
+    themeClass: 'loading-theme-neon-birthday'
+  },
+  'floral-pink': {
+    badge: '💍 WEDDING INVITATION 💍',
+    title: 'Sweet Pink Romance',
+    subText: 'မင်္ဂလာဖိတ်ကြားလွှာ ဖွင့်နေပါသည်...',
+    slowNet1: 'မင်္ဂလာအစီအစဉ် အင်တာနက် စစ်ဆေးနေပါသည်...',
+    slowNet2: 'ဒေတာများ ဆွဲယူနေဆဲဖြစ်ပါသည်၊ ခေတ္တစောင့်ဆိုင်းပေးပါ...',
+    icon: '❤',
+    themeClass: 'loading-theme-floral-pink'
+  },
+  'default': {
+    badge: '✦ DIGITAL INVITATION ✦',
+    title: 'Digital Invitation & Profile',
+    subText: 'စာမျက်နှာ ဖွင့်နေပါသည်...',
+    slowNet1: 'အင်တာနက်လိုင်း စစ်ဆေးနေပါသည်...',
+    slowNet2: 'ဒေတာများ ဆွဲယူနေဆဲဖြစ်ပါသည်၊ ခေတ္တစောင့်ဆိုင်းပေးပါ...',
+    icon: '✦',
+    themeClass: 'loading-theme-default'
+  }
+};
+
+let currentAppliedLoadingTemplate = null;
+
+export function applyTemplateLoadingTheme(templateId) {
+  const loadScreen = document.getElementById('loading-screen');
+  if (!loadScreen) return;
+
+  const config = LOADING_THEMES[templateId] || LOADING_THEMES['default'];
+  currentAppliedLoadingTemplate = templateId;
+
+  // Swap theme classes
+  loadScreen.classList.remove(
+    'loading-theme-default',
+    'loading-theme-biz-card-gold',
+    'loading-theme-floral-pink',
+    'loading-theme-neon-birthday'
+  );
+  if (config.themeClass) {
+    loadScreen.classList.add(config.themeClass);
+  }
+
+  // Update DOM elements if present
+  const badgeEl = document.getElementById('loading-badge');
+  if (badgeEl) badgeEl.textContent = config.badge;
+
+  const titleEl = document.getElementById('loading-title');
+  if (titleEl) titleEl.textContent = config.title;
+
+  const subEl = document.getElementById('loading-sub-text') || loadScreen.querySelector('.loading-sub');
+  if (subEl) subEl.textContent = config.subText;
+
+  const iconEl = document.getElementById('loading-center-icon');
+  if (iconEl) iconEl.textContent = config.icon;
 }
 
 // ─── Error Screen Display ─────────────────────────────────────────────────────
@@ -425,8 +499,12 @@ function showError(type) {
         const loadScreen = document.getElementById('loading-screen');
         if (loadScreen) {
           loadScreen.classList.remove('hidden');
-          const sub = loadScreen.querySelector('.loading-sub');
-          if (sub) sub.textContent = 'စာမျက်နှာ ဖွင့်နေပါသည်...';
+          if (currentAppliedLoadingTemplate) {
+            applyTemplateLoadingTheme(currentAppliedLoadingTemplate);
+          } else {
+            const sub = loadScreen.querySelector('.loading-sub');
+            if (sub) sub.textContent = 'စာမျက်နှာ ဖွင့်နေပါသည်...';
+          }
         }
         initEngine();
       });
@@ -632,19 +710,61 @@ let activeTemplateModule = null;
 async function initEngine() {
   const params  = new URLSearchParams(window.location.search);
   const rawSlug = (params.get('id') || params.get('slug') || window.location.hash.replace(/^#/, '') || '').trim().toLowerCase() || null;
+  const urlTemplate = (params.get('t') || params.get('tpl') || params.get('template') || window.__PRE_RESOLVED_TEMPLATE__ || '').trim().toLowerCase() || null;
+
+  // Determine earliest possible template hint (URL param > localStorage cache > fallback match)
+  let initialTemplateId = urlTemplate;
+  if (!initialTemplateId && rawSlug) {
+    try {
+      const cached = localStorage.getItem('wedding_inv_cache_' + rawSlug);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.template_id) initialTemplateId = parsed.template_id;
+      }
+    } catch (_) {}
+  }
+
+  if (initialTemplateId) {
+    applyTemplateLoadingTheme(initialTemplateId);
+  }
 
   // Progressive loading notifications for slow mobile networks
-  const loadingSub = document.querySelector('.loading-sub');
+  const loadingSub = document.getElementById('loading-sub-text') || document.querySelector('.loading-sub');
   const timer1 = setTimeout(() => {
-    if (loadingSub) loadingSub.textContent = 'အင်တာနက်လိုင်း စစ်ဆေးနေပါသည်...';
+    const activeCfg = LOADING_THEMES[currentAppliedLoadingTemplate] || LOADING_THEMES['default'];
+    if (loadingSub) loadingSub.textContent = activeCfg.slowNet1;
   }, 3500);
   const timer2 = setTimeout(() => {
-    if (loadingSub) loadingSub.textContent = 'ဒေတာများ ဆွဲယူနေဆဲဖြစ်ပါသည်၊ ခေတ္တစောင့်ဆိုင်းပေးပါ...';
+    const activeCfg = LOADING_THEMES[currentAppliedLoadingTemplate] || LOADING_THEMES['default'];
+    if (loadingSub) loadingSub.textContent = activeCfg.slowNet2;
   }, 7500);
+
+  // Manual retry button on loading screen if network stalls past 8s
+  const timerRetry = setTimeout(() => {
+    const loadScreen = document.getElementById('loading-screen');
+    if (!loadScreen || loadScreen.classList.contains('hidden')) return;
+    let manualRetryBtn = document.getElementById('loading-manual-retry-btn');
+    if (!manualRetryBtn) {
+      manualRetryBtn = document.createElement('button');
+      manualRetryBtn.id = 'loading-manual-retry-btn';
+      manualRetryBtn.className = 'error-retry-btn';
+      manualRetryBtn.style.marginTop = '1rem';
+      manualRetryBtn.type = 'button';
+      manualRetryBtn.textContent = '🔄 ပြန်လည်ကြိုးစားမည်';
+      manualRetryBtn.addEventListener('click', () => {
+        initEngine();
+      });
+      loadScreen.appendChild(manualRetryBtn);
+    }
+    manualRetryBtn.style.display = 'inline-block';
+  }, 8000);
 
   const clearLoadingTimers = () => {
     clearTimeout(timer1);
     clearTimeout(timer2);
+    clearTimeout(timerRetry);
+    const manualBtn = document.getElementById('loading-manual-retry-btn');
+    if (manualBtn) manualBtn.remove();
   };
 
   try {
@@ -656,8 +776,28 @@ async function initEngine() {
       updatePageMeta(freshData);
     };
 
-    // Step 1: Multi-tier resolve
-    const invitation = await resolveInvitationData(rawSlug, onLiveUpdate);
+    const onNetworkProgress = ({ attempt }) => {
+      if (!loadingSub) return;
+      if (attempt === 1) {
+        loadingSub.textContent = 'စာမျက်နှာ ဖွင့်နေပါသည်...';
+      } else if (attempt === 2) {
+        loadingSub.textContent = 'အင်တာနက်လိုင်း စစ်ဆေးနေပါသည် (၁ ကြိမ် ပြန်လည်ကြိုးစားနေပါသည်)...';
+      } else if (attempt === 3) {
+        loadingSub.textContent = 'ဒေတာများ ဆွဲယူနေဆဲဖြစ်ပါသည်၊ ခေတ္တစောင့်ဆိုင်းပေးပါ...';
+      }
+    };
+
+    // Parallel preloading: if template was pre-resolved, start loading layout & CSS immediately
+    let prefetchPromise = null;
+    if (initialTemplateId) {
+      prefetchPromise = Promise.all([
+        fetch(`templates/${initialTemplateId}/layout.html?v=20`).then(res => res.ok ? res.text() : null).catch(() => null),
+        loadTemplateCSS(initialTemplateId)
+      ]);
+    }
+
+    // Step 1: Multi-tier resolve (Returning visitor returns 0ms instant)
+    const invitation = await resolveInvitationData(rawSlug, onLiveUpdate, onNetworkProgress);
 
     // Step 2: Enrich customer_data
     const data = enrichCustomerData(invitation.customer_data);
@@ -665,14 +805,25 @@ async function initEngine() {
     // Step 3: Resolve template ID
     const templateId = (invitation.template_id && invitation.template_id.trim()) ? invitation.template_id.trim() : 'floral-pink';
 
-    // Step 4 & 5: Parallel fetch layout HTML fragment & load template CSS
-    const [layoutHTML] = await Promise.all([
-      fetch(`templates/${templateId}/layout.html?v=16`).then(res => {
-        if (!res.ok) throw new Error(`Failed to fetch templates/${templateId}/layout.html`);
-        return res.text();
-      }),
-      loadTemplateCSS(templateId)
-    ]);
+    // Step 3.1: Synchronize loading screen to exact template theme
+    applyTemplateLoadingTheme(templateId);
+
+    // Step 4 & 5: Fetch layout HTML fragment & load template CSS (reuse prefetch if matched)
+    let layoutHTML = null;
+    if (prefetchPromise && templateId === initialTemplateId) {
+      const [prefetchedHTML] = await prefetchPromise;
+      layoutHTML = prefetchedHTML;
+    }
+    if (!layoutHTML) {
+      const [fetchedHTML] = await Promise.all([
+        fetch(`templates/${templateId}/layout.html?v=20`).then(res => {
+          if (!res.ok) throw new Error(`Failed to fetch templates/${templateId}/layout.html`);
+          return res.text();
+        }),
+        loadTemplateCSS(templateId)
+      ]);
+      layoutHTML = fetchedHTML;
+    }
 
     // Step 6: Inject HTML into template container
     const container = document.getElementById('template-container');
@@ -701,7 +852,7 @@ async function initEngine() {
 
     // Step 11: Decoupled Plugin Execution — Dynamically mount template's script.js if present
     try {
-      const templateScriptUrl = `../templates/${templateId}/script.js?v=16`;
+      const templateScriptUrl = `../templates/${templateId}/script.js?v=20`;
       const templateModule = await import(templateScriptUrl);
 
       if (templateModule && typeof templateModule.init === 'function') {
@@ -740,7 +891,7 @@ async function initEngine() {
     // Only attempt emergency demo render if NO specific slug was requested (direct landing visit)
     if (!rawSlug) {
       try {
-        const emergencyLayout = await fetch('templates/floral-pink/layout.html?v=16');
+        const emergencyLayout = await fetch('templates/floral-pink/layout.html?v=20');
         if (emergencyLayout.ok) {
           const container = document.getElementById('template-container');
           container.innerHTML = await emergencyLayout.text();

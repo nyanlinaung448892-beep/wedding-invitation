@@ -20,16 +20,37 @@
 
   <title>Digital Invitation & Profile</title>
 
-  <!-- Google Fonts: Cormorant Garamond, Alex Brush, Playfair Display (Optimized weights) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
-    rel="stylesheet"
-  >
+  <!-- High-Performance Zero-Network Font System: Fast local system fonts + Supabase preconnect -->
+  <link rel="dns-prefetch" href="https://kweylhqnzqnxnopqwrhj.supabase.co">
+  <link rel="preconnect" href="https://kweylhqnzqnxnopqwrhj.supabase.co" crossorigin>
+
+  <!-- Pre-render Template Detector: 0ms Instant Loading Theme Activation -->
+  <script>
+    (function() {
+      try {
+        const p = new URLSearchParams(window.location.search);
+        const t = (p.get('t') || p.get('tpl') || p.get('template') || '').trim().toLowerCase();
+        const slug = (p.get('id') || p.get('slug') || window.location.hash.replace(/^#/, '') || '').trim().toLowerCase();
+        let tpl = t;
+        if (!tpl && slug) {
+          try {
+            const c = localStorage.getItem('wedding_inv_cache_' + slug);
+            if (c) {
+              const parsed = JSON.parse(c);
+              if (parsed && parsed.template_id) tpl = parsed.template_id;
+            }
+          } catch (_) {}
+        }
+        if (tpl) {
+          window.__PRE_RESOLVED_TEMPLATE__ = tpl;
+          document.documentElement.classList.add('preload-tpl-' + tpl);
+        }
+      } catch (_) {}
+    })();
+  </script>
 
   <!-- Global Design System CSS -->
-  <link rel="stylesheet" href="css/global.css?v=16">
+  <link rel="stylesheet" href="css/global.css?v=21">
 </head>
 <body>
 
@@ -37,14 +58,65 @@
        Loading Screen — shown while engine fetches data & template
        ═══════════════════════════════════════════════════════════ -->
   <div id="loading-screen" role="status" aria-label="စာမျက်နှာ ဖွင့်နေပါသည်" aria-live="polite">
+    <div class="loading-badge-wrap">
+      <span class="loading-badge" id="loading-badge">✦ DIGITAL PROFILE ✦</span>
+    </div>
     <div class="loading-rings" aria-hidden="true">
       <div class="loading-ring"></div>
       <div class="loading-ring"></div>
       <div class="loading-ring"></div>
+      <span class="loading-center-icon" id="loading-center-icon">✦</span>
     </div>
-    <p class="loading-text">Digital Invitation & Profile</p>
+    <p class="loading-text" id="loading-title">Digital Invitation & Profile</p>
     <p class="loading-sub" id="loading-sub-text">စာမျက်နှာ ဖွင့်နေပါသည်...</p>
+    <div class="loading-progress-bar" aria-hidden="true">
+      <div class="loading-progress-fill"></div>
+    </div>
   </div>
+
+  <!-- Synchronous Loading Screen Theme Hydrator (0ms paint) -->
+  <script>
+    (function() {
+      try {
+        const tpl = window.__PRE_RESOLVED_TEMPLATE__;
+        if (!tpl) return;
+        const themes = {
+          'biz-card-gold': {
+            cls: 'loading-theme-biz-card-gold',
+            badge: '✦ APEX BUSINESS CARD ✦',
+            title: 'Business Card & Profile',
+            sub: 'လုပ်ငန်းအချက်အလက်များ ဖွင့်နေပါသည်...',
+            icon: '💼'
+          },
+          'neon-birthday': {
+            cls: 'loading-theme-neon-birthday',
+            badge: '🎉 BIRTHDAY CELEBRATION 🎉',
+            title: 'Neon Birthday Party',
+            sub: 'မွေးနေ့ဖိတ်ကြားလွှာ ဖွင့်နေပါသည်...',
+            icon: '🎂'
+          },
+          'floral-pink': {
+            cls: 'loading-theme-floral-pink',
+            badge: '💍 WEDDING INVITATION 💍',
+            title: 'Sweet Pink Romance',
+            sub: 'မင်္ဂလာဖိတ်ကြားလွှာ ဖွင့်နေပါသည်...',
+            icon: '❤'
+          }
+        };
+        const cfg = themes[tpl];
+        if (cfg) {
+          const el = document.getElementById('loading-screen');
+          if (el) {
+            el.classList.add(cfg.cls);
+            const b = document.getElementById('loading-badge'); if (b) b.textContent = cfg.badge;
+            const t = document.getElementById('loading-title'); if (t) t.textContent = cfg.title;
+            const s = document.getElementById('loading-sub-text'); if (s) s.textContent = cfg.sub;
+            const i = document.getElementById('loading-center-icon'); if (i) i.textContent = cfg.icon;
+          }
+        }
+      } catch (_) {}
+    })();
+  </script>
 
   <!-- ═══════════════════════════════════════════════════════════
        Error Screen — shown when slug not found / network error
@@ -66,13 +138,13 @@
   <div id="template-container" aria-live="polite"></div>
 
   <!-- Template Engine (ES Module) -->
-  <script type="module" src="js/engine.js?v=16"></script>
+  <script type="module" src="js/engine.js?v=21"></script>
 
   <!-- Service Worker Registration (100% Offline Support) -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=16').catch(err => {
+        navigator.serviceWorker.register('./sw.js?v=21').catch(err => {
           console.warn('[SW] ServiceWorker registration notice:', err);
         });
       });

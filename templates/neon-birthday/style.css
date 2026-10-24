@@ -393,6 +393,161 @@
   line-height: 1.5;
 }
 
+/* ─── Platform Sponsor & Event Media Partner Showcase ────────────────────────── */
+.neon-birthday .card-birthday-sponsor {
+  background: var(--nb-card);
+  border: 1px solid var(--nb-border);
+  border-radius: 20px;
+  padding: 1.8rem 1.4rem;
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(186, 104, 255, 0.12);
+  backdrop-filter: blur(14px);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.neon-birthday .sponsor-neon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(255, 209, 102, 0.12);
+  border: 1px solid rgba(255, 209, 102, 0.4);
+  color: var(--nb-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.9rem;
+  text-transform: uppercase;
+}
+
+.neon-birthday .sponsor-neon-badge .badge-sparkle {
+  color: var(--nb-pink);
+  font-size: 0.8rem;
+}
+
+.neon-birthday .sponsor-neon-brand {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin: 0 0 0.35rem;
+  background: linear-gradient(135deg, #fff 20%, var(--nb-accent) 60%, var(--nb-pink) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.4;
+}
+
+.neon-birthday .sponsor-neon-tagline {
+  color: var(--nb-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0 0 1.25rem;
+}
+
+.neon-birthday .sponsor-neon-services {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.35rem;
+}
+
+.neon-birthday .sponsor-service-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.8rem;
+  background: rgba(6, 214, 160, 0.12);
+  border: 1px solid rgba(6, 214, 160, 0.35);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  color: var(--nb-cyan);
+  font-weight: 500;
+}
+
+.neon-birthday .sponsor-neon-messenger-wrap {
+  margin-bottom: 1.25rem;
+}
+
+.neon-birthday .btn-neon-messenger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  max-width: 380px;
+  padding: 0.85rem 1.4rem;
+  background: linear-gradient(135deg, #0084FF 0%, #a855f7 100%);
+  color: #FFFFFF !important;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0, 132, 255, 0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.neon-birthday .btn-neon-messenger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 132, 255, 0.55), 0 0 15px rgba(168, 85, 247, 0.4);
+}
+
+.neon-birthday .btn-neon-messenger .messenger-svg-icon {
+  flex-shrink: 0;
+}
+
+.neon-birthday .sponsor-neon-channels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.neon-birthday .neon-channel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.95rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  font-size: 0.84rem;
+  color: var(--nb-text);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.neon-birthday .neon-channel-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: var(--nb-accent);
+  transform: translateY(-1px);
+  color: #FFFFFF;
+}
+
+.neon-birthday .neon-channel-btn.phone-btn {
+  color: var(--nb-cyan);
+  border-color: rgba(6, 214, 160, 0.35);
+  background: rgba(6, 214, 160, 0.1);
+  font-weight: 600;
+}
+
+.neon-birthday .neon-channel-btn.facebook-btn {
+  color: #60a5fa;
+}
+
+.neon-birthday .neon-channel-btn.tiktok-btn {
+  color: #f43f5e;
+}
+
+.neon-birthday .neon-channel-btn.viber-btn {
+  color: #c084fc;
+}
+
+.neon-birthday .neon-channel-btn.telegram-btn {
+  color: #38bdf8;
+}
+
 .neon-birthday .birthday-footer {
   text-align: center;
   color: var(--nb-muted);

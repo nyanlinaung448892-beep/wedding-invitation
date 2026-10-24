@@ -100,9 +100,17 @@
   transition: all 0.2s ease;
 }
 
+.biz-card-gold .biz-round-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  flex-shrink: 0;
+}
+
 .biz-card-gold .biz-round-btn:hover {
   background: rgba(245, 158, 11, 0.3);
   border-color: #f59e0b;
+  color: #fbbf24;
   transform: translateY(-2px);
 }
 
@@ -272,14 +280,14 @@
   color: #64748b;
 }
 
-/* ─── Segmented 3-Tab Controller ─────────────────────────────────────────── */
+/* ─── Segmented 4-Tab Controller ─────────────────────────────────────────── */
 .biz-card-gold .biz-tab-nav {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.4rem;
-  padding: 0.4rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.25rem;
+  padding: 0.3rem;
   margin: 1.25rem 1.25rem 0.5rem;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(15, 23, 42, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
 }
@@ -288,17 +296,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  padding: 0.65rem 0.3rem;
+  padding: 0.58rem 0.15rem;
   border-radius: 999px;
   background: transparent;
   border: none;
   color: #94a3b8;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.25s ease;
+  white-space: nowrap;
 }
 
 .biz-card-gold .biz-tab-btn:hover {
@@ -316,6 +324,12 @@
 .biz-card-gold .biz-tab-btn#biz-tab-channels.is-active {
   background: linear-gradient(135deg, #a855f7, #ec4899);
   box-shadow: 0 2px 12px rgba(168, 85, 247, 0.45);
+}
+
+/* When payment tab is active, emerald luxury gradient */
+.biz-card-gold .biz-tab-btn#biz-tab-payment.is-active {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.45);
 }
 
 /* ─── Tab Content & Panels ───────────────────────────────────────────────── */
@@ -444,11 +458,19 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
+.biz-card-gold .channel-logo svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+  flex-shrink: 0;
+}
+
 .biz-card-gold .channel-logo.facebook { background: #1877f2; color: #ffffff; }
 .biz-card-gold .channel-logo.messenger { background: linear-gradient(135deg, #00b2fe 0%, #006aff 50%, #9013fe 100%); color: #ffffff; }
 .biz-card-gold .channel-logo.telegram { background: #229ed9; color: #ffffff; }
 .biz-card-gold .channel-logo.tiktok { background: #000000; border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff; }
-.biz-card-gold .channel-logo.community { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #ffffff; }
+.biz-card-gold .channel-logo.community { background: linear-gradient(135deg, #1877f2, #0d5bbd); color: #ffffff; }
+.biz-card-gold .channel-logo.viber { background: #7360f2; color: #ffffff; }
 
 .biz-card-gold .channel-details {
   flex: 1;
@@ -481,7 +503,7 @@
   flex-shrink: 0;
 }
 
-/* ─── How We Work Section ────────────────────────────────────────────────── */
+/* ─── Sub Section Badge Titles ───────────────────────────────────────────── */
 .biz-card-gold .biz-sub-section {
   margin-bottom: 2rem;
 }
@@ -499,95 +521,373 @@
   margin: 0;
 }
 
-.biz-card-gold .biz-steps-grid {
+/* ─── Client Reviews Stream & Form ────────────────────────────────────────── */
+.biz-card-gold .biz-reviews-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.biz-card-gold .biz-write-review-btn {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.3));
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+}
+
+.biz-card-gold .biz-write-review-btn:hover {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(217, 119, 6, 0.45));
+  border-color: #fbbf24;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+/* Review Submission Form */
+.biz-card-gold .biz-review-form-container {
+  margin-bottom: 1.25rem;
+  animation: bizFadeIn 0.3s ease;
+}
+
+.biz-card-gold .biz-review-form-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 1.1rem;
+  padding: 1.1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 16px rgba(245, 158, 11, 0.1);
+  backdrop-filter: blur(12px);
+}
+
+.biz-card-gold .review-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+}
+
+.biz-card-gold .review-form-header h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+.biz-card-gold .review-form-close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.8rem;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  place-items: center;
+  transition: all 0.2s ease;
+}
+
+.biz-card-gold .review-form-close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+
+/* Star Rating Selector */
+.biz-card-gold .review-rating-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.biz-card-gold .picker-label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.biz-card-gold .rating-stars-row {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.biz-card-gold .star-btn {
+  background: transparent;
+  border: none;
+  color: #475569;
+  font-size: 1.35rem;
+  cursor: pointer;
+  padding: 0 0.1rem;
+  transition: color 0.15s ease, transform 0.15s ease;
+  line-height: 1;
+}
+
+.biz-card-gold .star-btn.is-active {
+  color: #f59e0b;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+}
+
+.biz-card-gold .star-btn:hover {
+  transform: scale(1.2);
+}
+
+.biz-card-gold .rating-text-feedback {
+  font-size: 0.78rem;
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+/* Review Inputs */
+.biz-card-gold .review-inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+@media (max-width: 480px) {
+  .biz-card-gold .review-inputs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.biz-card-gold .biz-review-input,
+.biz-card-gold .biz-review-textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.biz-card-gold .biz-review-input:focus,
+.biz-card-gold .biz-review-textarea:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+}
+
+.biz-card-gold .biz-review-textarea {
+  resize: vertical;
+  min-height: 70px;
+  margin-bottom: 0.75rem;
+}
+
+.biz-card-gold .biz-review-error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.5rem;
+  font-size: 0.78rem;
+  margin-bottom: 0.75rem;
+}
+
+.biz-card-gold .review-form-actions {
+  display: flex;
   gap: 0.5rem;
 }
 
-.biz-card-gold .biz-step-card {
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1rem;
-  padding: 1rem 0.6rem;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
+.biz-card-gold .biz-review-submit-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: none;
+  color: #ffffff;
+  padding: 0.65rem 1rem;
+  border-radius: 0.65rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  justify-content: center;
   align-items: center;
 }
 
-.biz-card-gold .step-num {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #ffffff;
-  font-size: 0.82rem;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-  margin-bottom: 0.5rem;
+.biz-card-gold .biz-review-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
-.biz-card-gold .biz-step-card h3 {
-  margin: 0 0 0.25rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #ffffff;
+.biz-card-gold .biz-review-cancel-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  padding: 0.65rem 0.9rem;
+  border-radius: 0.65rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-family: inherit;
 }
 
-.biz-card-gold .biz-step-card p {
-  margin: 0;
-  font-size: 0.72rem;
-  color: #94a3b8;
-  line-height: 1.45;
+/* Reviews Stream Container */
+.biz-card-gold .biz-reviews-stream-wrapper {
+  position: relative;
+  border-radius: 1rem;
 }
 
-/* ─── Client Reviews List ────────────────────────────────────────────────── */
 .biz-card-gold .biz-reviews-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  max-height: 330px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.2rem 0.35rem 0.2rem 0.1rem;
+  scroll-behavior: smooth;
 }
 
+.biz-card-gold .biz-reviews-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.biz-card-gold .biz-reviews-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+}
+
+.biz-card-gold .biz-reviews-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+  border-radius: 999px;
+}
+
+/* Review Card */
 .biz-card-gold .biz-review-card {
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(245, 158, 11, 0.18);
   border-radius: 1rem;
-  padding: 1rem;
+  padding: 0.95rem 1rem;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  backdrop-filter: blur(8px);
+  animation: bizFadeIn 0.35s ease;
+}
+
+.biz-card-gold .biz-review-card:hover {
+  border-color: rgba(245, 158, 11, 0.38);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.12);
 }
 
 .biz-card-gold .review-header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 0.5rem;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.45rem;
+}
+
+.biz-card-gold .reviewer-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.biz-card-gold .reviewer-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.4));
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+  display: grid;
+  place-items: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.biz-card-gold .reviewer-name-role {
+  display: flex;
+  flex-direction: column;
 }
 
 .biz-card-gold .reviewer-name {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: #ffffff;
+  line-height: 1.25;
 }
 
 .biz-card-gold .reviewer-role {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: #94a3b8;
-  font-weight: normal;
+}
+
+.biz-card-gold .review-rating-time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
 }
 
 .biz-card-gold .review-stars {
   color: #f59e0b;
   font-size: 0.85rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
+}
+
+.biz-card-gold .review-time {
+  font-size: 0.68rem;
+  color: #64748b;
 }
 
 .biz-card-gold .review-body {
   margin: 0;
-  font-size: 0.84rem;
+  font-size: 0.83rem;
   color: #cbd5e1;
   line-height: 1.55;
+  word-break: break-word;
+}
+
+/* Empty Reviews State */
+.biz-card-gold .biz-review-empty {
+  text-align: center;
+  padding: 1.8rem 1rem;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px dashed rgba(245, 158, 11, 0.25);
+  border-radius: 1rem;
+  color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.biz-card-gold .biz-review-empty .empty-icon {
+  font-size: 2rem;
+}
+
+.biz-card-gold .biz-review-empty p {
+  margin: 0;
+  font-size: 0.84rem;
+}
+
+/* Active Users Counter Pulse Animation */
+@keyframes bizStatPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.22); color: #fbbf24; text-shadow: 0 0 14px rgba(245, 158, 11, 0.8); }
+  100% { transform: scale(1); }
+}
+
+.biz-card-gold .biz-stat-item.is-pulsing .stat-value {
+  animation: bizStatPulse 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ─── FAQ Accordion ──────────────────────────────────────────────────────── */
@@ -645,6 +945,265 @@
 
 .biz-card-gold .biz-faq-item.is-open .faq-answer {
   display: block;
+}
+
+/* ─── Payment Cards ──────────────────────────────────────────────────────── */
+.biz-card-gold .biz-payments-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.biz-card-gold .biz-payment-card {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: 16px;
+  padding: 1rem 1.15rem;
+  position: relative;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.biz-card-gold .biz-payment-card:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.biz-card-gold .biz-payment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+}
+
+.biz-card-gold .biz-payment-bank {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.biz-card-gold .biz-payment-badge {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-weight: 600;
+}
+
+.biz-card-gold .biz-payment-number-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.55rem;
+}
+
+.biz-card-gold .biz-payment-number {
+  font-family: monospace, system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: #ffffff;
+  word-break: break-all;
+}
+
+.biz-card-gold .biz-copy-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.biz-card-gold .biz-copy-btn:hover {
+  filter: brightness(1.1);
+}
+
+.biz-card-gold .biz-copy-btn:active {
+  transform: scale(0.95);
+}
+
+.biz-card-gold .biz-payment-holder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+.biz-card-gold .biz-payment-holder strong {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+/* ─── Platform Sponsor & Official Solutions Partner Showcase ──────────────── */
+.biz-card-gold .biz-sponsor-card {
+  margin: 1.5rem 1rem 0.5rem;
+  padding: 1.75rem 1.25rem;
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.9) 0%, rgba(13, 19, 34, 0.95) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(245, 158, 11, 0.06);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.biz-card-gold .biz-sponsor-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.9rem;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #fbbf24;
+  margin-bottom: 0.85rem;
+  text-transform: uppercase;
+}
+
+.biz-card-gold .biz-sponsor-badge .badge-sparkle {
+  color: #f59e0b;
+  font-size: 0.78rem;
+}
+
+.biz-card-gold .biz-sponsor-brand {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0 0 0.35rem;
+  line-height: 1.4;
+}
+
+.biz-card-gold .biz-sponsor-tagline {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin: 0 0 1.15rem;
+}
+
+.biz-card-gold .biz-sponsor-services {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+}
+
+.biz-card-gold .sponsor-service-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.32rem 0.75rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: #fde68a;
+  font-weight: 500;
+}
+
+.biz-card-gold .biz-sponsor-messenger-wrap {
+  margin-bottom: 1.15rem;
+}
+
+.biz-card-gold .btn-biz-sponsor-messenger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 360px;
+  padding: 0.85rem 1.25rem;
+  background: linear-gradient(135deg, #0084FF 0%, #0066CC 100%);
+  color: #FFFFFF !important;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 132, 255, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.biz-card-gold .btn-biz-sponsor-messenger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 132, 255, 0.5);
+}
+
+.biz-card-gold .btn-biz-sponsor-messenger .messenger-svg-icon {
+  flex-shrink: 0;
+}
+
+.biz-card-gold .biz-sponsor-channels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.biz-card-gold .biz-sponsor-channel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.biz-card-gold .biz-sponsor-channel-btn:hover {
+  background: rgba(51, 65, 85, 0.85);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.biz-card-gold .biz-sponsor-channel-btn.phone-btn {
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.12);
+  font-weight: 600;
+}
+
+.biz-card-gold .biz-sponsor-channel-btn.facebook-btn {
+  color: #60a5fa;
+}
+
+.biz-card-gold .biz-sponsor-channel-btn.tiktok-btn {
+  color: #f43f5e;
+}
+
+.biz-card-gold .biz-sponsor-channel-btn.viber-btn {
+  color: #c084fc;
+}
+
+.biz-card-gold .biz-sponsor-channel-btn.telegram-btn {
+  color: #38bdf8;
 }
 
 /* ─── Footer ─────────────────────────────────────────────────────────────── */

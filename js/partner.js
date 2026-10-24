@@ -18,10 +18,10 @@ const escapeHTML = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ 
 // ─── Partner QR Code Modal Management ─────────────────────────────────────────
 let currentPartnerQr = null;
 
-function openPartnerQrModal({ slug, title }) {
+function openPartnerQrModal({ slug, title, templateId = null }) {
   if (!slug) return;
-  currentPartnerQr = { slug, title };
-  const guestUrl = resolveInvitationUrl(slug);
+  currentPartnerQr = { slug, title, templateId };
+  const guestUrl = resolveInvitationUrl(slug, null, templateId);
 
   $('#qr-modal-title-text').textContent = title || slug;
   $('#qr-modal-url-input').value = guestUrl;
@@ -141,10 +141,10 @@ async function loadPartnerDashboard(session) {
 
     $('#referral-list').innerHTML = invitations.length ? invitations.map(invitation => {
       const title = resolveDisplayTitle(invitation);
-      const guestUrl = resolveInvitationUrl(invitation.slug);
+      const guestUrl = resolveInvitationUrl(invitation.slug, null, invitation.template_id);
       const linkHtml = invitation.is_active 
         ? `<div class="link-cell">
-            <button type="button" class="copy-icon-btn qr-table-btn" data-referral-qr data-slug="${escapeHTML(invitation.slug)}" data-title="${escapeHTML(title)}" title="QR Code ရယူ / ဒေါင်းလုဒ်ဆွဲမည်">📱 QR</button>
+            <button type="button" class="copy-icon-btn qr-table-btn" data-referral-qr data-slug="${escapeHTML(invitation.slug)}" data-title="${escapeHTML(title)}" data-template-id="${escapeHTML(invitation.template_id || '')}" title="QR Code ရယူ / ဒေါင်းလုဒ်ဆွဲမည်">📱 QR</button>
             <a class="invitation-link" href="${escapeHTML(guestUrl)}" target="_blank" rel="noopener">ဖွင့် ↗</a>
            </div>`
         : `<span style="color: #ffd0d0; font-size: 0.85rem;" title="Admin မှ ပိတ်ထားသည်">ပိတ်ထားသည်</span>`;
@@ -267,8 +267,9 @@ $('#referral-list')?.addEventListener('click', event => {
   if (!btn) return;
   const slug = btn.dataset.slug;
   const title = btn.dataset.title;
+  const templateId = btn.dataset.templateId;
   if (slug) {
-    openPartnerQrModal({ slug, title });
+    openPartnerQrModal({ slug, title, templateId });
   }
 });
 
@@ -285,7 +286,7 @@ document.addEventListener('keydown', event => {
 // QR Download PNG Handler (Mobile Gallery / Print-Ready)
 $('#qr-download-png-btn')?.addEventListener('click', () => {
   if (!currentPartnerQr) return;
-  const guestUrl = resolveInvitationUrl(currentPartnerQr.slug);
+  const guestUrl = resolveInvitationUrl(currentPartnerQr.slug, null, currentPartnerQr.templateId);
   const selectedSize = Number(document.querySelector('input[name="qr-size-select"]:checked')?.value || 1024);
   const filename = `QR-${currentPartnerQr.slug}-${selectedSize}px.png`;
 
@@ -303,7 +304,7 @@ $('#qr-download-png-btn')?.addEventListener('click', () => {
 // QR Download Vector SVG Handler
 $('#qr-download-svg-btn')?.addEventListener('click', () => {
   if (!currentPartnerQr) return;
-  const guestUrl = resolveInvitationUrl(currentPartnerQr.slug);
+  const guestUrl = resolveInvitationUrl(currentPartnerQr.slug, null, currentPartnerQr.templateId);
   const filename = `QR-${currentPartnerQr.slug}.svg`;
 
   downloadQrFile({

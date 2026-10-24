@@ -163,11 +163,6 @@
         "telegram_url": "https://t.me",
         "telegram_group_url": "https://t.me",
         "facebook_group_url": "https://facebook.com/groups",
-        "how_we_work": [
-          { "step": 1, "title": "ဆွေးနွေးခြင်း", "desc": "လုပ်ငန်းလိုအပ်ချက်ကို အသေးစိတ်မေးမြန်းခြင်း" },
-          { "step": 2, "title": "တည်ဆောက်ခြင်း", "desc": "စိတ်ကြိုက် ဒီဇိုင်းနှင့် စနစ်များ ရေးဆွဲပေးခြင်း" },
-          { "step": 3, "title": "လွှဲပြောင်းခြင်း", "desc": "စမ်းသပ်စစ်ဆေးပြီး အသင့်သုံးနိုင်အောင် ပေးအပ်ခြင်း" }
-        ],
         "services": [
           { "icon": "🌐", "title": "Web & App Development", "desc": "Modern responsive websites and powerful web applications" },
           { "icon": "🎨", "title": "Brand Identity & Design", "desc": "Unique logos, digital business cards, and marketing materials" },
@@ -189,6 +184,23 @@
           {
             "question": "ငွေပေးချေမှုပုံစံ မည်သို့ရှိပါသလဲ?",
             "answer": "KBZPay, WavePay, AYA Pay စသည့် Mobile Banking စနစ်များဖြင့် လွယ်ကူလျင်မြန်စွာ ပေးချေနိုင်ပါသည်။"
+          }
+        ],
+        "biz_payments": [
+          {
+            "bank_name": "KBZPay",
+            "account_number": "09987654321",
+            "account_name": "Apex Business Hub"
+          },
+          {
+            "bank_name": "KBZ Bank",
+            "account_number": "2038472910382910",
+            "account_name": "Apex Business Hub"
+          },
+          {
+            "bank_name": "WavePay",
+            "account_number": "09987654321",
+            "account_name": "Apex Business Hub"
           }
         ]
       }

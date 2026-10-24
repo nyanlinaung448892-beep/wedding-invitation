@@ -3,28 +3,28 @@
 // Provides 100% Offline Caching for Shell, Data, and Couple Photos
 // =============================================================================
 
-const SHELL_CACHE_NAME = 'wedding-shell-v16';
+const SHELL_CACHE_NAME = 'wedding-shell-v21';
 const PHOTO_CACHE_NAME = 'wedding-invitation-photos-v2';
 
 const SHELL_ASSETS = [
   './',
   './index.html',
   './404.html',
-  './css/global.css?v=16',
-  './js/engine.js?v=16',
+  './css/global.css?v=21',
+  './js/engine.js?v=21',
   './js/supabase-config.js',
   './js/calendar.js',
-  './templates/registry.json?v=16',
-  './templates/floral-pink/layout.html?v=16',
-  './templates/floral-pink/style.css?v=16',
-  './templates/floral-pink/script.js?v=16',
-  './templates/neon-birthday/layout.html?v=16',
-  './templates/neon-birthday/style.css?v=16',
-  './templates/neon-birthday/script.js?v=16',
-  './templates/biz-card-gold/layout.html?v=16',
-  './templates/biz-card-gold/style.css?v=16',
-  './templates/biz-card-gold/script.js?v=16',
-  './data/fallback-invitations.json?v=16',
+  './templates/registry.json?v=21',
+  './templates/floral-pink/layout.html?v=21',
+  './templates/floral-pink/style.css?v=21',
+  './templates/floral-pink/script.js?v=21',
+  './templates/neon-birthday/layout.html?v=21',
+  './templates/neon-birthday/style.css?v=21',
+  './templates/neon-birthday/script.js?v=21',
+  './templates/biz-card-gold/layout.html?v=21',
+  './templates/biz-card-gold/style.css?v=21',
+  './templates/biz-card-gold/script.js?v=21',
+  './data/fallback-invitations.json?v=21',
   './assets/images/couple-portrait-default.jpg',
   './assets/images/wedding-memory-default.jpg'
 ];
@@ -99,25 +99,61 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Navigation / Page Shell requests
+  // 2. Navigation / Page Shell requests (Fast 2.5s network timeout with instant cache fallback)
   event.respondWith(
-    fetch(request)
-      .then((networkResponse) => {
+    (async () => {
+      const cached = await caches.match(request);
+
+      // If returning visitor and cached asset exists for static shells (css, js, template html):
+      // Return cached immediately and revalidate in background!
+      const isStaticShell = url.pathname.includes('/css/') ||
+                            url.pathname.includes('/js/') ||
+                            url.pathname.includes('/templates/') ||
+                            url.pathname.includes('/data/');
+
+      if (cached && isStaticShell) {
+        if (navigator.onLine) {
+          fetch(request).then((res) => {
+            if (res && res.ok) {
+              caches.open(SHELL_CACHE_NAME).then((c) => c.put(request, res));
+            }
+          }).catch(() => {});
+        }
+        return cached;
+      }
+
+      // For Navigation or first-load shells: Race network with 2500ms timeout
+      const networkPromise = fetch(request).then((networkResponse) => {
         if (networkResponse && networkResponse.ok) {
           const clone = networkResponse.clone();
           caches.open(SHELL_CACHE_NAME).then((cache) => cache.put(request, clone));
         }
         return networkResponse;
-      })
-      .catch(async () => {
-        // Offline: Serve cached match or fallback to index.html for navigation
-        const cachedResponse = await caches.match(request);
-        if (cachedResponse) return cachedResponse;
-        if (request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-        return new Response('Offline', { status: 503, statusText: 'Offline' });
-      })
+      });
+
+      if (!cached) {
+        // First-time visitor without cache: wait for network
+        return networkPromise.catch(async () => {
+          if (request.mode === 'navigate') {
+            const fallback = await caches.match('./index.html');
+            if (fallback) return fallback;
+          }
+          return new Response('Offline', { status: 503, statusText: 'Offline' });
+        });
+      }
+
+      // If cached exists but is navigation: race 2500ms
+      const timeoutPromise = new Promise((resolve) => {
+        setTimeout(() => resolve(null), 2500);
+      });
+
+      const fastRes = await Promise.race([networkPromise, timeoutPromise]);
+      if (fastRes) return fastRes;
+
+      // Network didn't respond within 2.5s on slow mobile link — serve cached immediately!
+      networkPromise.catch(() => {});
+      return cached;
+    })()
   );
 });
 
