@@ -70,6 +70,7 @@ export function generateVCard(data) {
   return [
     'BEGIN:VCARD',
     'VERSION:3.0',
+    `N:${escapeVCard(company)};;;;`,
     `FN:${escapeVCard(company)}`,
     `ORG:${escapeVCard(company)}`,
     tagline ? `TITLE:${escapeVCard(tagline)}` : '',
@@ -146,26 +147,46 @@ export function init({ container, data, helpers, slug }) {
   });
   activateTab(container.querySelector('#biz-tab-channels') || tabs[0]);
 
-  // 2. Setup vCard (.vcf) Download
+  // 2. Setup Device OS Contact Integration (Prompt OS to save / pre-fill contact with 0 typing)
   const vcardBtn = container.querySelector('#btn-save-vcard');
-  vcardBtn?.addEventListener('click', () => {
+  vcardBtn?.addEventListener('click', async () => {
     try {
       const vcardContent = generateVCard(bizData);
+      const company = bizData.company_name || bizData.display_title || 'Business Contact';
+      const cleanName = company.toLowerCase().replace(/[^a-z0-9]+/g, '_') || 'business_contact';
+      const filename = `${cleanName}.vcf`;
+
+      // Method 1: Web Share File API (prompts mobile OS: "Add to Contacts" / "Contacts app")
+      const file = new File([vcardContent], filename, { type: 'text/vcard;charset=utf-8' });
+      if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: company,
+            text: `${company} Contact Info`
+          });
+          showToast(container, '✅ ဖုန်း Contact ထဲသို့ မှတ်ရန် စနစ်ပွင့်လာပါပြီ!');
+          return;
+        } catch (shareErr) {
+          if (shareErr?.name === 'AbortError') return; // User closed sheet
+        }
+      }
+
+      // Method 2: Direct OS Import Download (triggers Android/iOS "Open with Contacts" pre-filled)
       const blob = new Blob([vcardContent], { type: 'text/vcard;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      const filename = `${(bizData.company_name || 'business_contact').toLowerCase().replace(/[^a-z0-9]+/g, '_')}.vcf`;
-
       link.href = url;
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast(container, '✅ Contact Card (.vcf) ကို ဖုန်းထဲသို့ ဒေါင်းလုဒ်ဆွဲပြီးပါပြီ!');
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+
+      showToast(container, '✅ Contact ဖိုင် ဒေါင်းလုဒ်ဆွဲပြီးပါပြီ! (ဖွင့်၍ Contact ထဲ အလွယ်တကူ သိမ်းပါ)');
     } catch (err) {
       console.warn('[biz-card-gold] vCard generation error:', err);
-      showToast(container, 'ဖုန်းစာအုပ်ထဲ သိမ်းရန် မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။');
+      showToast(container, 'Contact မှတ်ရန် မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။');
     }
   });
 

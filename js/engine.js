@@ -11,7 +11,7 @@ import { fetchInvitationBySlug, fetchLatestActiveInvitation, fetchWishesBySlug, 
 import { saveToCalendar, getGoogleCalendarUrl, scheduleWeddingReminder } from './calendar.js';
 
 // Unified Asset & Shell Cache Version
-const ASSET_CACHE_VERSION = '21';
+const ASSET_CACHE_VERSION = '23';
 
 // ─── Static Fallback JSON cache (loaded once) ─────────────────────────────────
 let _fallbackJSON = null;

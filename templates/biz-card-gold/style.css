@@ -61,14 +61,15 @@
 /* ── Hero Header ───────────────────────────────────────────────────────────── */
 .biz-card-gold .biz-profile-header {
   position: relative;
-  padding-bottom: 0;
-  overflow: hidden;
+  padding-bottom: 24px;
 }
 
 .biz-card-gold .biz-header-bg {
   position: absolute;
   inset: 0;
   background: linear-gradient(145deg, #1e3a8a 0%, #1d4ed8 40%, #2563eb 70%, #3b82f6 100%);
+  border-radius: 0 0 28px 28px;
+  overflow: hidden;
   z-index: 0;
 }
 
@@ -198,74 +199,86 @@
   background: rgba(255,255,255,.14);
   color: #fff;
   cursor: pointer;
-  transition: background .18s ease;
-  backdrop-filter: blur(6px);
+  transition: background .18s ease, transform .15s ease, box-shadow .18s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-.biz-card-gold .biz-share-btn:hover { background: rgba(255,255,255,.24); }
+.biz-card-gold .biz-share-btn:hover {
+  background: rgba(255,255,255,.24);
+  transform: translateY(-1px);
+}
+.biz-card-gold .biz-share-btn:active {
+  transform: scale(.94);
+}
 .biz-card-gold .biz-share-btn svg {
   width: 20px;
   height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  fill: currentColor;
 }
 
-/* CTA Buttons — float over the header bottom edge */
+/* CTA Buttons — placed cleanly inside the hero header */
 .biz-card-gold .biz-cta-group {
   position: relative;
-  z-index: 1;
+  z-index: 10;
   display: grid;
   grid-template-columns: repeat(2, minmax(0,1fr));
-  gap: 10px;
-  padding: 0 18px 0;
+  gap: 12px;
+  padding: 0 18px;
   margin-top: 16px;
-  margin-bottom: -22px;
+  margin-bottom: 0;
 }
 .biz-card-gold .biz-cta-btn {
-  min-height: 50px;
+  min-height: 52px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 11px 14px;
-  border: none;
-  border-radius: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
   font-size: 13.5px;
   font-weight: 700;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition: transform .15s ease, box-shadow .15s ease;
-  box-shadow: var(--biz-shadow-md);
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+  box-shadow: 0 8px 24px rgba(15,23,42,.14), 0 2px 6px rgba(15,23,42,.08);
 }
-.biz-card-gold .biz-cta-btn:active { transform: scale(.97); }
+.biz-card-gold .biz-cta-btn:active { transform: scale(.96); }
 .biz-card-gold .biz-cta-btn.primary {
-  background: #fff;
-  color: var(--biz-accent-dk);
+  background: #ffffff;
+  color: #1d4ed8;
+  border: 1.5px solid rgba(255,255,255,.9);
 }
-.biz-card-gold .biz-cta-btn.primary:hover { box-shadow: var(--biz-shadow-lg); }
+.biz-card-gold .biz-cta-btn.primary:hover {
+  box-shadow: 0 12px 32px rgba(29,78,216,.24);
+  transform: translateY(-2px);
+}
 .biz-card-gold .biz-cta-btn.secondary {
-  background: rgba(255,255,255,.88);
-  color: var(--biz-body);
-  backdrop-filter: blur(8px);
+  background: #ffffff;
+  color: #1e293b;
+  border: 1.5px solid #e2e8f0;
 }
-.biz-card-gold .biz-cta-btn.secondary:hover { background: #fff; }
+.biz-card-gold .biz-cta-btn.secondary:hover {
+  background: #f8fafc;
+  box-shadow: 0 10px 28px rgba(15,23,42,.16);
+  transform: translateY(-2px);
+}
 .biz-card-gold .biz-cta-btn svg {
   width: 18px;
   height: 18px;
   flex: 0 0 auto;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 2.1;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 /* ── Main Content ──────────────────────────────────────────────────────────── */
 .biz-card-gold .biz-main-content {
-  padding: 40px 16px calc(96px + env(safe-area-inset-bottom));
+  position: relative;
+  z-index: 2;
+  padding: 24px 16px calc(96px + env(safe-area-inset-bottom));
 }
 
 /* Panel system */
@@ -299,11 +312,20 @@
   line-height: 1.6;
 }
 .biz-card-gold .biz-about-copy {
-  margin: 8px 0 0;
+  margin: 12px 0 0;
+  padding: 16px 18px;
+  border: 1.5px solid var(--biz-border);
+  border-radius: var(--biz-radius);
+  background: var(--biz-surface);
+  box-shadow: var(--biz-shadow-sm);
   color: var(--biz-body);
   font-size: 14.5px;
-  line-height: 1.8;
+  line-height: 1.85;
   white-space: pre-line;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: auto;
 }
 
 /* ── List / Grid Containers ────────────────────────────────────────────────── */
@@ -876,63 +898,95 @@
   left: 50%;
   width: min(100%, 520px);
   display: grid;
-  grid-template-columns: repeat(4, minmax(0,1fr));
-  gap: 2px;
-  padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
-  background: rgba(255,255,255,.95);
-  border-top: 1px solid rgba(226,232,240,.8);
-  box-shadow: 0 -4px 24px rgba(15,23,42,.07);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.94);
+  border-top: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 -4px 25px rgba(15, 23, 42, 0.08), 0 -1px 4px rgba(15, 23, 42, 0.03);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   transform: translateX(-50%);
 }
 
 .biz-card-gold .biz-tab-btn {
   min-width: 0;
-  min-height: 56px;
+  height: 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 6px 4px;
+  gap: 3px;
+  padding: 4px 2px;
   border: 0;
-  border-radius: 13px;
+  border-radius: 14px;
   background: transparent;
-  color: var(--biz-subtle);
-  font-size: clamp(10px, 2.6vw, 11.5px);
-  font-weight: 600;
-  line-height: 1.2;
+  color: #64748b;
   text-align: center;
   cursor: pointer;
-  transition: background .2s ease, color .2s ease, transform .15s ease;
+  position: relative;
+  transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
 }
-.biz-card-gold .biz-tab-btn:active { transform: scale(.92); }
+.biz-card-gold .biz-tab-btn:hover {
+  color: #1e293b;
+  background: rgba(241, 245, 249, 0.65);
+}
+.biz-card-gold .biz-tab-btn:active {
+  transform: scale(0.94);
+}
 
 .biz-card-gold .biz-tab-icon {
-  width: 28px;
+  width: 38px;
   height: 28px;
   display: grid;
   place-items: center;
-  border-radius: 9px;
-  transition: background .2s ease;
+  border-radius: 100px;
+  transition: all .22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .biz-card-gold .biz-tab-btn svg {
   width: 20px;
   height: 20px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.7;
+  stroke-width: 1.85;
   stroke-linecap: round;
   stroke-linejoin: round;
+  transition: transform .2s ease;
 }
 
+.biz-card-gold .biz-tab-label,
+.biz-card-gold .biz-tab-btn > span:not(.biz-tab-icon) {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  font-size: clamp(9.5px, 2.5vw, 11px);
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  letter-spacing: -0.015em;
+  transition: color .2s ease, font-weight .2s ease;
+}
+
+/* Active Tab */
 .biz-card-gold .biz-tab-btn.is-active {
-  color: var(--biz-accent);
-  font-weight: 750;
+  color: #2563eb;
 }
 .biz-card-gold .biz-tab-btn.is-active .biz-tab-icon {
   background: #dbeafe;
+  color: #1d4ed8;
+}
+.biz-card-gold .biz-tab-btn.is-active svg {
+  stroke-width: 2.1;
+  transform: translateY(-1px);
+}
+.biz-card-gold .biz-tab-btn.is-active .biz-tab-label,
+.biz-card-gold .biz-tab-btn.is-active > span:not(.biz-tab-icon) {
+  color: #1d4ed8;
+  font-weight: 750;
 }
 
 /* ── Toast Notification ────────────────────────────────────────────────────── */
@@ -980,11 +1034,12 @@
 @media (max-width: 360px) {
   .biz-card-gold .biz-header-inner { padding-left: 14px; padding-right: 14px; }
   .biz-card-gold .biz-cta-group { padding-left: 14px; padding-right: 14px; gap: 8px; }
+  .biz-card-gold .biz-cta-btn { padding: 10px 8px; font-size: 12px; gap: 6px; min-height: 48px; }
   .biz-card-gold .biz-main-content { padding-left: 14px; padding-right: 14px; }
   .biz-card-gold .biz-avatar-wrap { width: 58px; height: 58px; flex-basis: 58px; }
   .biz-card-gold .biz-main-title { font-size: 17px; }
-  .biz-card-gold .biz-tab-btn { font-size: 10px; }
-  .biz-card-gold .biz-cta-group { grid-template-columns: 1fr; }
+  .biz-card-gold .biz-tab-label,
+  .biz-card-gold .biz-tab-btn > span:not(.biz-tab-icon) { font-size: 9.5px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

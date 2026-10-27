@@ -1184,10 +1184,13 @@ async function testAdminDashboardFeatures() {
 
     const hasNoFallbackDefault = fallbackData.default === undefined;
     const hasNoEngineDefault = !engineCode.includes('DEFAULT_INVITATION');
-    const hasUnifiedCacheVersion = engineCode.includes("ASSET_CACHE_VERSION = '21'") && swCode.includes('wedding-shell-v21');
+    const engineVersionMatch = engineCode.match(/ASSET_CACHE_VERSION\s*=\s*['"](\d+)['"]/);
+    const swVersionMatch = swCode.match(/wedding-shell-v(\d+)/);
+    const currentVersion = engineVersionMatch ? engineVersionMatch[1] : null;
+    const hasUnifiedCacheVersion = Boolean(currentVersion && swVersionMatch && swVersionMatch[1] === currentVersion);
 
     if (hasNoFallbackDefault && hasNoEngineDefault && hasUnifiedCacheVersion) {
-      logPass('Zero-Default Fallback & Unified Cache Defense', 'Zero default fallback verified across JSON & engine, with unified cache version v21');
+      logPass('Zero-Default Fallback & Unified Cache Defense', `Zero default fallback verified across JSON & engine, with unified cache version v${currentVersion}`);
     } else {
       logFail('Zero-Default Fallback & Unified Cache Defense', `Integrity check failed: noFallbackDefault=${hasNoFallbackDefault}, noEngineDefault=${hasNoEngineDefault}, unifiedCacheVersion=${hasUnifiedCacheVersion}`);
     }
@@ -1208,8 +1211,8 @@ async function testPartnerPortalFeatures() {
     const loginRes = await supabaseFetch('/rest/v1/rpc/verify_partner_login', {
       method: 'POST',
       body: JSON.stringify({
-        p_partner_code: 'SHOP-002',
-        p_passcode: 'studio99'
+        p_partner_code: ENV.TEST_PARTNER_CODE || 'SHOP-002',
+        p_passcode: ENV.TEST_PARTNER_PASSCODE || 'studio99'
       })
     });
 
