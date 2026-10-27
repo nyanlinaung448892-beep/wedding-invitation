@@ -10,29 +10,8 @@
 import { fetchInvitationBySlug, fetchLatestActiveInvitation, fetchWishesBySlug, submitGuestWish, reportSystemError, fetchPlatformSponsor } from './supabase-config.js';
 import { saveToCalendar, getGoogleCalendarUrl, scheduleWeddingReminder } from './calendar.js';
 
-// ─── Default Invitation (In-Memory Fallback) ──────────────────────────────────
-const DEFAULT_INVITATION = {
-  slug        : 'heinthu-aung-pan-ei-phyu-2026',
-  template_id : 'floral-pink',
-  is_active   : true,
-  _isFallbackDefault: true,
-  customer_data: {
-    groom_name      : 'ဟိန်းသူအောင်',
-    bride_name      : 'ပန်းအိဖြူ',
-    groom_name_en   : 'Hein Thu Aung',
-    bride_name_en   : 'Pann Ei Phyu',
-    wedding_date    : '2026-09-13',
-    wedding_day     : 'တနင်္ဂနွေနေ့',
-    wedding_time    : 'နံနက် ၉:၃၀ နာရီ မှ နေ့လယ် ၁၂:၃၀ နာရီ ထိ',
-    venue_name      : 'ဟုတ်ဝမ်မင်္ဂလာခန်းမ',
-    venue_address   : 'ကန်လမ်း၊ တောင်ငူမြို့။',
-    map_url         : 'https://maps.app.goo.gl/9F1rMzPbByDxeGmh9',
-    rsvp_phone      : '09950351292',
-    cover_photo_url : 'https://kweylhqnzqnxnopqwrhj.supabase.co/storage/v1/object/public/wedding-media/invitations/heinthu-aung-pan-ei-phyu-2026/cover-1792470392282.webp',
-    couple_photo_url: 'https://kweylhqnzqnxnopqwrhj.supabase.co/storage/v1/object/public/wedding-media/invitations/heinthu-aung-pan-ei-phyu-2026/couple-1792470392372.webp',
-    message         : '',
-  },
-};
+// Unified Asset & Shell Cache Version
+const ASSET_CACHE_VERSION = '21';
 
 // ─── Static Fallback JSON cache (loaded once) ─────────────────────────────────
 let _fallbackJSON = null;
@@ -40,7 +19,7 @@ let _fallbackJSON = null;
 async function loadFallbackJSON() {
   if (_fallbackJSON) return _fallbackJSON;
   try {
-    const res = await fetch('data/fallback-invitations.json?v=20');
+    const res = await fetch(`data/fallback-invitations.json?v=${ASSET_CACHE_VERSION}`);
     if (res.ok) {
       _fallbackJSON = await res.json();
     }
@@ -50,20 +29,20 @@ async function loadFallbackJSON() {
   return _fallbackJSON;
 }
 
-// ─── Multi-Tier Invitation Resolver ──────────────────────────────────────────
+// ─── Multi-Tier Invitation Resolver (Strict Zero-Default-Fallback) ─────────────
 /**
- * Resolves invitation data using a 5-tier fallback chain.
- * NEVER throws — always returns an invitation object.
+ * Resolves invitation data strictly for the requested slug or tenant.
+ * Zero-Stranger-Data Policy: NEVER falls back to any generic default card.
+ * If data cannot be retrieved, throws NETWORK_OR_NOT_FOUND to show clear Retry UI.
  *
- * Tier 0 — Direct entry (no slug): dynamically fetch latest active invitation from Supabase,
- *          then fall back to fallback JSON / DEFAULT_INVITATION
+ * Tier 0 — Direct entry (no slug): dynamically fetch latest active invitation from Supabase
  * Tier 1 — Supabase live fetch
  * Tier 2 — localStorage cache (Stale-while-revalidate for 0ms load)
- * Tier 3 — Static fallback-invitations.json
- * Tier 4 — In-memory DEFAULT_INVITATION
+ * Tier 3 — Static pre-cached fallback JSON (ONLY matching the exact cleanSlug)
  *
  * @param {string|null} slug
  * @param {Function|null} onLiveUpdate
+ * @param {Function|null} onNetworkProgress
  * @returns {Promise<Object>}
  */
 async function resolveInvitationData(slug, onLiveUpdate = null, onNetworkProgress = null) {
@@ -75,18 +54,19 @@ async function resolveInvitationData(slug, onLiveUpdate = null, onNetworkProgres
         return latest;
       }
     } catch (_) {}
-    const fb = await loadFallbackJSON();
-    if (fb?.default) return fb.default;
-    return DEFAULT_INVITATION;
+    const notFoundErr = new Error('No active invitation found or network offline');
+    notFoundErr.code = 'NETWORK_OR_NOT_FOUND';
+    throw notFoundErr;
   }
 
   const cleanSlug = String(slug).trim().toLowerCase();
-  const cacheKey  = `wedding_inv_cache_${cleanSlug}`;
+  const cacheKey  = `inv_cache_${cleanSlug}`;
+  const legacyKey = `wedding_inv_cache_${cleanSlug}`;
 
   // Check local cache first for INSTANT 0ms load (Returning Visitors)
   let cachedData = null;
   try {
-    const raw = localStorage.getItem(cacheKey);
+    const raw = localStorage.getItem(cacheKey) || localStorage.getItem(legacyKey);
     if (raw) cachedData = JSON.parse(raw);
   } catch (_) {}
 
@@ -131,7 +111,7 @@ async function resolveInvitationData(slug, onLiveUpdate = null, onNetworkProgres
   }
 
   // Slug was specifically requested by guest/QR, but not found or network timed out.
-  // NEVER silently swap to a stranger's wedding card (DEFAULT_INVITATION)!
+  // NEVER silently swap to a stranger's wedding card or any default fallback!
   console.warn('[engine.js] Slug not found in Supabase or fallback:', cleanSlug);
   const notFoundErr = new Error(`Invitation not found or network timeout: ${cleanSlug}`);
   notFoundErr.code = 'NETWORK_OR_NOT_FOUND';
@@ -370,7 +350,7 @@ function loadTemplateCSS(templateId) {
     const link = document.createElement('link');
     link.id   = 'template-style';
     link.rel  = 'stylesheet';
-    link.href = `templates/${templateId}/style.css?v=21`;
+    link.href = `templates/${templateId}/style.css?v=${ASSET_CACHE_VERSION}`;
 
     link.onload  = () => resolve();
     link.onerror = () => {
@@ -460,31 +440,41 @@ export function applyTemplateLoadingTheme(templateId) {
 
 const ERROR_MESSAGES = {
   'not-found': {
+    icon: '🔍',
     title:   'ဖိတ်ကြားလွှာ ရှာမတွေ့ပါ',
     message: 'ဖိတ်ကြားလွှာ URL မှားယွင်းနေပါသည် သို့မဟုတ် ဖိတ်ကြားလွှာ ပိတ်ထားခြင်း ဖြစ်နိုင်ပါသည်။',
+    guidance: 'ကျေးဇူးပြု၍ ဖိတ်ကြားသူထံမှ Link သို့မဟုတ် QR Code အသစ်ကို ပြန်လည်စစ်ဆေး ရယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည်။',
     canRetry: false,
   },
   'network-error': {
-    title:   'အင်တာနက်လိုင်း ခေတ္တနှေးနေပါသည်',
-    message: 'ဖိတ်ကြားလွှာကို ဖွင့်ရန် ကြိုးစားနေဆဲဖြစ်ပါသည်။ အင်တာနက်လိုင်း စစ်ဆေးပြီး ပြန်လည်ကြိုးစားပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည်။',
+    icon: '📡',
+    title:   'အင်တာနက်လိုင်း ချိတ်ဆက်မှု ခေတ္တနှေးနေပါသည်',
+    message: 'အချက်အလက်များကို ဆွဲယူဖွင့်လှစ်ရန် ကြိုးစားနေဆဲဖြစ်ပါသည်။',
+    guidance: 'Wi-Fi သို့မဟုတ် Mobile Data ဖွင့်ထားခြင်း ရှိမရှိ စစ်ဆေးပြီး အောက်ပါ ခလုတ်ကို နှိပ်၍ ပြန်လည်ဖွင့်နိုင်ပါသည်။',
     canRetry: true,
   },
   'template-error': {
-    title:   'မင်္ဂလာဖိတ်ကြားလွှာ',
-    message: 'ဆာဗာချိတ်ဆက်မှု ခေတ္တအဆင်မပြေဖြစ်နေပါသည်။ ခေတ္တစောင့်ဆိုင်းပြီး ပြန်လည်ကြိုးစားပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည်။',
+    icon: '⚡',
+    title:   'စာမျက်နှာ ဖွင့်ရန် ခေတ္တစောင့်ဆိုင်းပါ',
+    message: 'ကွန်ရက်ချိတ်ဆက်မှု မတည်ငြိမ်သဖြင့် စာမျက်နှာဖွင့်ရန် နှောင့်နှေးနေပါသည်။',
+    guidance: 'အင်တာနက်လိုင်း ကောင်းမွန်ပါက အောက်ပါခလုတ်ကို နှိပ်၍ ချက်ချင်း ပြန်လည်ဖွင့်လှစ်နိုင်ပါသည်။',
     canRetry: true,
   },
 };
 
 function showError(type) {
-  const errScreen = document.getElementById('error-screen');
-  const errTitle  = document.getElementById('error-title');
-  const errMsg    = document.getElementById('error-message');
+  const errScreen   = document.getElementById('error-screen');
+  const errIcon     = errScreen ? errScreen.querySelector('.error-icon') : null;
+  const errTitle    = document.getElementById('error-title');
+  const errMsg      = document.getElementById('error-message');
+  const errGuidance = document.getElementById('error-guidance');
 
   const config = ERROR_MESSAGES[type] ?? ERROR_MESSAGES['network-error'];
 
-  if (errTitle)  errTitle.textContent  = config.title;
-  if (errMsg)    errMsg.textContent    = config.message;
+  if (errIcon && config.icon) errIcon.textContent = config.icon;
+  if (errTitle)    errTitle.textContent    = config.title;
+  if (errMsg)      errMsg.textContent      = config.message;
+  if (errGuidance) errGuidance.textContent = config.guidance;
 
   let retryBtn = document.getElementById('error-retry-button');
   if (config.canRetry) {
@@ -493,27 +483,26 @@ function showError(type) {
       retryBtn.id = 'error-retry-button';
       retryBtn.className = 'error-retry-btn';
       retryBtn.type = 'button';
-      retryBtn.textContent = '🔄 ပြန်လည်ကြိုးစားမည်';
-      retryBtn.addEventListener('click', () => {
-        errScreen.classList.remove('visible');
-        const loadScreen = document.getElementById('loading-screen');
-        if (loadScreen) {
-          loadScreen.classList.remove('hidden');
-          if (currentAppliedLoadingTemplate) {
-            applyTemplateLoadingTheme(currentAppliedLoadingTemplate);
-          } else {
-            const sub = loadScreen.querySelector('.loading-sub');
-            if (sub) sub.textContent = 'စာမျက်နှာ ဖွင့်နေပါသည်...';
-          }
-        }
-        initEngine();
-      });
-      errScreen.appendChild(retryBtn);
-    } else {
-      retryBtn.textContent = '🔄 ပြန်လည်ကြိုးစားမည်';
+      const card = errScreen?.querySelector('.error-card') || errScreen;
+      card?.appendChild(retryBtn);
     }
+    retryBtn.textContent = '🔄 ပြန်လည်ကြိုးစားမည်';
+    retryBtn.onclick = () => {
+      if (errScreen) errScreen.classList.remove('visible');
+      const loadScreen = document.getElementById('loading-screen');
+      if (loadScreen) {
+        loadScreen.classList.remove('hidden');
+        if (currentAppliedLoadingTemplate) {
+          applyTemplateLoadingTheme(currentAppliedLoadingTemplate);
+        } else {
+          const sub = loadScreen.querySelector('.loading-sub');
+          if (sub) sub.textContent = 'စာမျက်နှာ ဖွင့်နေပါသည်...';
+        }
+      }
+      initEngine();
+    };
     retryBtn.hidden = false;
-    retryBtn.style.display = '';
+    retryBtn.style.display = 'inline-flex';
   } else if (retryBtn) {
     retryBtn.hidden = true;
     retryBtn.style.display = 'none';
@@ -529,7 +518,6 @@ function hideLoadingScreen() {
   const el = document.getElementById('loading-screen');
   if (!el) return;
   el.classList.add('hidden');
-  setTimeout(() => el.remove(), 750);
 }
 
 // ─── Customer Data Normalization & Enrichment ─────────────────────────────────
@@ -705,9 +693,33 @@ async function bindPlatformSponsor(container) {
 // ─── Active Template Module State ─────────────────────────────────────────────
 let activeTemplateModule = null;
 
+// ─── Automated Local Storage Cache Purge & Eviction ──────────────────────────
+
+function checkAndPurgeStaleLocalCaches() {
+  try {
+    const storedVersion = localStorage.getItem('app_cache_version');
+    if (storedVersion !== ASSET_CACHE_VERSION) {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('inv_cache_') || key.startsWith('wedding_inv_cache_'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+      localStorage.setItem('app_cache_version', ASSET_CACHE_VERSION);
+      if (keysToRemove.length > 0) {
+        console.info(`[engine.js] Purged ${keysToRemove.length} stale invitation cache entries for v${ASSET_CACHE_VERSION}`);
+      }
+    }
+  } catch (_) {}
+}
+
 // ─── Main Engine Orchestrator ─────────────────────────────────────────────────
 
 async function initEngine() {
+  checkAndPurgeStaleLocalCaches();
+
   const params  = new URLSearchParams(window.location.search);
   const rawSlug = (params.get('id') || params.get('slug') || window.location.hash.replace(/^#/, '') || '').trim().toLowerCase() || null;
   const urlTemplate = (params.get('t') || params.get('tpl') || params.get('template') || window.__PRE_RESOLVED_TEMPLATE__ || '').trim().toLowerCase() || null;
@@ -716,7 +728,7 @@ async function initEngine() {
   let initialTemplateId = urlTemplate;
   if (!initialTemplateId && rawSlug) {
     try {
-      const cached = localStorage.getItem('wedding_inv_cache_' + rawSlug);
+      const cached = localStorage.getItem('inv_cache_' + rawSlug) || localStorage.getItem('wedding_inv_cache_' + rawSlug);
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed?.template_id) initialTemplateId = parsed.template_id;
@@ -791,7 +803,7 @@ async function initEngine() {
     let prefetchPromise = null;
     if (initialTemplateId) {
       prefetchPromise = Promise.all([
-        fetch(`templates/${initialTemplateId}/layout.html?v=20`).then(res => res.ok ? res.text() : null).catch(() => null),
+        fetch(`templates/${initialTemplateId}/layout.html?v=${ASSET_CACHE_VERSION}`).then(res => res.ok ? res.text() : null).catch(() => null),
         loadTemplateCSS(initialTemplateId)
       ]);
     }
@@ -816,7 +828,7 @@ async function initEngine() {
     }
     if (!layoutHTML) {
       const [fetchedHTML] = await Promise.all([
-        fetch(`templates/${templateId}/layout.html?v=20`).then(res => {
+        fetch(`templates/${templateId}/layout.html?v=${ASSET_CACHE_VERSION}`).then(res => {
           if (!res.ok) throw new Error(`Failed to fetch templates/${templateId}/layout.html`);
           return res.text();
         }),
@@ -852,7 +864,7 @@ async function initEngine() {
 
     // Step 11: Decoupled Plugin Execution — Dynamically mount template's script.js if present
     try {
-      const templateScriptUrl = `../templates/${templateId}/script.js?v=20`;
+      const templateScriptUrl = `../templates/${templateId}/script.js?v=${ASSET_CACHE_VERSION}`;
       const templateModule = await import(templateScriptUrl);
 
       if (templateModule && typeof templateModule.init === 'function') {
@@ -887,27 +899,6 @@ async function initEngine() {
       message: `Engine render failure (${rawSlug || 'default'}): ${err.message || 'Unknown error'}`,
       details: { stack: err.stack, slug: rawSlug, url: window.location.href }
     });
-
-    // Only attempt emergency demo render if NO specific slug was requested (direct landing visit)
-    if (!rawSlug) {
-      try {
-        const emergencyLayout = await fetch('templates/floral-pink/layout.html?v=20');
-        if (emergencyLayout.ok) {
-          const container = document.getElementById('template-container');
-          container.innerHTML = await emergencyLayout.text();
-          await loadTemplateCSS('floral-pink');
-          const data = enrichCustomerData(DEFAULT_INVITATION.customer_data);
-          bindData(container, data);
-          updatePageMeta(data);
-          hideLoadingScreen();
-          requestAnimationFrame(() => requestAnimationFrame(() => container.classList.add('visible')));
-          initScrollAnimations();
-          return;
-        }
-      } catch (emergencyErr) {
-        console.error('[engine.js] Emergency render failed:', emergencyErr);
-      }
-    }
 
     showError('network-error');
   }

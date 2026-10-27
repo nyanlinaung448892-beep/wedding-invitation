@@ -99,12 +99,27 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Navigation / Page Shell requests (Fast 2.5s network timeout with instant cache fallback)
+  // 2. Navigation / Page Shell requests (Fast App Shell Navigation with Instant 0ms Cache)
   event.respondWith(
     (async () => {
+      // For page navigation (e.g. index.html?id=... or root entry), serve precached index.html shell instantly
+      if (request.mode === 'navigate') {
+        const cachedShell = await caches.match('./index.html') || await caches.match('index.html');
+        if (cachedShell) {
+          if (navigator.onLine) {
+            fetch(request).then((res) => {
+              if (res && res.ok) {
+                caches.open(SHELL_CACHE_NAME).then((c) => c.put('./index.html', res));
+              }
+            }).catch(() => {});
+          }
+          return cachedShell;
+        }
+      }
+
       const cached = await caches.match(request);
 
-      // If returning visitor and cached asset exists for static shells (css, js, template html):
+      // If returning visitor and cached asset exists for static shells (css, js, template html, data):
       // Return cached immediately and revalidate in background!
       const isStaticShell = url.pathname.includes('/css/') ||
                             url.pathname.includes('/js/') ||
@@ -142,7 +157,7 @@ self.addEventListener('fetch', (event) => {
         });
       }
 
-      // If cached exists but is navigation: race 2500ms
+      // If cached exists but not static shell: race 2500ms
       const timeoutPromise = new Promise((resolve) => {
         setTimeout(() => resolve(null), 2500);
       });

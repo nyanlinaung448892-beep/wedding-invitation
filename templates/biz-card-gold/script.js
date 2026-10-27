@@ -1,8 +1,8 @@
 // =============================================================================
 // templates/biz-card-gold/script.js
-// Apex Business Card (Gold Luxury Hub) — Controller & Interactive Plugin
-// Features: 
-//   - Tab Switcher (Services, Channels, About)
+// Business Card Mobile Web App — Controller & Interactive Plugin
+// Features:
+//   - Mobile navigation (Contact, Services, Payments, About)
 //   - Strict Conditional Social Channel Rendering (Only display configured URLs)
 //   - Interactive FAQ Accordions
 //   - vCard (.vcf) Contact Generator & Downloader
@@ -18,14 +18,49 @@ function escapeHTML(str = '') {
 function showToast(container, message) {
   const toast = container.querySelector('#biz-toast');
   if (!toast) return;
+  clearTimeout(toast._hideTimer);
   toast.textContent = message;
   toast.hidden = false;
-  setTimeout(() => {
+  toast._hideTimer = setTimeout(() => {
     toast.hidden = true;
   }, 3200);
 }
 
+function showEmptyState(element, message) {
+  if (!element) return;
+  const state = document.createElement('p');
+  state.className = 'biz-empty-state';
+  state.textContent = message;
+  if (typeof element.replaceChildren === 'function') {
+    element.replaceChildren(state);
+  } else {
+    element.innerHTML = '';
+    element.appendChild(state);
+  }
+}
+
+async function copyText(value) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return;
+    } catch (_) {}
+  }
+
+  const field = document.createElement('textarea');
+  field.value = value;
+  field.setAttribute('readonly', '');
+  field.style.position = 'fixed';
+  field.style.opacity = '0';
+  document.body.appendChild(field);
+  field.select();
+  const copied = document.execCommand('copy');
+  field.remove();
+  if (!copied) throw new Error('Clipboard unavailable');
+}
+
 export function generateVCard(data) {
+  const escapeVCard = value => String(value || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
   const company = data.company_name || data.display_title || 'Apex Business Hub';
   const tagline = data.tagline || '';
   const phone = data.rsvp_phone || '';
@@ -35,12 +70,12 @@ export function generateVCard(data) {
   return [
     'BEGIN:VCARD',
     'VERSION:3.0',
-    `FN:${company}`,
-    `ORG:${company}`,
-    tagline ? `TITLE:${tagline}` : '',
-    phone ? `TEL;TYPE=WORK,VOICE:${phone}` : '',
-    website ? `URL:${website}` : '',
-    bio ? `NOTE:${bio.replace(/\n/g, ' ')}` : '',
+    `FN:${escapeVCard(company)}`,
+    `ORG:${escapeVCard(company)}`,
+    tagline ? `TITLE:${escapeVCard(tagline)}` : '',
+    phone ? `TEL;TYPE=WORK,VOICE:${escapeVCard(phone)}` : '',
+    website ? `URL:${escapeVCard(website)}` : '',
+    bio ? `NOTE:${escapeVCard(bio)}` : '',
     'END:VCARD'
   ].filter(Boolean).join('\r\n');
 }
@@ -51,25 +86,65 @@ export function init({ container, data, helpers, slug }) {
   const bizData = data || {};
   const currentSlug = String(slug || '').trim().toLowerCase() || 'default';
 
-  // 1. Setup Tab Switching Logic
+  const aboutCopy = container.querySelector('.biz-about-copy');
+  if (aboutCopy && !String(bizData.message || '').trim()) {
+    aboutCopy.textContent = 'လုပ်ငန်းမိတ်ဆက် အချက်အလက် မထည့်သွင်းရသေးပါ။';
+  }
+  const callButton = container.querySelector('#btn-call-hotline');
+  if (callButton?.style.display === 'none') {
+    container.querySelector('.biz-cta-group')?.classList.add('is-single');
+  }
+  container.querySelectorAll('[data-bind="stat_rating"], [data-bind="stat_support"]').forEach(value => {
+    const stat = value.closest('.biz-stat-item');
+    if (stat) stat.hidden = !String(bizData[value.dataset.bind] || '').trim();
+  });
+  const statLabels = {
+    stat_users_label: 'သုံးသပ်ချက်များ',
+    stat_rating_label: 'အဆင့်သတ်မှတ်ချက်',
+    stat_support_label: 'အကူအညီ'
+  };
+  Object.entries(statLabels).forEach(([key, fallback]) => {
+    const label = container.querySelector(`[data-bind="${key}"]`);
+    if (label && !String(bizData[key] || '').trim()) label.textContent = fallback;
+  });
+
+  // 1. Setup mobile navigation and keyboard tab behavior
   const tabs = container.querySelectorAll('.biz-tab-btn');
   const panels = container.querySelectorAll('.biz-panel');
 
+  function activateTab(tab, moveFocus = false) {
+    const target = tab?.dataset.target;
+    if (!target) return;
+
+    tabs.forEach(item => {
+      const isActive = item === tab;
+      item.classList.toggle('is-active', isActive);
+      item.setAttribute('aria-selected', String(isActive));
+      item.tabIndex = isActive ? 0 : -1;
+    });
+    panels.forEach(panel => {
+      const isActive = panel.id === `biz-panel-${target}`;
+      panel.classList.toggle('is-active', isActive);
+      panel.hidden = !isActive;
+    });
+    if (moveFocus) tab.focus();
+  }
+
   tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const target = tab.dataset.target;
-      tabs.forEach(t => {
-        const isActive = t === tab;
-        t.classList.toggle('is-active', isActive);
-        t.setAttribute('aria-selected', String(isActive));
-      });
-      panels.forEach(p => {
-        const isTarget = p.id === `biz-panel-${target}`;
-        p.classList.toggle('is-active', isTarget);
-        p.hidden = !isTarget;
-      });
+    tab.addEventListener('click', () => activateTab(tab));
+    tab.addEventListener('keydown', event => {
+      const index = Array.from(tabs).indexOf(tab);
+      let nextIndex = index;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
+      else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + tabs.length) % tabs.length;
+      else if (event.key === 'Home') nextIndex = 0;
+      else if (event.key === 'End') nextIndex = tabs.length - 1;
+      else return;
+      event.preventDefault();
+      activateTab(tabs[nextIndex], true);
     });
   });
+  activateTab(container.querySelector('#biz-tab-channels') || tabs[0]);
 
   // 2. Setup vCard (.vcf) Download
   const vcardBtn = container.querySelector('#btn-save-vcard');
@@ -86,10 +161,11 @@ export function init({ container, data, helpers, slug }) {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       showToast(container, '✅ Contact Card (.vcf) ကို ဖုန်းထဲသို့ ဒေါင်းလုဒ်ဆွဲပြီးပါပြီ!');
     } catch (err) {
       console.warn('[biz-card-gold] vCard generation error:', err);
+      showToast(container, 'ဖုန်းစာအုပ်ထဲ သိမ်းရန် မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။');
     }
   });
 
@@ -152,19 +228,21 @@ export function init({ container, data, helpers, slug }) {
     channelsContainer.innerHTML = '';
 
     channelConfigs.forEach(cfg => {
-      let rawUrl = (bizData[cfg.key] || '').trim();
-      if (!rawUrl) return;
+      let rawUrl = String(bizData[cfg.key] || '').trim();
+    if (!rawUrl) return;
 
-      // Handle raw usernames or phone numbers for messenger/telegram/viber
+      // Keep configured links only; convert supported handles to their canonical URLs.
       let finalUrl = rawUrl;
-      if (cfg.key === 'messenger_url' && !rawUrl.startsWith('http')) {
+      if (cfg.key === 'messenger_url' && !/^https?:/i.test(rawUrl)) {
         finalUrl = `https://m.me/${rawUrl.replace(/^@/, '')}`;
-      } else if ((cfg.key === 'telegram_url' || cfg.key === 'telegram_group_url') && !rawUrl.startsWith('http')) {
+      } else if ((cfg.key === 'telegram_url' || cfg.key === 'telegram_group_url') && !/^https?:/i.test(rawUrl)) {
         finalUrl = `https://t.me/${rawUrl.replace(/^@/, '')}`;
-      } else if (cfg.key === 'viber_url' && !rawUrl.startsWith('viber:') && !rawUrl.startsWith('http')) {
+      } else if (cfg.key === 'viber_url' && !/^viber:/i.test(rawUrl) && !/^https?:/i.test(rawUrl)) {
         const cleanDigits = rawUrl.replace(/[^0-9+]/g, '');
         finalUrl = `viber://chat?number=${cleanDigits}`;
       }
+
+      if (!/^(https?:|viber:)/i.test(finalUrl)) return;
 
       renderedCount++;
       const item = document.createElement('a');
@@ -186,45 +264,37 @@ export function init({ container, data, helpers, slug }) {
     });
 
     if (renderedCount === 0) {
-      channelsContainer.innerHTML = `
-        <div style="text-align:center; padding: 2rem 1rem; color: #94a3b8; font-size: 0.88rem;">
-          <p style="font-size: 1.8rem; margin: 0 0 0.5rem;">🌐</p>
-          <p style="margin: 0;">မကြာမီ ဆက်သွယ်ရန် Official Channels များ ထည့်သွင်းပေးပါမည်။</p>
-        </div>
-      `;
+      showEmptyState(channelsContainer, 'ဆက်သွယ်ရန် လမ်းကြောင်းများ မထည့်သွင်းရသေးပါ။ ဖုန်းခေါ်ရန် သို့မဟုတ် ဆက်လက်ကြည့်ရှုရန် လုပ်ငန်းရှင်ထံ တိုက်ရိုက်ဆက်သွယ်ပါ။');
     }
   }
 
   // 4. Render Dynamic Services
   const servicesContainer = container.querySelector('#biz-services-grid');
   if (servicesContainer) {
-    const services = Array.isArray(bizData.services) && bizData.services.length
-      ? bizData.services
-      : [
-          { icon: '🌐', title: 'Web & App Development', desc: 'Modern responsive websites and powerful web applications' },
-          { icon: '🎨', title: 'Brand Identity & Design', desc: 'Unique logos, digital business cards, and marketing materials' },
-          { icon: '📈', title: 'Digital Marketing & Growth', desc: 'Targeted outreach and online business optimization' }
-        ];
+    const services = Array.isArray(bizData.services) ? bizData.services.filter(service => service && (service.title || service.desc)) : [];
 
-    servicesContainer.innerHTML = services.map(s => `
-      <div class="biz-service-card">
-        <div class="service-icon-box">${escapeHTML(s.icon || '💼')}</div>
-        <div class="service-info">
-          <h3>${escapeHTML(s.title || '')}</h3>
-          <p>${escapeHTML(s.desc || '')}</p>
-        </div>
-      </div>
-    `).join('');
+    if (!services.length) {
+      showEmptyState(servicesContainer, 'ဝန်ဆောင်မှုအချက်အလက်များကို မကြာမီ ထည့်သွင်းပေးပါမည်။');
+    } else {
+      servicesContainer.innerHTML = services.map(s => `
+        <article class="biz-service-card">
+          <div class="service-icon-box" aria-hidden="true">${escapeHTML(s.icon || '•')}</div>
+          <div class="service-info">
+            <h3>${escapeHTML(s.title || '')}</h3>
+            ${s.desc ? `<p>${escapeHTML(s.desc)}</p>` : ''}
+          </div>
+        </article>
+      `).join('');
+    }
   }
 
   // 5. Active Users Counter & Live Public Reviews System
   const statUsersEl = container.querySelector('#biz-stat-users-val');
-  const statUsersCard = container.querySelector('#biz-stat-users-card');
 
   // Parse initial base value from bizData.stat_users (e.g., "500+", "1,200+", "250")
-  const rawUsersStr = String(bizData.stat_users || (statUsersEl ? statUsersEl.textContent : '500+')).trim();
+  const rawUsersStr = String(bizData.stat_users || '').trim();
   const rawDigitsMatch = rawUsersStr.replace(/,/g, '').match(/\d+/);
-  const baseUsersNum = rawDigitsMatch ? parseInt(rawDigitsMatch[0], 10) : 500;
+  const baseUsersNum = rawDigitsMatch ? parseInt(rawDigitsMatch[0], 10) : 0;
   const usersSuffix = rawUsersStr.includes('+') ? '+' : '';
 
   let additionalUsersCount = 0;
@@ -232,14 +302,7 @@ export function init({ container, data, helpers, slug }) {
   function updateActiveUsersDisplay() {
     if (!statUsersEl) return;
     const totalUsers = baseUsersNum + additionalUsersCount;
-    statUsersEl.textContent = `${totalUsers.toLocaleString()}${usersSuffix}`;
-  }
-
-  function pulseActiveUsers() {
-    if (!statUsersCard) return;
-    statUsersCard.classList.remove('is-pulsing');
-    void statUsersCard.offsetWidth; // Trigger reflow for keyframe restart
-    statUsersCard.classList.add('is-pulsing');
+    statUsersEl.textContent = totalUsers ? `${totalUsers.toLocaleString()}${usersSuffix}` : '—';
   }
 
   // Reviews Elements
@@ -259,17 +322,7 @@ export function init({ container, data, helpers, slug }) {
 
   const reviewsCacheKey = `biz_public_reviews_${currentSlug}`;
 
-  // Default initial admin reviews
-  const defaultAdminReviews = Array.isArray(bizData.reviews) && bizData.reviews.length
-    ? bizData.reviews
-    : [
-        {
-          name: 'ကိုအောင်မင်း',
-          role: 'Online Shop Owner',
-          rating: 5,
-          text: 'လုပ်ငန်းရှင်တွေအတွက် ဘောင်ချာနဲ့ စာရင်းဇယား စနစ်တွေ တကယ်ပဲ အဆင်ပြေပြေ သုံးလို့ရပါတယ်။ အထူး ကျေးဇူးတင်ပါတယ်။'
-        }
-      ];
+  const defaultAdminReviews = Array.isArray(bizData.reviews) ? bizData.reviews : [];
 
   // Helper to normalize any review (whether admin, cached, or remote from Supabase wishes)
   function normalizeReview(r) {
@@ -308,7 +361,7 @@ export function init({ container, data, helpers, slug }) {
     }
 
     return {
-      id: r.id || `${name}_${Math.random()}`,
+      id: String(r.id || `${name}_${text.slice(0, 32)}`),
       name: name || 'Anonymous Client',
       role,
       rating: Math.min(5, Math.max(1, rating)),
@@ -327,7 +380,8 @@ export function init({ container, data, helpers, slug }) {
   }
 
   // All combined reviews: public reviews first, followed by admin reviews
-  let allReviews = [...publicReviews, ...defaultAdminReviews.map(normalizeReview)];
+  const adminReviews = defaultAdminReviews.map(normalizeReview);
+  let allReviews = [...publicReviews, ...adminReviews];
   additionalUsersCount = publicReviews.length;
   updateActiveUsersDisplay();
 
@@ -335,12 +389,7 @@ export function init({ container, data, helpers, slug }) {
     if (!reviewsContainer) return;
 
     if (!allReviews || allReviews.length === 0) {
-      reviewsContainer.innerHTML = `
-        <div class="biz-review-empty">
-          <span class="empty-icon">⭐</span>
-          <p>သုံးသပ်ချက် မရှိသေးပါ။ ပထမဆုံး Review ရေးသားပေးပို့ပါ!</p>
-        </div>
-      `;
+      reviewsContainer.innerHTML = '<div class="biz-review-empty"><p>သုံးသပ်ချက် မရှိသေးပါ။ ပထမဆုံး သုံးသပ်ချက်ကို မျှဝေနိုင်ပါသည်။</p></div>';
       return;
     }
 
@@ -377,12 +426,14 @@ export function init({ container, data, helpers, slug }) {
     helpers.wishes.fetchWishesBySlug(currentSlug).then(remoteWishes => {
       if (Array.isArray(remoteWishes) && remoteWishes.length > 0) {
         const normalizedRemote = remoteWishes.map(normalizeReview);
-        publicReviews = normalizedRemote;
+        const remoteIds = new Set(normalizedRemote.map(review => review.id));
+        const locallyCached = publicReviews.filter(review => !remoteIds.has(review.id));
+        publicReviews = [...normalizedRemote, ...locallyCached].slice(0, 50);
         try {
           localStorage.setItem(reviewsCacheKey, JSON.stringify(publicReviews.slice(0, 50)));
         } catch (_) {}
 
-        allReviews = [...publicReviews, ...defaultAdminReviews.map(normalizeReview)];
+        allReviews = [...publicReviews, ...adminReviews];
         additionalUsersCount = publicReviews.length;
         updateActiveUsersDisplay();
         renderReviews();
@@ -411,6 +462,7 @@ export function init({ container, data, helpers, slug }) {
         starBtns.forEach(b => {
           const bVal = parseInt(b.dataset.val, 10);
           b.classList.toggle('is-active', bVal <= val);
+          b.setAttribute('aria-pressed', String(bVal <= val));
         });
         if (ratingFeedback) {
           ratingFeedback.textContent = ratingLabels[val] || `${val} ကြယ်`;
@@ -436,11 +488,15 @@ export function init({ container, data, helpers, slug }) {
     reviewForm?.reset();
     currentRating = 5;
     if (starsRow) {
-      starsRow.querySelectorAll('.star-btn').forEach(b => b.classList.add('is-active'));
+      starsRow.querySelectorAll('.star-btn').forEach(b => {
+        b.classList.add('is-active');
+        b.setAttribute('aria-pressed', 'true');
+      });
     }
     if (ratingFeedback) {
       ratingFeedback.textContent = ratingLabels[5];
     }
+    toggleFormBtn?.focus();
   }
 
   toggleFormBtn?.addEventListener('click', openReviewForm);
@@ -481,11 +537,6 @@ export function init({ container, data, helpers, slug }) {
       return;
     }
 
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span>ပေးပို့နေပါသည်… ⏳</span>';
-    }
-
     const now = new Date();
     const timeFormatted = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
     const newReview = {
@@ -505,74 +556,65 @@ export function init({ container, data, helpers, slug }) {
     });
     const remoteFullName = roleVal ? `${nameVal} (${roleVal})` : nameVal;
 
-    if (helpers?.wishes?.submitGuestWish) {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'ပေးပို့နေပါသည်…';
+    }
+
+    try {
+      if (!helpers?.wishes?.submitGuestWish) throw new Error('connection unavailable');
+      const result = await helpers.wishes.submitGuestWish({
+        slug: currentSlug,
+        name: remoteFullName,
+        message: remotePayloadMessage
+      });
+      if (!result?.success) throw new Error(result?.error || 'save failed');
+      if (result?.data?.id) newReview.id = String(result.data.id);
+
+      publicReviews = [newReview, ...publicReviews.filter(review => review.id !== newReview.id)].slice(0, 50);
       try {
-        const result = await helpers.wishes.submitGuestWish({
-          slug: currentSlug,
-          name: remoteFullName,
-          message: remotePayloadMessage
-        });
-        if (result?.data?.id) newReview.id = result.data.id;
-      } catch (err) {
-        console.warn('[biz-card-gold] Save review warning:', err);
+        localStorage.setItem(reviewsCacheKey, JSON.stringify(publicReviews));
+      } catch (_) {}
+
+      allReviews = [...publicReviews, ...adminReviews];
+      additionalUsersCount = publicReviews.length;
+      updateActiveUsersDisplay();
+      renderReviews();
+      closeReviewForm();
+      showToast(container, 'ကျေးဇူးတင်ပါသည်။ သင့်သုံးသပ်ချက်ကို အောင်မြင်စွာ ပေးပို့ပြီးပါပြီ။');
+    } catch (err) {
+      console.warn('[biz-card-gold] Save review warning:', err);
+      if (errorEl) {
+        errorEl.textContent = 'သုံးသပ်ချက်ကို ယခု ပေးပို့၍ မရသေးပါ။ အင်တာနက်ချိတ်ဆက်မှုကို စစ်ဆေးပြီး ထပ်မံကြိုးစားပါ။';
+        errorEl.hidden = false;
+      }
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'သုံးသပ်ချက်ပေးပို့ရန်';
       }
     }
-
-    // Prepend to reviews list immediately
-    publicReviews.unshift(newReview);
-    try {
-      localStorage.setItem(reviewsCacheKey, JSON.stringify(publicReviews.slice(0, 50)));
-    } catch (_) {}
-
-    allReviews = [...publicReviews, ...defaultAdminReviews.map(normalizeReview)];
-
-    // 1 ပေါင်းခြင်း: review တစ်ခါရေးရင် current active users ထဲမှာ 1 ပေါင်းပါ
-    additionalUsersCount++;
-    updateActiveUsersDisplay();
-    pulseActiveUsers();
-
-    // Re-render and scroll to top of stream
-    renderReviews();
-    if (reviewsContainer) reviewsContainer.scrollTop = 0;
-
-    // Reset and close form
-    closeReviewForm();
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '<span>⭐ Review အတည်ပြုပေးပို့မည်</span>';
-    }
-
-    // Success feedback
-    showToast(container, 'ကျေးဇူးတင်ပါသည်! သင့် Review ကို အောင်မြင်စွာ ပေးပို့ပြီးပါပြီ။ ⭐');
   });
 
   // 7. Render Dynamic Question & Answer Accordions
   const faqContainer = container.querySelector('#biz-faq-list');
   if (faqContainer) {
-    const faqs = Array.isArray(bizData.faq) && bizData.faq.length
-      ? bizData.faq
-      : [
-          {
-            question: 'ဝန်ဆောင်မှုများကို မည်သို့ ဆက်သွယ်ရယူနိုင်ပါသလဲ?',
-            answer: 'အထက်ပါ Official Channels များမှတစ်ဆင့် Messenger သို့မဟုတ် Telegram သို့ တိုက်ရိုက် စာပို့မေးမြန်း၍ ရယူနိုင်ပါသည်။'
-          },
-          {
-            question: 'ငွေပေးချေမှုပုံစံ မည်သို့ရှိပါသလဲ?',
-            answer: 'KBZPay, WavePay, AYA Pay စသည့် Mobile Banking စနစ်များဖြင့် လွယ်ကူလျင်မြန်စွာ ပေးချေနိုင်ပါသည်။'
-          }
-        ];
+    const faqs = Array.isArray(bizData.faq) ? bizData.faq.filter(item => item?.question && item?.answer) : [];
 
-    faqContainer.innerHTML = faqs.map(f => `
-      <div class="biz-faq-item">
-        <button type="button" class="faq-trigger" aria-expanded="false">
-          <span>${escapeHTML(f.question || '')}</span>
-          <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-answer">
-          <p style="margin:0;">${escapeHTML(f.answer || '')}</p>
+    if (!faqs.length) {
+      showEmptyState(faqContainer, 'မေးလေ့ရှိသော မေးခွန်းများ မထည့်သွင်းရသေးပါ။');
+    } else {
+      faqContainer.innerHTML = faqs.map((f, index) => `
+        <div class="biz-faq-item">
+          <button type="button" class="faq-trigger" aria-expanded="false" aria-controls="biz-faq-answer-${index}" id="biz-faq-trigger-${index}">
+            <span>${escapeHTML(f.question)}</span><span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer" id="biz-faq-answer-${index}" role="region" aria-labelledby="biz-faq-trigger-${index}">
+            <p>${escapeHTML(f.answer)}</p>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `).join('');
+    }
 
     // Accordion toggle click listeners
     faqContainer.querySelectorAll('.faq-trigger').forEach(trigger => {
@@ -588,36 +630,29 @@ export function init({ container, data, helpers, slug }) {
   // 7. Setup Dynamic Payment Methods
   const paymentsContainer = container.querySelector('#biz-payments-list');
   if (paymentsContainer) {
-    const rawPayments = Array.isArray(bizData.biz_payments) && bizData.biz_payments.length > 0
-      ? bizData.biz_payments
-      : [
-          { bank_name: 'KBZPay', account_number: '09987654321', account_name: bizData.company_name || 'Apex Business Hub' },
-          { bank_name: 'KBZ Bank', account_number: '2038472910382910', account_name: bizData.company_name || 'Apex Business Hub' },
-          { bank_name: 'WavePay', account_number: '09987654321', account_name: bizData.company_name || 'Apex Business Hub' }
-        ];
+    const rawPayments = Array.isArray(bizData.biz_payments)
+      ? bizData.biz_payments.filter(payment => payment && (payment.bank_name || payment.account_number || payment.account_name))
+      : [];
 
     if (!Array.isArray(rawPayments) || rawPayments.length === 0) {
-      paymentsContainer.innerHTML = `
-        <div style="text-align: center; padding: 2rem 1rem; color: #94a3b8; background: rgba(0,0,0,0.25); border-radius: 12px; border: 1px dashed rgba(245, 158, 11, 0.2);">
-          <p style="margin: 0;">ငွေပေးချေမှု အချက်အလက်များကို မကြာမီ ထည့်သွင်းပေးပါမည်။</p>
-        </div>
-      `;
+      showEmptyState(paymentsContainer, 'ငွေပေးချေမှုအချက်အလက်များ မထည့်သွင်းရသေးပါ။ ငွေလွှဲခြင်းမပြုမီ ဆက်သွယ်ရန် tab မှ အတည်ပြုမေးမြန်းပါ။');
     } else {
       paymentsContainer.innerHTML = rawPayments.map(p => {
         const bank = escapeHTML(p.bank_name || 'Payment');
-        const num = escapeHTML(p.account_number || '—');
+        const rawNumber = String(p.account_number || '').trim();
+        const num = escapeHTML(rawNumber || '—');
         const holder = escapeHTML(p.account_name || '—');
 
         return `
           <div class="biz-payment-card">
             <div class="biz-payment-header">
-              <span class="biz-payment-bank">🏦 ${bank}</span>
-              <span class="biz-payment-badge">Verified Account</span>
+              <span class="biz-payment-bank">${bank}</span>
+              <span class="biz-payment-badge">ငွေလွှဲအကောင့်</span>
             </div>
             <div class="biz-payment-number-row">
               <span class="biz-payment-number">${num}</span>
-              <button type="button" class="biz-copy-btn" data-copy-val="${num}" title="အကောင့်နံပါတ် ကူးယူမည်">
-                📋 Copy
+              <button type="button" class="biz-copy-btn" data-copy-val="${num}" title="အကောင့်နံပါတ် ကူးယူမည်" aria-label="${bank} အကောင့်နံပါတ် ကူးယူရန်" ${rawNumber ? '' : 'disabled'}>
+                ကူးယူရန်
               </button>
             </div>
             <div class="biz-payment-holder">
@@ -634,11 +669,8 @@ export function init({ container, data, helpers, slug }) {
           const val = btn.dataset.copyVal;
           if (!val || val === '—') return;
           try {
-            await navigator.clipboard.writeText(val);
-            const origHtml = btn.innerHTML;
-            btn.innerHTML = '✔ Copied!';
-            showToast(container, `✅ ${val} ကို ကူးယူပြီးပါပြီ!`);
-            setTimeout(() => { btn.innerHTML = origHtml; }, 2000);
+            await copyText(val);
+            showToast(container, 'အကောင့်နံပါတ်ကို ကူးယူပြီးပါပြီ။');
           } catch (_) {
             showToast(container, `အကောင့်နံပါတ်: ${val}`);
           }
@@ -666,18 +698,13 @@ export function init({ container, data, helpers, slug }) {
     }
 
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      showToast(container, '✅ Link ကို Clipboard ထဲသို့ ကူးယူပြီးပါပြီ!');
+      await copyText(window.location.href);
+      showToast(container, 'ပရိုဖိုင်လင့်ခ်ကို ကူးယူပြီးပါပြီ။');
     } catch (_) {
       showToast(container, `Link: ${window.location.href}`);
     }
   });
 
-  const catalogBtn = container.querySelector('#btn-catalog-grid');
-  catalogBtn?.addEventListener('click', () => {
-    const channelsTab = container.querySelector('#biz-tab-channels');
-    channelsTab?.click();
-  });
 }
 
 export function destroy() {

@@ -1,25 +1,4 @@
 {
-  "default": {
-    "slug": "heinthu-aung-pan-ei-phyu-2026",
-    "template_id": "floral-pink",
-    "is_active": true,
-    "customer_data": {
-      "groom_name": "ဟိန်းသူအောင်",
-      "bride_name": "ပန်းအိဖြူ",
-      "groom_name_en": "Hein Thu Aung",
-      "bride_name_en": "Pann Ei Phyu",
-      "wedding_date": "2026-09-13",
-      "wedding_day": "တနင်္ဂနွေနေ့",
-      "wedding_time": "နံနက် ၉:၃၀ နာရီ မှ နေ့လယ် ၁၂:၃၀ နာရီ ထိ",
-      "venue_name": "ဟုတ်ဝမ်မင်္ဂလာခန်းမ",
-      "venue_address": "ကန်လမ်း၊ တောင်ငူမြို့။",
-      "map_url": "https://maps.app.goo.gl/9F1rMzPbByDxeGmh9",
-      "rsvp_phone": "09950351292",
-      "cover_photo_url": "https://kweylhqnzqnxnopqwrhj.supabase.co/storage/v1/object/public/wedding-media/invitations/heinthu-aung-pan-ei-phyu-2026/cover-1792470392282.webp",
-      "couple_photo_url": "https://kweylhqnzqnxnopqwrhj.supabase.co/storage/v1/object/public/wedding-media/invitations/heinthu-aung-pan-ei-phyu-2026/couple-1792470392372.webp",
-      "message": ""
-    }
-  },
   "sponsor": {
     "brand_name": "မင်္ဂလာ ဒစ်ဂျစ်တယ် မီဒီယာ စတူဒီယို",
     "tagline": "ဒစ်ဂျစ်တယ် မင်္ဂလာဖိတ်စာနှင့် မီဒီယာ ဝန်ဆောင်မှု",
@@ -142,6 +121,74 @@
       "template_id": "biz-card-gold",
       "category": "business",
       "title": "Apex Business Hub (Invoice Tools & Digital Solutions)",
+      "is_active": true,
+      "customer_data": {
+        "company_name": "Apex Business Hub",
+        "tagline": "Invoice Tools & Digital Business Solutions",
+        "rsvp_phone": "09987654321",
+        "rsvp_phone_href": "tel:09987654321",
+        "status_text": "🟢 Open Now",
+        "stat_users": "500+",
+        "stat_users_label": "Active Users",
+        "stat_rating": "4.9 ★",
+        "stat_rating_label": "Client Rating",
+        "stat_support": "24/7",
+        "stat_support_label": "Support",
+        "cover_photo_url": "assets/images/wedding-memory-default.jpg",
+        "message": "လုပ်ငန်းရှင်များအတွက် ဘောင်ချာနှင့် စာရင်းဇယား Tools များ၊ QR Digital Card များနှင့် Business Automation ဝန်ဆောင်မှုများကို တစ်နေရာတည်းတွင် စိတ်ချစွာ ရယူနိုင်ပါသည်။",
+        "facebook_url": "https://facebook.com",
+        "messenger_url": "https://m.me",
+        "tiktok_url": "https://tiktok.com",
+        "telegram_url": "https://t.me",
+        "telegram_group_url": "https://t.me",
+        "facebook_group_url": "https://facebook.com/groups",
+        "services": [
+          { "icon": "🌐", "title": "Web & App Development", "desc": "Modern responsive websites and powerful web applications" },
+          { "icon": "🎨", "title": "Brand Identity & Design", "desc": "Unique logos, digital business cards, and marketing materials" },
+          { "icon": "📈", "title": "Digital Marketing & Growth", "desc": "Targeted outreach and online business optimization" }
+        ],
+        "reviews": [
+          {
+            "name": "ကိုအောင်မင်း",
+            "role": "Online Shop Owner",
+            "rating": 5,
+            "text": "လုပ်ငန်းရှင်တွေအတွက် ဘောင်ချာနဲ့ စာရင်းဇယား စနစ်တွေ တကယ်ပဲ အဆင်ပြေပြေ သုံးလို့ရပါတယ်။ အထူး ကျေးဇူးတင်ပါတယ်။"
+          }
+        ],
+        "faq": [
+          {
+            "question": "ဝန်ဆောင်မှုများကို မည်သို့ ဆက်သွယ်ရယူနိုင်ပါသလဲ?",
+            "answer": "အထက်ပါ Official Channels များမှတစ်ဆင့် Messenger သို့မဟုတ် Telegram သို့ တိုက်ရိုက် စာပို့မေးမြန်း၍ ရယူနိုင်ပါသည်။"
+          },
+          {
+            "question": "ငွေပေးချေမှုပုံစံ မည်သို့ရှိပါသလဲ?",
+            "answer": "KBZPay, WavePay, AYA Pay စသည့် Mobile Banking စနစ်များဖြင့် လွယ်ကူလျင်မြန်စွာ ပေးချေနိုင်ပါသည်။"
+          }
+        ],
+        "biz_payments": [
+          {
+            "bank_name": "KBZPay",
+            "account_number": "09987654321",
+            "account_name": "Apex Business Hub"
+          },
+          {
+            "bank_name": "KBZ Bank",
+            "account_number": "2038472910382910",
+            "account_name": "Apex Business Hub"
+          },
+          {
+            "bank_name": "WavePay",
+            "account_number": "09987654321",
+            "account_name": "Apex Business Hub"
+          }
+        ]
+      }
+    },
+    "business-tools": {
+      "slug": "business-tools",
+      "template_id": "biz-card-gold",
+      "category": "business",
+      "title": "Business Tools & Digital Solutions",
       "is_active": true,
       "customer_data": {
         "company_name": "Apex Business Hub",

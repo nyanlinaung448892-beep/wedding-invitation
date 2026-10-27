@@ -258,7 +258,7 @@ function renderPartnerOptions() {
 }
 
 async function loadMetadata() {
-  const [templateResponse, partners] = await Promise.all([fetch('templates/registry.json?v=20'), fetchAllPartners()]);
+  const [templateResponse, partners] = await Promise.all([fetch('templates/registry.json?v=21'), fetchAllPartners()]);
   if (!templateResponse.ok) throw new Error('Template registry ကို ဖတ်၍မရပါ။');
   state.templates = (await templateResponse.json()).filter(template => template.available);
   state.partners = partners;

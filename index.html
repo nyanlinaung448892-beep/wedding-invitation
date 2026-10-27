@@ -34,7 +34,7 @@
         let tpl = t;
         if (!tpl && slug) {
           try {
-            const c = localStorage.getItem('wedding_inv_cache_' + slug);
+            const c = localStorage.getItem('inv_cache_' + slug) || localStorage.getItem('wedding_inv_cache_' + slug);
             if (c) {
               const parsed = JSON.parse(c);
               if (parsed && parsed.template_id) tpl = parsed.template_id;
@@ -122,14 +122,21 @@
        Error Screen — shown when slug not found / network error
        ═══════════════════════════════════════════════════════════ -->
   <div id="error-screen" role="alert" aria-live="assertive">
-    <div class="error-icon" aria-hidden="true">💌</div>
-    <h1 class="error-title"  id="error-title">ဖိတ်ကြားလွှာ မတွေ့ပါ</h1>
-    <p  class="error-message" id="error-message">
-      ဤ URL သည် မမှန်ကန်ပါ သို့မဟုတ် ဖိတ်ကြားလွှာ ပိတ်ထားသည်။
-    </p>
-    <button id="error-retry-button" class="error-retry-btn" type="button" style="display: none;">
-      🔄 ပြန်လည်ကြိုးစားမည်
-    </button>
+    <div class="error-card">
+      <div class="error-icon" aria-hidden="true">📡</div>
+      <h1 class="error-title" id="error-title">အင်တာနက်လိုင်း ချိတ်ဆက်မှု ခေတ္တနှေးနေပါသည်</h1>
+      <p class="error-message" id="error-message">
+        အချက်အလက်များကို ဆွဲယူဖွင့်လှစ်ရန် ကြိုးစားနေဆဲဖြစ်ပါသည်။
+      </p>
+      <div class="error-guidance-box" id="error-guidance-box">
+        <p class="error-guidance" id="error-guidance">
+          Wi-Fi သို့မဟုတ် Mobile Data ဖွင့်ထားခြင်း ရှိမရှိ စစ်ဆေးပြီး အောက်ပါ ခလုတ်ကို နှိပ်၍ ပြန်လည်ဖွင့်နိုင်ပါသည်။
+        </p>
+      </div>
+      <button id="error-retry-button" class="error-retry-btn" type="button" style="display: none;">
+        🔄 ပြန်လည်ကြိုးစားမည်
+      </button>
+    </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════
